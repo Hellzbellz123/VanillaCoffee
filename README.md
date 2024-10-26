@@ -34,34 +34,19 @@ However i gave up and did not touch it for a really long time
 
 - Rust
 - Cargo
-- [Cargo Make](https://github.com/sagiegurari/cargo-make)
-- [Trunk](https://trunkrs.dev) (Optional for web development)
+- [Cargo Make](https://github.com/sagiegurari/cargo-make) (general make targets for each platform and a package workflow)
+- [Cargo Xwin](https://github.com/rust-cross/cargo-xwin) (required for windows development)
+- [Cargo Apk](https://github.com/rust-mobile/cargo-apk) (required for android development)
+- [Trunk](https://trunkrs.dev) (required for web development)
 
 ## Development Guide
 
-- Edit the `.env` file if you need
 - Run `cargo make run-native` for run desktop dev mode
 - Run `cargo make run-mobile` too build and install on connected adb device
-- Run `cargo make run-web` too build and install on connected adb device
+- Run `cargo make run-web` too start webserver and host wasm game there
 - Run `cargo make` for all available tasks
 
-### Other CargoMake Tasks
-
-- **build** - Generate release binary/lib
-- **check** - Check all issues, format and code quality
-- **clean** - Clean all target directory
-- **clippy** - Check code quality
-- **default** - Check all issues, format and code quality
-- **dev** - Run native launcher with development configuration
-- **fix-all** - Try fix all clippy and format issues
-- **fix-clippy** - Fix code quality
-- **fix-fmt** - Fix format
-- **fmt** - Check format quality
-- **test** - Check all unit test
-
 ## Usage as Library
-
-> ⚠️ Check the `launchers` folders for examples
 
 why would you use this as a library?
 

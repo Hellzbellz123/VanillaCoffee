@@ -44,7 +44,7 @@ impl Plugin for InputPlugin {
             .insert_resource(action_maps::Gameplay::default_input_map());
 
         // TODO: make this plugin only active by default if target_platform == (ANDROID || IOS) else make it a setting too enable
-        // app.add_plugins(touch_gamepad::TouchInputPlugin);
+        app.add_plugins(touch_gamepad::TouchInputPlugin);
         // TODO: make software cursor an option in the settings, mostly only useful for debugging
         app.add_plugins(software_cursor::SoftwareCursorPlugin);
         // implement targeting system reticle that snaps too nearest interactable actor too cursor. interaction and pickup uses this system?

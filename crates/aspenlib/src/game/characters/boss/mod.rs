@@ -38,6 +38,7 @@ pub mod utils {
             game_world::components::CharacterSpawner,
         },
         loading::{custom_assets::actor_definitions::CharacterDefinition, registry::ActorRegistry},
+        utilities::EntityCreator,
     };
 
     /// spawns creep character in world
@@ -70,26 +71,29 @@ pub mod utils {
             commands.spawn(character.clone()).with_children(|child| {
                 let collider_name = format!("{}Collider", character.name.clone().as_str());
                 let spawned_enemy = child
-                    .spawn((ActorColliderBundle {
-                        tag: ActorColliderType::Character,
-                        name: Name::new(collider_name),
-                        transform_bundle: TransformBundle {
-                            local: (Transform {
-                                translation: (Vec3 {
-                                    x: 0.0,
-                                    y: 0.0,
-                                    z: ACTOR_PHYSICS_Z_INDEX,
+                    .spawn((
+                        EntityCreator(child.parent_entity()),
+                        ActorColliderBundle {
+                            tag: ActorColliderType::Character,
+                            name: Name::new(collider_name),
+                            transform_bundle: TransformBundle {
+                                local: (Transform {
+                                    translation: (Vec3 {
+                                        x: 0.0,
+                                        y: 0.0,
+                                        z: ACTOR_PHYSICS_Z_INDEX,
+                                    }),
+                                    ..default()
                                 }),
                                 ..default()
-                            }),
-                            ..default()
+                            },
+                            collider: actor_collider(char_def.actor.pixel_size),
+                            collision_groups: CollisionGroups {
+                                memberships: AspenCollisionLayer::ACTOR,
+                                filters: AspenCollisionLayer::EVERYTHING,
+                            },
                         },
-                        collider: actor_collider(char_def.actor.pixel_size),
-                        collision_groups: CollisionGroups {
-                            memberships: AspenCollisionLayer::ACTOR,
-                            filters: AspenCollisionLayer::EVERYTHING,
-                        },
-                    },))
+                    ))
                     .id();
 
                 if let Ok(mut spawner_state) = spawners.get_mut(spawn_event.spawner) {

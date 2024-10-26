@@ -404,7 +404,13 @@ fn spawn_controlsbutton<S: Component>(
     id: S,
 ) {
     let debug_name = name.trim().to_string();
-    let image = UiImage::new(image.unwrap_or_default());
+
+    let image = if let Some(image) = image {
+        UiImage::new(image)
+    } else {
+        UiImage::default()
+    };
+
     touch_controls_builder
         .spawn((
             Name::new(debug_name),
@@ -427,8 +433,8 @@ fn spawn_controlsbutton<S: Component>(
                     height: size.1,
                     ..default()
                 },
-                background_color: BackgroundColor(crate::colors::SEA_GREEN.into()),
-                border_color: BorderColor(crate::colors::RED.into()),
+                // background_color: BackgroundColor(crate::colors::PURPLE.into()),
+                // border_color: BorderColor(crate::colors::RED.into()),
                 z_index: ZIndex::Local(1),
                 // TODO: change from button with text too fancier image
                 image,
@@ -436,21 +442,21 @@ fn spawn_controlsbutton<S: Component>(
             },
         ))
         .with_children(|text| {
-            text.spawn(
-                TextBundle::from_section(
-                    name,
-                    TextStyle {
-                        font_size: 14.0,
-                        color: Color::WHITE,
-                        ..default()
-                    },
-                )
-                .with_style(Style {
-                    display: Display::Flex,
-                    position_type: PositionType::Absolute,
+            let mut text_bundle = TextBundle::from_section(
+                name,
+                TextStyle {
+                    font_size: 14.0,
+                    color: Color::WHITE,
                     ..default()
-                }),
-            );
+                },
+            )
+            .with_style(Style {
+                display: Display::Flex,
+                position_type: PositionType::Absolute,
+                ..default()
+            });
+            text_bundle.z_index = ZIndex::Local(2);
+            text.spawn(text_bundle);
         });
 }
 
@@ -481,6 +487,7 @@ fn spawn_touchstick<
         .spawn((
             Name::new(name),
             mapping.1,
+            // BackgroundColor(crate::colors::ANTIQUE_WHITE.with_alpha(0.25).into()),
             TouchStickUiBundle {
                 stick: TouchStick {
                     id: mapping.0,
@@ -496,6 +503,7 @@ fn spawn_touchstick<
                     border: UiRect::all(Val::Px(2.0)),
                     position_type: PositionType::Relative,
                     margin: position,
+                    padding: UiRect::all(Val::Auto),
                     ..default()
                 },
                 ..default()
@@ -506,15 +514,20 @@ fn spawn_touchstick<
                 Name::new("TouchStickKnob"),
                 TouchStickUiKnob,
                 ImageBundle {
-                    image: images.0.clone().into(),
+                    image: UiImage {
+                        texture: images.0.clone().into(),
+                        color: crate::colors::ORANGE.with_alpha(0.3).into(),
+                        ..default()
+                    },
                     style: Style {
                         // (Val::Px(100.0), Val::Px(100.0)),
                         width: size.0 / 2.0,
                         height: size.1 / 2.0,
-                        position_type: PositionType::Relative,
+                        position_type: PositionType::Absolute,
+                        margin: UiRect::all(Val::Auto),
+                        padding: UiRect::all(Val::Auto),
                         ..default()
                     },
-                    background_color: crate::colors::ORANGE.with_alpha(0.3).into(),
                     ..default()
                 },
             ));
@@ -522,15 +535,19 @@ fn spawn_touchstick<
                 Name::new("TouchStickOutline"),
                 TouchStickUiOutline,
                 ImageBundle {
-                    image: images.1.clone().into(),
-                    style: Style {
-                        position_type: PositionType::Relative,
-                        width: Val::Px(150.),
-                        height: Val::Px(150.),
-                        margin: UiRect::all(Val::Px(50.0)),
+                    image: UiImage {
+                        texture: images.1.clone().into(),
+                        color: crate::colors::ORANGE.with_alpha(0.3).into(),
                         ..default()
                     },
-                    background_color: crate::colors::ORANGE.with_alpha(0.3).into(),
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        width: Val::Px(150.),
+                        height: Val::Px(150.),
+                        margin: UiRect::all(Val::Auto),
+                        padding: UiRect::all(Val::Auto),
+                        ..default()
+                    },
                     ..default()
                 },
             ));

@@ -10,6 +10,7 @@ pub fn create_gun_hud(playing_ui_parts: &mut ChildBuilder) {
     playing_ui_parts
         .spawn((
             Name::new("GunHud"),
+            GunHudContainer,
             Outline {
                 width: Val::Px(3.0),
                 offset: Val::default(),
@@ -159,6 +160,9 @@ fn create_gun_slot(gun_slot_parts: &mut ChildBuilder, slot: WeaponSlot, size: f3
     ));
 }
 
+#[derive(Component)]
+pub struct GunHudContainer;
+
 /// ui ammo bar resource data
 #[derive(Debug, Component, Reflect, Default)]
 #[reflect(Component)]
@@ -172,6 +176,29 @@ pub struct PlayerAmmoBar {
 /// ui widget tag for weapon slots
 #[derive(Debug, Component)]
 pub struct UiWeaponSlot(WeaponSlot);
+
+pub fn gunhud_visibility_system(
+    player_query: Query<&WeaponCarrier, With<PlayerSelectedHero>>,
+    mut gunhud_query: Query<&mut Style, With<GunHudContainer>>,
+) {
+    let Ok(player_slots) = player_query.get_single() else {
+        return;
+    };
+    let Ok(mut gunhud_style) = gunhud_query.get_single_mut() else {
+        return;
+    };
+
+    let all_slots_empty = player_slots
+        .weapon_slots
+        .values()
+        .all(|value| value.is_none());
+
+    if all_slots_empty || player_slots.drawn_slot.is_none() && !all_slots_empty {
+        gunhud_style.display = Display::None;
+    } else {
+        gunhud_style.display = Display::Flex;
+    }
+}
 
 /// update ui ammo slot with equipped weapon
 pub fn update_ui_ammo_slots(
@@ -226,7 +253,6 @@ pub fn update_ui_ammo_counter(
 
         if let Some(weapon) = drawn_weapon {
             let Ok(ammo_count) = weapon_query.get(*weapon) else {
-                warn!("could not get weapon ammo counts");
                 return;
             };
             Some(ammo_count)

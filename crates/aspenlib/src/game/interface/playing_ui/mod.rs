@@ -27,6 +27,7 @@ impl Plugin for PlayingUiPlugin {
                         stat_hud::update_player_hp_bar,
                         gun_hud::update_ui_ammo_counter,
                         gun_hud::update_ui_ammo_slots,
+                        gun_hud::gunhud_visibility_system
                     )
                         .run_if(in_state(AppState::PlayingGame)),
                 ),),

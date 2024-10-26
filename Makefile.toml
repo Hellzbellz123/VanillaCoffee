@@ -9,7 +9,7 @@ load_cargo_aliases = false
 CARGO_MAKE_WORKSPACE_EMULATION = true
 CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
 CARGO_MAKE_CRATE_WORKSPACE_MEMBERS = [
-  "crates/aspenlib",
+  # "crates/aspenlib",
   "crates/native",
   "crates/wasm",
   "crates/mobile",
@@ -29,9 +29,11 @@ script.main = '''
 
     ##  Development  ##
       run-native: Run Aspen Halls for desktop.
+      run-mobile: starts app on device connected too adb. make sure too pair first
+      run-web: starts a webserver on localhost and runs the wasm version of the game
 
     ##  Release ##
-      create-release: builds all launchers in release mode and outputs artifacts too package dir
+      package-release: builds all launchers in release mode and outputs artifacts too package dir
 
     ##  Utilities ##
       pretty-list: list all tasks that are worthwile in this workspace
@@ -71,7 +73,3 @@ script.pre = "rm -rf crates/desktop/assets && cp -r assets crates/desktop/assets
 [tasks.package-release]
 description = "runs package release workflow for each target"
 
-# [tasks.connect-android]
-# workspace = false
-# description = "Connects first android device found by avahi-discover"
-# script = "tools/adb-connecter.sh"

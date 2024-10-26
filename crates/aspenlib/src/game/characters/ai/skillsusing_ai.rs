@@ -7,6 +7,7 @@ use std::collections::VecDeque;
 
 use crate::game::attributes_stats::{Damage, ElementalEffect, PhysicalDamage};
 use crate::game::characters::ai::components::ChaseScorer;
+use crate::game::characters::player::PlayerSelectedHero;
 use crate::game::items::weapons::components::AttackDamage;
 use crate::game::items::weapons::forms::create_bullet;
 use crate::game::{
@@ -18,6 +19,12 @@ use crate::register_types;
 use crate::utilities::EntityCreator;
 
 use super::components::AIAutoShootConfig;
+
+// new final boss called 'The Executioner'
+// charges Skillpoints and at max skill points/and when player is below hp threshold,
+// teleports too center of room, says voiceline "beated and battered, now for your execution"
+// visual timer starts
+// player must heal before timer is finished or is killed
 
 /// stupid ai systems and functions
 pub struct SkillusingAiPlugin;
@@ -106,8 +113,6 @@ pub enum ShootPattern {
         amount: i32,
         /// rotation applied too spawn area per wave
         rotation_per_wave: i32,
-        /// focus casters enemy
-        focus: bool,
     },
     /// singular beams divided between arc
     BeamedArc {
@@ -117,6 +122,10 @@ pub enum ShootPattern {
         beam_width: f32,
         /// arc too spawn beams inside
         arc: i32,
+        /// sweep speed of beams over arc
+        rotate_speed: f32,
+        /// beam duration in second
+        beam_time: f32,
     },
 }
 
@@ -155,14 +164,12 @@ fn ai_patterns_use_system(
         patterns_cfg.time_between_patterns.tick(time.delta());
         pattern_energy.current = updated_energy.clamp(0.0, MAX_PATTERN_ENERGY);
 
-        if patterns_cfg.time_between_patterns.finished()
+        if patterns_cfg.time_between_patterns.just_finished()
             && patterns_cfg
                 .patterns
                 .iter()
                 .any(|(cost, _)| (*cost as f32) < pattern_energy.current)
         {
-            patterns_cfg.time_between_patterns.reset();
-
             let thinker_ent = has_thinkers.get(actor).unwrap().entity();
 
             let chase_scorer = children
@@ -264,6 +271,7 @@ pub fn shootpatternspawner_system(
     time: Res<Time>,
     init_handles: Res<AspenInitHandles>,
     mut cmds: Commands,
+    player_q: Query<&Transform, With<PlayerSelectedHero>>,
     mut pattern_spawners: Query<(Entity, &mut ShootPatternSpawner, &Transform, &EntityCreator)>,
 ) {
     for (spawner_ent, mut pattern_spawner, spawner_pos, spawner_creator) in &mut pattern_spawners {
@@ -273,24 +281,24 @@ pub fn shootpatternspawner_system(
             pattern_spawner.pattern_timer.reset();
             pattern_spawner.runs += 1;
 
-            let mut bullet_spawn = *spawner_pos;
+            let mut bullet_spawn = spawner_pos.clone();
 
             match pattern_spawner.shootpattern {
                 ShootPattern::BulletsOverArc {
                     waves,
-                    arc: _,
+                    arc,
                     amount,
                     rotation_per_wave,
-                    focus: _,
                 } => {
-                    info!("creating BulletsOverArc pattern");
+                    let degrees_per_bullet = (arc / amount) as f32;
 
-                    for _ in 1..=amount {
-                        info!("spawning bullet for shoot pattern");
+                    // if allowed_rotation_degrees > 360.0 then rotation the spawners forward should not go outside allowed_rotation_degrees / 2.0
+                    let _allowed_rotation_degrees = arc as f32;
+                    let degrees_per_wave = (rotation_per_wave * pattern_spawner.runs - 1) as f32;
+                    bullet_spawn.rotate_local_z(degrees_per_wave.to_radians());
 
-                        bullet_spawn.rotate_local_x(
-                            ((rotation_per_wave + (pattern_spawner.runs * 10)) as f32).to_radians(),
-                        );
+                    for _ in 0..amount {
+                        bullet_spawn.rotate_local_z(degrees_per_bullet.to_radians());
 
                         // mostly works, must offset each one by some amount
                         create_bullet(
@@ -298,8 +306,8 @@ pub fn shootpatternspawner_system(
                             &mut cmds,
                             &init_handles,
                             &AttackDamage(Damage {
-                                physical: PhysicalDamage(120.0),
-                                elemental: ElementalEffect::Fire(20.0),
+                                physical: PhysicalDamage(20.0),
+                                elemental: ElementalEffect::Fire(5.0),
                             }),
                             bullet_spawn,
                             (100.0, 15.0),
@@ -315,6 +323,8 @@ pub fn shootpatternspawner_system(
                     beams: _,
                     beam_width: _,
                     arc: _,
+                    rotate_speed: _,
+                    beam_time: _,
                 } => {
                     warn!("unhandled shoot pattern, despawning");
                     cmds.entity(spawner_ent).despawn_recursive();

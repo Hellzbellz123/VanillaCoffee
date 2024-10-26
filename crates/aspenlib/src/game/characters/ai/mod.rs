@@ -123,15 +123,33 @@ fn insert_stupid_ai(commands: &mut Commands<'_, '_>, character: Entity, pos: &Gl
 fn basic_bullet_pattern() -> VecDeque<(i32, ShootPattern)> {
     let mut map = VecDeque::new();
     map.push_front((
-        20,
+        40,
         ShootPattern::BulletsOverArc {
             arc: 360,
-            amount: 32,
-            waves: 16,
-            rotation_per_wave: 33,
-            focus: false,
+            amount: 16,
+            waves: 14,
+            rotation_per_wave: 5,
         },
     ));
+    map.push_front((
+        40,
+        ShootPattern::BulletsOverArc {
+            arc: 360,
+            amount: 12,
+            waves: 14,
+            rotation_per_wave: 15,
+        },
+    ));
+    map.push_front((
+        10,
+        ShootPattern::BulletsOverArc {
+            arc: 45,
+            amount: 8,
+            waves: 16,
+            rotation_per_wave: 15,
+        },
+    ));
+
     map
 }
 
@@ -145,7 +163,7 @@ fn insert_skillusing_ai(commands: &mut Commands<'_, '_>, character: Entity, pos:
         skillsusing_ai::SkillusingAIBundle {
             shootpattern: AIShootPatternsConfig {
                 patterns: basic_bullet_pattern(),
-                time_between_patterns: Timer::from_seconds(5.0, TimerMode::Once),
+                time_between_patterns: Timer::from_seconds(2.0, TimerMode::Repeating),
             },
             combat_config: AICombatAggroConfig {
                 chase_start: 10,

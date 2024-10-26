@@ -2,8 +2,8 @@
 extend = "../../Makefile.toml"
 
 [tasks.package-release]
-private = false
-dependencies = ["build-release-windows", "build-release-linux", "clean-packagedir"]
+private = true
+dependencies = ["build-release-windows", "build-release-linux"]
 workspace = false
 run_task = { name = ["package-artifacts"] }
 
@@ -23,10 +23,13 @@ args = ["xwin", "build", "--release", "--target=x86_64-pc-windows-msvc"]
 
 
 [tasks.package-artifacts]
-private = false
+private = true
 dependencies = ["copy-assets", "copy-bin-windows", "copy-bin-linux"]
 workspace = false
 run_task = { name = ["zip-artifacts"]}
+script_runner = "@shell"
+script.pre = "rm -rf ../../packages/desktop"
+script.main = "mkdir ../../package/desktop"
 
 [tasks.copy-bin-windows]
 script_runner = "@shell"
@@ -41,15 +44,10 @@ script.main = "cp ../../target/x86_64-unknown-linux-gnu/release/aspen_halls_desk
 [tasks.copy-assets]
 private = true
 script_runner = "@shell"
-script.pre = "cp -r ../../assets ../../package/desktop && cp config.toml ../../package/desktop/"
+script.pre = "cp -r ../../assets ../../package/desktop/assets && cp config.toml ../../package/desktop/"
 
 [tasks.zip-artifacts]
 private = true
 script_runner = "@shell"
 script.pre = "cd ../../package/desktop"
 script.main = "zip -ur ../aspenhalls_desktop.zip *"
-
-[tasks.clean-packagedir]
-private = true
-script_runner = "@shell"
-script.pre = "rm -rf ../../package/desktop/* ../../package/aspenhalls_desktop.zip"

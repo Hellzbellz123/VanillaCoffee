@@ -122,10 +122,13 @@ fn handle_animation_changes(
             .get(sheet_handle)
             .expect("sprite sheet should exist for this actor");
 
-        let anim_time = sprite_sheet
-            .get_anim(&event.anim_handle)
-            .expect("anim id does not exist")
-            .total_time();
+        let Ok(animation) = sprite_sheet
+            .get_anim(&event.anim_handle) else {
+                warn!("animation id does not exist in spritesheet");
+                continue;
+            };
+        let anim_time = animation.total_time();
+
         if animator.is_cur_anim(event.anim_handle) && animator.cur_time() < anim_time
             || animator.cur_anim().unwrap_or(AnimHandle::from_index(0)) == event.anim_handle
         {

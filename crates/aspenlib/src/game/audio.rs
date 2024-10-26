@@ -48,9 +48,10 @@ impl Plugin for AudioPlugin {
             ActorSoundTimer
         ]);
 
+        // pretty sure the max sound amount is different per platform?
         app.insert_resource(AudioSettings {
-            command_capacity: 256,
-            sound_capacity: 128,
+            command_capacity: 512,
+            sound_capacity: 512,
         })
         .add_plugins(InternalAudioPlugin)
         .add_audio_channel::<MusicSoundChannel>()
