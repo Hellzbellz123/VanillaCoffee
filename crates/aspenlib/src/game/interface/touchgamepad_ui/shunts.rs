@@ -1,8 +1,8 @@
 #![allow(clippy::type_complexity)]
 
-use crate::game::input::{
-    action_maps,
-    touch_gamepad::{
+use crate::game::{
+    input::action_maps,
+    interface::touchgamepad_ui::{
         HealTag, InteractionTag, PauseTag, SwapWeaponTag, TouchStickBinding, ZoomInTag, ZoomOutTag,
     },
 };

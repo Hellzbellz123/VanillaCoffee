@@ -37,6 +37,7 @@ fn main() {
     let cfg_file = ConfigFile {
         log_filter: Some("Info,wgpu=error,naga=error".to_string()),
         window_settings: WindowSettings {
+            software_cursor_enabled: true,
             v_sync: true,
             frame_rate_target: 60.0,
             full_screen: false,
@@ -50,6 +51,7 @@ fn main() {
             sound_volume: 1.0,
         },
         general_settings: GeneralSettings {
+            enable_touch_controls: false,
             camera_zoom: 3.5,
             game_difficulty: GameDifficulty::Easy,
         },

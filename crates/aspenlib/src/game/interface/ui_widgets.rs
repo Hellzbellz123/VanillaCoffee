@@ -10,11 +10,14 @@ pub fn spawn_button<T: Component>(
 ) {
     buttons
         .spawn((
+            Name::new(format!("{text} Button")),
             component,
             ButtonBundle {
                 style: Style {
                     width: Val::Px(100.0),
                     height: Val::Px(60.0),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
                     ..default()
                 },
                 background_color: BackgroundColor(crate::colors::PURPLE.into()),
@@ -40,7 +43,7 @@ pub fn spawn_button<T: Component>(
 /// spawns a text bundle with alignment center
 /// styling for this component makes
 /// it a good title for menu like interfaces
-pub fn spawn_menu_title(child_builder: &mut ChildBuilder, font: Handle<Font>, text: &str) {
+pub fn spawn_menu_title(child_builder: &mut ChildBuilder, font: Handle<Font>, text: &str, font_size: f32) {
     child_builder.spawn((
         Name::new("Title"),
         TextBundle::from_section(
@@ -48,7 +51,7 @@ pub fn spawn_menu_title(child_builder: &mut ChildBuilder, font: Handle<Font>, te
             TextStyle {
                 font,
                 color: Color::WHITE,
-                font_size: 48.0,
+                font_size,
             },
         )
         .with_background_color(random_color(Some(0.6)))

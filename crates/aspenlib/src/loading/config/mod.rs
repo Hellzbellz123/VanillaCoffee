@@ -54,6 +54,8 @@ impl Default for ConfigFile {
 #[derive(Reflect, Resource, Serialize, Deserialize, Copy, Clone, Debug)]
 #[reflect(Resource)]
 pub struct WindowSettings {
+    /// disable software cursor systems
+    pub software_cursor_enabled: bool,
     /// enable `v_sync` if true
     pub v_sync: bool,
     /// framerate
@@ -70,7 +72,7 @@ pub struct WindowSettings {
 #[derive(Reflect, Resource, Serialize, Deserialize, Copy, Clone, Default, Debug)]
 #[reflect(Resource)]
 pub struct RenderSettings {
-    /// enable `v_sync` if true
+    /// enable `msaa` if true
     pub msaa: bool,
 }
 
@@ -105,6 +107,8 @@ pub enum GameDifficulty {
     reflect(InspectorOptions)
 )]
 pub struct GeneralSettings {
+    /// spawns touch gamepad ui for devices with touch screens
+    pub enable_touch_controls: bool,
     /// camera zoom
     #[cfg(feature = "develop")]
     #[inspector(min = 0.0, max = 150.0)]
@@ -206,6 +210,11 @@ impl Default for GeneralSettings {
         Self {
             camera_zoom: 3.5,
             game_difficulty: GameDifficulty::Custom(DifficultyScales::default()),
+            enable_touch_controls: if cfg!(target_os = "android") | cfg!(target_os = "ios") {
+                true
+            } else {
+                false
+            },
         }
     }
 }
@@ -214,6 +223,7 @@ impl Default for GeneralSettings {
 impl Default for WindowSettings {
     fn default() -> Self {
         Self {
+            software_cursor_enabled: true,
             v_sync: true,
             frame_rate_target: 60.0,
             full_screen: false,

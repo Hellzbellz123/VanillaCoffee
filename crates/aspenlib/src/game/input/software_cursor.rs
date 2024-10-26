@@ -1,9 +1,9 @@
-use bevy::{prelude::*, render::primitives::Aabb};
+use bevy::{prelude::*, render::primitives::Aabb, window::CursorGrabMode};
 
 use crate::{
     game::{characters::player::PlayerSelectedHero, input::AspenCursorPosition},
     loading::{assets::AspenInitHandles, registry::RegistryIdentifier},
-    AppState,
+    AppState, WindowSettings,
 };
 
 use super::AspenInputSystemSet;
@@ -14,22 +14,20 @@ pub struct SoftwareCursorPlugin;
 impl Plugin for SoftwareCursorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.register_type::<SoftWareCursor>();
-        app.add_systems(
-            OnEnter(AppState::Loading),
-            spawn_software_cursor.run_if(not(any_with_component::<SoftWareCursor>)),
-        );
 
         app.add_systems(
             PreUpdate,
             (
                 cursor_grab_system,
+                control_software_cursor.run_if(resource_exists::<AspenInitHandles>),
                 (
                     update_software_cursor_position,
                     update_software_cursor_image,
                 )
                     .run_if(
                         resource_exists::<AspenCursorPosition>
-                            .and_then(any_with_component::<SoftWareCursor>),
+                            .and_then(any_with_component::<SoftWareCursor>)
+                            .and_then(|res: Res<WindowSettings>| res.software_cursor_enabled),
                     )
                     .in_set(AspenInputSystemSet::SoftwareCursor),
             ),
@@ -42,25 +40,31 @@ fn cursor_grab_system(
     mut windows: Query<&mut Window>,
     btn: Res<ButtonInput<MouseButton>>,
     key: Res<ButtonInput<KeyCode>>,
+    cfg: Res<WindowSettings>,
 ) {
-    let mut window = windows.single_mut();
+    let Ok(mut window) = windows.get_single_mut() else {
+        return;
+    };
 
-    if btn.just_pressed(MouseButton::Left) {
-        // if you want to use the cursor, but not let it leave the window,
-        // use `Confined` mode:
-        window.cursor.grab_mode = bevy::window::CursorGrabMode::Confined;
-
-        if !cfg!(debug_assertions) {
-            window.cursor.visible = false;
-        }
-    }
-
-    if key.just_pressed(KeyCode::Escape) {
-        window.cursor.grab_mode = bevy::window::CursorGrabMode::None;
-
-        if !cfg!(debug_assertions) {
+    if !cfg.software_cursor_enabled {
+        if window.cursor.visible == false {
             window.cursor.visible = true;
         }
+        return;
+    }
+
+    //TODO: disable system if software cursor is disabled.
+    if btn.just_pressed(MouseButton::Left) && window.cursor.visible {
+        // locking cursor causes loss of mouse movement on windows?
+        // window.cursor.grab_mode = bevy::window::CursorGrabMode::Confined;
+
+        window.cursor.visible = false;
+    }
+
+    if key.just_pressed(KeyCode::Escape) && !window.cursor.visible {
+        // window.cursor.grab_mode = bevy::window::CursorGrabMode::None;
+
+        window.cursor.visible = true;
     }
 }
 
@@ -83,33 +87,46 @@ pub struct SoftWareCursor {
 
 /// creates software cursor entity
 /// image selected from `init_resources.custom_cursor` ?
-fn spawn_software_cursor(mut cmds: Commands, tex: Res<AspenInitHandles>) {
-    cmds.spawn((
-        Name::new("SoftwareCursor"),
-        SoftWareCursor {
-            offset: Vec2 { x: 0.0, y: 0.0 },
-            hide_distance: 50.0,
-            hide_alpha: 0.4,
-            show_alpha: 0.8,
-        },
-        TextureAtlas::from(tex.cursor_layout.clone()),
-        ImageBundle {
-            background_color: BackgroundColor(crate::colors::WHITE.with_alpha(0.0).into()),
-            style: Style {
-                width: Val::Vw(3.0),
-                aspect_ratio: Some(1.0),
-                position_type: PositionType::Absolute,
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Auto,
-                bottom: Val::Auto,
+fn control_software_cursor(
+    mut cmds: Commands,
+    cfg: Res<WindowSettings>,
+    tex: Res<AspenInitHandles>,
+    software_cursor: Query<Entity, With<SoftWareCursor>>,
+) {
+    if !cfg.software_cursor_enabled {
+        for cursor in &software_cursor {
+            cmds.entity(cursor).despawn_recursive();
+        }
+    }
+
+    if cfg.software_cursor_enabled && software_cursor.is_empty() {
+        cmds.spawn((
+            Name::new("SoftwareCursor"),
+            SoftWareCursor {
+                offset: Vec2 { x: 0.0, y: 0.0 },
+                hide_distance: 50.0,
+                hide_alpha: 0.4,
+                show_alpha: 0.8,
+            },
+            TextureAtlas::from(tex.cursor_layout.clone()),
+            ImageBundle {
+                background_color: BackgroundColor(crate::colors::WHITE.with_alpha(0.0).into()),
+                style: Style {
+                    width: Val::Vw(3.0),
+                    aspect_ratio: Some(1.0),
+                    position_type: PositionType::Absolute,
+                    left: Val::Auto,
+                    right: Val::Auto,
+                    top: Val::Auto,
+                    bottom: Val::Auto,
+                    ..default()
+                },
+                z_index: ZIndex::Global(15),
+                image: tex.cursor_image.clone().into(),
                 ..default()
             },
-            z_index: ZIndex::Global(15),
-            image: tex.cursor_image.clone().into(),
-            ..default()
-        },
-    ));
+        ));
+    }
 }
 
 /// changes software cursor image based upon certain conditions

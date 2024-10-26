@@ -67,6 +67,7 @@ pub fn load_settings() -> ConfigFile {
             println!("Game Settings loaded from file successfully");
             ConfigFile {
                 window_settings: WindowSettings {
+                    software_cursor_enabled: cfg.window_settings.software_cursor_enabled,
                     resolution: Vec2 {
                         x: cfg.window_settings.resolution.x,
                         y: cfg.window_settings.resolution.y,
@@ -85,6 +86,7 @@ pub fn load_settings() -> ConfigFile {
                 },
 
                 general_settings: GeneralSettings {
+                    enable_touch_controls: cfg.general_settings.enable_touch_controls,
                     camera_zoom: cfg.general_settings.camera_zoom,
                     game_difficulty: cfg.general_settings.game_difficulty,
                 },

@@ -1,11 +1,18 @@
 ###### OLD MOBILE MAKEFILE #######
+#  TODO: figure out solution for ios cross compilation
 extend = "../../Makefile.toml"
 
 [tasks.package-release]
 private = true
-dependencies = ["build-release-android"]
+dependencies = ["clean-old-artifacts", "build-release-android"]
 workspace = false
-run_task = { name = ["package-mobile-artifacts"] }
+run_task = { name = ["package-artifacts"] }
+
+[tasks.package-artifacts]
+private = true
+workspace = false
+script_runner = "@shell"
+script.main = "cp ../../target/release/apk/AspenHalls.apk ../../package"
 
 [tasks.build-release-android]
 private = true
@@ -20,10 +27,10 @@ args = [
   "--features=develop",
 ]
 
-#  TODO: figure out solution for ios cross compilation
-
-[tasks.package-mobile-artifacts]
+[tasks.clean-old-artifacts]
 private = true
 workspace = false
 script_runner = "@shell"
-script.main = "cp ../../target/release/apk/AspenHalls.apk ../../package"
+script.main = "rm -rf ../../package/AspenHalls.apk"
+
+

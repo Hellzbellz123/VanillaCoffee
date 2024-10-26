@@ -52,6 +52,9 @@ develop = [
 dynamic = ["bevy/dynamic_linking"]
 trace = ["bevy/trace_tracy"] #, "bevy_mod_logfu/trace_tracy_memory"]
 
+[target.'cfg(windows)'.dependencies]
+winapi = "*"
+
 [dependencies]
 pretty-type-name = "1.0.1"
 petgraph = "0.6.5"

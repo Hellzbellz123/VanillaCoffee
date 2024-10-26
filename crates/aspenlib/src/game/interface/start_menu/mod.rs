@@ -19,6 +19,7 @@ pub struct StartMenuPlugin;
 impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnExit(AppState::Loading), spawn_start_menu);
+
         app.add_systems(
             Update,
             (
@@ -88,6 +89,7 @@ fn spawn_start_menu(
                                 top: Val::Percent(10.0),
                                 bottom: Val::Percent(10.0),
                             },
+                            padding: UiRect::all(Val::Px(0.0)).with_top(Val::Px(5.0)),
                             ..default()
                         },
                         background_color: BackgroundColor(random_color(Some(0.8))),
@@ -99,24 +101,21 @@ fn spawn_start_menu(
                         start_menu_container_childs,
                         assets.font_title.clone(),
                         "Aspen Halls",
+                        48.0,
                     );
                     start_menu_container_childs
                         .spawn((
                             Name::new("ButtonContainer"),
                             NodeBundle {
                                 style: Style {
-                                    position_type: PositionType::Relative,
                                     flex_direction: FlexDirection::Column,
-                                    justify_content: JustifyContent::SpaceEvenly,
+                                    position_type: PositionType::Relative,
                                     align_items: AlignItems::Center,
-                                    width: Val::Percent(70.0),
-                                    height: Val::Percent(70.0),
-                                    // min_height: Val::Percent(20.0),
-                                    // max_height: Val::Percent(85.0),
+                                    row_gap: Val::Px(15.0),
                                     margin: UiRect {
                                         left: Val::Auto,
                                         right: Val::Auto,
-                                        top: Val::Px(5.0),
+                                        top: Val::Px(15.0),
                                         bottom: Val::Px(15.0),
                                     },
                                     ..default()

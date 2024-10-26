@@ -10,6 +10,8 @@ pub mod playing_ui;
 pub mod settings_menu;
 /// start menu module
 pub mod start_menu;
+/// touch controls interface
+pub mod touchgamepad_ui;
 /// resuseable ui parts
 pub mod ui_widgets;
 
@@ -23,6 +25,7 @@ pub struct InterfaceRootTag;
 impl Plugin for InterfacePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
+            touchgamepad_ui::TouchInputUIPlugin,
             // start menu
             start_menu::StartMenuPlugin,
             // pause menu

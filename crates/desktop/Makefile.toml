@@ -3,9 +3,15 @@ extend = "../../Makefile.toml"
 
 [tasks.package-release]
 private = true
-dependencies = ["build-release-windows", "build-release-linux"]
+dependencies = ["clean-desktop-package", "build-release-windows", "build-release-linux"]
 workspace = false
 run_task = { name = ["package-artifacts"] }
+
+[tasks.package-artifacts]
+private = true
+dependencies = ["copy-assets", "copy-bin-windows", "copy-bin-linux"]
+workspace = false
+run_task = { name = ["zip-artifacts"]}
 
 [tasks.build-release-linux]
 private = true
@@ -21,33 +27,32 @@ env = { "CARGO_FEATURE_PURE" = "1" }
 command = "cargo"
 args = ["xwin", "build", "--release", "--target=x86_64-pc-windows-msvc"]
 
-
-[tasks.package-artifacts]
+[tasks.clean-desktop-package]
 private = true
-dependencies = ["copy-assets", "copy-bin-windows", "copy-bin-linux"]
-workspace = false
-run_task = { name = ["zip-artifacts"]}
 script_runner = "@shell"
-script.pre = "rm -rf ../../packages/desktop"
-script.main = "mkdir ../../package/desktop"
+script.pre = "echo 'deleting old package dir contents'"
+script.main = "rm -rf ../../package/desktop/* && rm -rf ../../package/aspenhalls_desktop.zip"
 
 [tasks.copy-bin-windows]
+private = true
 script_runner = "@shell"
-script.pre = "echo 'copying windows binary'"
+script.pre = "echo 'copying windows binary too package directory'"
 script.main = "cp ../../target/x86_64-pc-windows-msvc/release/aspen_halls_desktop.exe ../../package/desktop"
 
 [tasks.copy-bin-linux]
+private = true
 script_runner = "@shell"
-script.pre = "echo 'copying linux binary'"
-script.main = "cp ../../target/x86_64-unknown-linux-gnu/release/aspen_halls_desktop ../../package/desktop"
+script.pre = "echo 'copying linux binary too package directory and stripping symbols'"
+script.main = "cp ../../target/x86_64-unknown-linux-gnu/release/aspen_halls_desktop ../../package/desktop && strip ../../package/desktop/aspen_halls_desktop"
 
 [tasks.copy-assets]
 private = true
 script_runner = "@shell"
-script.pre = "cp -r ../../assets ../../package/desktop/assets && cp config.toml ../../package/desktop/"
+script.pre = "echo 'copying game assets too package directory'"
+script.main = "cp -r ../../assets ../../package/desktop/assets && cp config.toml ../../package/desktop/"
 
 [tasks.zip-artifacts]
 private = true
 script_runner = "@shell"
-script.pre = "cd ../../package/desktop"
-script.main = "zip -ur ../aspenhalls_desktop.zip *"
+script.pre = "echo 'moving too package directory and zipping artifacts'"
+script.main = "cd ../../package/desktop && zip -ur ../aspenhalls_desktop.zip *"

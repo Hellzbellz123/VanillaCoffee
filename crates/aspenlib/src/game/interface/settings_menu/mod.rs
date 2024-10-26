@@ -1,3 +1,4 @@
+use crate::colors;
 use bevy::prelude::*;
 
 /// settings menu toggle button
@@ -27,6 +28,7 @@ impl Plugin for SettingsMenuPlugin {
         app.add_systems(
             Update,
             (
+                settings_menu_visibility,
                 close_settings_interaction,
                 apply_settings_interaction,
                 toggle_settings_interactions
@@ -64,21 +66,15 @@ fn spawn_settings_menu(
                         style: Style {
                             display: Display::None,
                             position_type: PositionType::Absolute,
-                            overflow: Overflow::clip(),
                             flex_direction: FlexDirection::Column,
-                            min_height: Val::Percent(75.0),
-                            min_width: Val::Vw(75.0),
-                            // aspect_ratio: Some(0.8),
-                            align_self: AlignSelf::Center,
-                            justify_content: JustifyContent::FlexStart,
-                            margin: UiRect {
-                                left: Val::Vw(0.0),
-                                right: Val::Px(0.0),
-                                top: Val::Percent(10.0),
-                                bottom: Val::Percent(10.0),
-                            },
+                            height: Val::Percent(90.0),
+                            width: Val::Percent(85.0),
+                            margin: UiRect::all(Val::Auto)
+                                .with_top(Val::Px(50.0))
+                                .with_bottom(Val::Px(50.0)),
                             ..default()
                         },
+                        focus_policy: bevy::ui::FocusPolicy::Block,
                         z_index: ZIndex::Local(3),
                         background_color: BackgroundColor(random_color(Some(0.95))),
                         ..default()
@@ -87,23 +83,23 @@ fn spawn_settings_menu(
                 .with_children(|start_menu_container_childs| {
                     start_menu_container_childs
                         .spawn((
-                            Name::new("TopButtonContainer"),
+                            Name::new("SettingsTopBar"),
                             NodeBundle {
+                                background_color: BackgroundColor(colors::REBECCA_PURPLE.into()),
+                                border_radius: BorderRadius::all(Val::Px(15.0)),
                                 style: Style {
                                     position_type: PositionType::Relative,
                                     flex_direction: FlexDirection::Row,
-                                    justify_content: JustifyContent::SpaceEvenly,
                                     align_items: AlignItems::Center,
-                                    width: Val::Percent(70.0),
-                                    height: Val::Percent(70.0),
-                                    // min_height: Val::Percent(20.0),
-                                    // max_height: Val::Percent(85.0),
-                                    margin: UiRect {
-                                        left: Val::Auto,
-                                        right: Val::Auto,
-                                        top: Val::Px(5.0),
-                                        bottom: Val::Px(15.0),
-                                    },
+                                    height: Val::Percent(15.0),
+                                    // justify_content: JustifyContent::SpaceEvenly,
+                                    // width: Val::Percent(70.0),
+                                    // height: Val::Percent(70.0),
+                                    // // min_height: Val::Percent(20.0),
+                                    // // max_height: Val::Percent(85.0),
+                                    padding: UiRect::left(Val::Px(30.0)),
+                                    margin: UiRect::all(Val::Px(10.0)),
+                                    border: UiRect::all(Val::Px(2.0)),
                                     ..default()
                                 },
                                 border_color: BorderColor(random_color(None)),
@@ -111,22 +107,51 @@ fn spawn_settings_menu(
                             },
                         ))
                         .with_children(|buttons| {
-                            spawn_button(
+                            buttons
+                                .spawn((
+                                    Name::new("TopBarButtonsContainer"),
+                                    NodeBundle {
+                                        style: Style {
+                                            column_gap: Val::Px(15.0),
+                                            ..default()
+                                        },
+                                        ..default()
+                                    },
+                                ))
+                                .with_children(|buttons| {
+                                    spawn_button(
+                                        buttons,
+                                        assets.font_regular.clone(),
+                                        "Apply Settings",
+                                        ApplySettingsTag,
+                                    );
+                                    spawn_button(
+                                        buttons,
+                                        assets.font_regular.clone(),
+                                        "Close Settings",
+                                        CloseSettingsTag,
+                                    );
+                                });
+                            spawn_menu_title(
                                 buttons,
-                                assets.font_regular.clone(),
-                                "Apply Settings",
-                                ApplySettingsTag,
+                                assets.font_title.clone(),
+                                "Settings Menu",
+                                38.0,
                             );
-                            spawn_button(
-                                buttons,
-                                assets.font_regular.clone(),
-                                "Close Settings",
-                                CloseSettingsTag,
-                            );
-                            spawn_menu_title(buttons, assets.font_title.clone(), "Settings Menu");
                         });
                 });
         });
+}
+
+fn settings_menu_visibility(
+    game_state: Res<State<AppState>>,
+    mut settings_menu_query: Query<&mut Style, (With<Node>, With<SettingsMenuTag>)>,
+){
+    let state = game_state.get();
+    match state {
+        AppState::PlayingGame => settings_menu_query.single_mut().display = Display::None,
+        _ => {},
+    }
 }
 
 /// updates color of all buttons with text for interactions

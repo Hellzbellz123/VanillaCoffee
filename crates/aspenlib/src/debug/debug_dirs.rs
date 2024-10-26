@@ -213,6 +213,7 @@ mod linux {
 /// check if path is executable on windows
 #[cfg(target_os = "windows")]
 mod windows {
+    use bevy::log::warn;
     use super::IsExecutable;
     use std::{os::windows::ffi::OsStrExt, path::Path};
     use winapi::ctypes::{c_ulong, wchar_t};

@@ -16,14 +16,15 @@ use crate::{
         AppState,
     },
     loading::assets::AspenTouchHandles,
+    GeneralSettings,
 };
 
 // TODO: handle controllers on mobile properly
 /// adds touch input functionality too the app
 /// also spawns joysticks and buttons for touching
-pub struct TouchInputPlugin;
+pub struct TouchInputUIPlugin;
 
-impl Plugin for TouchInputPlugin {
+impl Plugin for TouchInputUIPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(TouchStickPlugin::<TouchStickBinding>::default());
         // TODO: handle menus properly. despawn touch controls when exiting PlayingGame
@@ -46,7 +47,10 @@ impl Plugin for TouchInputPlugin {
                     .run_if(in_state(AppState::PlayingGame)),
             )
                 .in_set(AspenInputSystemSet::TouchInput)
-                .run_if(resource_exists::<ActionState<action_maps::Gameplay>>),
+                .run_if(
+                    resource_exists::<ActionState<action_maps::Gameplay>>
+                        .and_then(|res: Res<GeneralSettings>| res.enable_touch_controls),
+                ),
         );
     }
 }
@@ -118,6 +122,7 @@ pub enum TouchStickBinding {
 /// hides touch controls if menus with buttons should be shown
 fn handle_touch_controls_visibility(
     game_state: Res<State<AppState>>,
+    cfg: Res<GeneralSettings>,
     mut touch_root_query: Query<&mut Style, (With<Node>, With<TouchControlsRoot>)>,
 ) {
     let Ok(mut touch_root_style) = touch_root_query.get_single_mut() else {
@@ -126,7 +131,13 @@ fn handle_touch_controls_visibility(
     };
 
     match game_state.get() {
-        AppState::PlayingGame => touch_root_style.display = Display::Flex,
+        AppState::PlayingGame => {
+            if cfg.enable_touch_controls {
+                touch_root_style.display = Display::Flex;
+            } else {
+                touch_root_style.display = Display::None;
+            }
+        },
         _ => touch_root_style.display = Display::None,
     }
 }

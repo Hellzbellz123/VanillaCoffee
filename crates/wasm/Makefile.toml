@@ -3,9 +3,12 @@ extend = "../../Makefile.toml"
 
 [tasks.package-release]
 private = true
-dependencies = ["build-release-wasm"]
 workspace = false
-run_task = { name = ["package-wasm-artifacts"] }
+script_runner = "@shell"
+script.main = "echo 'wasm packaging disabled due too toolchain issues'"
+
+# dependencies = ["build-release-wasm"]
+# run_task = { name = ["package-wasm-artifacts"] }
 
 [tasks.build-release-wasm]
 command = "trunk"

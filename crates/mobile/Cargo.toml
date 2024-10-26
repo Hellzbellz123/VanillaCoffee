@@ -43,7 +43,7 @@ resources = "../../assets-build/android"
 assets = "../../assets"
 apk_name = "AspenHalls"
 strip = "strip"
-sdk = { target_sdk_version = 34, min_sdk_version = 31 }
+sdk = { target_sdk_version = 34, min_sdk_version = 24 }
 # See https://developer.android.com/guide/topics/manifest/uses-feature-element
 uses_feature = [
   { name = "android.hardware.vulkan.level", required = true, version = 1 },
