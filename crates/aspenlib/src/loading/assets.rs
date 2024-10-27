@@ -102,7 +102,7 @@ pub struct AspenAudioHandles {
 
 /// map asset handle
 #[derive(AssetCollection, Resource, Clone, Debug, Reflect)]
-pub struct AspenMapHandles {
+pub struct AspenLevelsetHandles {
     /// dungeons
     #[asset(key = "default_levels")]
     pub default_levels: Handle<LdtkProject>,

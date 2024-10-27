@@ -6,18 +6,13 @@ use bevy_mod_picking::{
 };
 
 use crate::{
-    bundles::ActorColliderBundle,
-    consts::{actor_collider, AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX},
-    game::{
+    bundles::ActorColliderBundle, consts::{actor_collider, AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX}, game::{
         characters::components::WeaponSlot, components::ActorColliderType,
         interface::start_menu::StartMenuTag, items::weapons::components::WeaponCarrier,
-    },
-    loading::{
+    }, loading::{
         custom_assets::actor_definitions::CharacterDefinition, registry::RegistryIdentifier,
         splashscreen::MainCamera,
-    },
-    utilities::EntityCreator,
-    AppState, GeneralSettings,
+    }, playing_game, utilities::EntityCreator, AppStage, GameStage, GeneralSettings
 };
 
 use bevy_rapier2d::prelude::CollisionGroups;
@@ -37,7 +32,7 @@ impl Plugin for PlayerPlugin {
         app.add_event::<SelectThisHeroForPlayer>()
             .add_systems(
                 Update,
-                ((
+                (
                     movement::update_player_velocity,
                     movement::camera_movement_system,
                     actions::spawn_custom,
@@ -47,15 +42,13 @@ impl Plugin for PlayerPlugin {
                     actions::change_weapon,
                     actions::aim_weapon,
                 )
-                    .run_if(in_state(AppState::PlayingGame)),),
+                    .run_if(playing_game()),
             )
-            .add_systems(OnExit(AppState::StartMenu), build_player_from_selected_hero)
             .add_systems(
-                Update,
-                select_wanted_hero.run_if(
-                    in_state(AppState::StartMenu).and_then(on_event::<SelectThisHeroForPlayer>()),
-                ),
-            );
+                OnExit(GameStage::SelectCharacter),
+                build_player_from_selected_hero,
+            )
+            .add_systems(Update, select_wanted_hero.run_if(in_state(GameStage::SelectCharacter)));
     }
 }
 
@@ -98,7 +91,7 @@ fn select_wanted_hero(
             .remove::<On<Pointer<Down>>>()
             .remove::<PickableBundle>();
 
-        cmds.insert_resource(NextState::Pending(AppState::PlayingGame));
+        cmds.insert_resource(NextState::Pending(GameStage::PlayingGame));
     }
 }
 
@@ -108,7 +101,10 @@ pub fn build_player_from_selected_hero(
     player_selected_hero: Query<(Entity, &RegistryIdentifier), With<PlayerSelectedHero>>,
     char_assets: Res<Assets<CharacterDefinition>>,
 ) {
-    let (selected_hero, player_registry_identifier) = player_selected_hero.single();
+    let Ok((selected_hero, player_registry_identifier)) = player_selected_hero.get_single() else {
+        warn!("no player entity available too build off");
+        return;
+    };
 
     let (_, char_def) = char_assets
         .iter()

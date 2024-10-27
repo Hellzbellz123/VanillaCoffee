@@ -15,8 +15,7 @@ use crate::{
             EventAttackWeapon,
         },
     },
-    utilities::EntityCreator,
-    AppState,
+    utilities::EntityCreator, AppStage,
 };
 
 /// handles attacks from characters without weapons
@@ -35,7 +34,7 @@ impl Plugin for CombatPlugin {
 
         app.add_systems(
             PreUpdate,
-            apply_damage_system.run_if(in_state(AppState::PlayingGame)),
+            apply_damage_system.run_if(in_state(AppStage::Running)),
         );
 
         app.add_systems(
@@ -44,7 +43,7 @@ impl Plugin for CombatPlugin {
                 delegate_attack_events.run_if(on_event::<EventRequestAttack>()),
                 handle_death_system,
             )
-                .run_if(in_state(AppState::PlayingGame)),
+                .run_if(in_state(AppStage::Running)),
         );
     }
 }

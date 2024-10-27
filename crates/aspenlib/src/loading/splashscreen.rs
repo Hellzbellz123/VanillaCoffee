@@ -4,7 +4,7 @@ use bevy::{
     render::{camera::ScalingMode, primitives::Frustum},
 };
 
-use crate::{loading::assets::AspenInitHandles, register_types, utilities::despawn_with, AppState};
+use crate::{loading::assets::AspenInitHandles, register_types, utilities::despawn_with, AppStage};
 
 /// Identifies the Main Camera
 #[derive(Component, Reflect, Default)]
@@ -45,9 +45,9 @@ impl Plugin for SplashPlugin {
         register_types!(app, [MainCamera]);
 
         app.add_systems(Startup, spawn_main_camera);
-        app.add_systems(OnEnter(AppState::Loading), splash_setup);
+        app.add_systems(OnEnter(AppStage::Starting), splash_setup);
         app.add_systems(
-            OnEnter(AppState::StartMenu),
+            OnEnter(AppStage::Running),
             despawn_with::<OnlySplashScreen>,
         );
     }

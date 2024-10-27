@@ -1,4 +1,4 @@
-use crate::colors;
+use crate::{colors, AppStage, GameStage};
 use bevy::prelude::*;
 
 /// settings menu toggle button
@@ -6,13 +6,10 @@ use bevy::prelude::*;
 pub struct SettingsMenuToggleButton;
 
 use crate::{
-    game::{
-        interface::{
-            random_color,
-            ui_widgets::{spawn_button, spawn_menu_title},
-            InterfaceRootTag,
-        },
-        AppState,
+    game::interface::{
+        random_color,
+        ui_widgets::{spawn_button, spawn_menu_title},
+        InterfaceRootTag,
     },
     loading::assets::AspenInitHandles,
 };
@@ -24,7 +21,7 @@ pub struct SettingsMenuPlugin;
 
 impl Plugin for SettingsMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnExit(AppState::Loading), spawn_settings_menu);
+        app.add_systems(OnEnter(AppStage::Starting), spawn_settings_menu);
         app.add_systems(
             Update,
             (
@@ -32,7 +29,7 @@ impl Plugin for SettingsMenuPlugin {
                 close_settings_interaction,
                 apply_settings_interaction,
                 toggle_settings_interactions
-                    .run_if(in_state(AppState::PauseMenu).or_else(in_state(AppState::StartMenu))),
+                    .run_if(in_state(GameStage::PausedGame).or_else(in_state(GameStage::StartMenu))),
             ),
         );
     }
@@ -144,13 +141,13 @@ fn spawn_settings_menu(
 }
 
 fn settings_menu_visibility(
-    game_state: Res<State<AppState>>,
+    game_state: Option<Res<State<GameStage>>>,
     mut settings_menu_query: Query<&mut Style, (With<Node>, With<SettingsMenuTag>)>,
-){
-    let state = game_state.get();
-    match state {
-        AppState::PlayingGame => settings_menu_query.single_mut().display = Display::None,
-        _ => {},
+) {
+    let Some(state) = game_state else {return;};
+    match state.get() {
+        GameStage::PlayingGame | GameStage::SelectCharacter => settings_menu_query.single_mut().display = Display::None,
+        _ => {}
     }
 }
 

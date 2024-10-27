@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{
-    prelude::{LevelSet, SpawnExclusions},
+    prelude::{LdtkProject, LevelSet, SpawnExclusions},
     IntGridRendering, LdtkSettings, LdtkWorldBundle, LevelBackground, LevelSelection,
     LevelSpawnBehavior, SetClearColor,
 };
@@ -14,9 +14,9 @@ use crate::{
     game::{
         characters::components::{CharacterMoveState, CharacterType, TeleportStatus},
         components::ActorColliderType,
-        game_world::components::{ActorTeleportEvent, Teleporter},
+        game_world::{components::{ActorTeleportEvent, Teleporter}, dungeonator_v2::components::DungeonRoomDatabase},
     },
-    loading::assets::AspenMapHandles,
+    loading::assets::AspenLevelsetHandles,
     utilities::collision_to_data,
 };
 
@@ -26,7 +26,10 @@ use crate::{
 pub struct HideoutTag;
 
 /// spawns hideout and related resources
-pub fn spawn_world_container(mut commands: Commands, maps: Res<AspenMapHandles>) {
+pub fn spawn_hideout(mut commands: Commands, maps: Res<AspenLevelsetHandles>) {
+    // TODO: use available levelset.hideout too spawn dungeon.
+    // how do i get the handle for any given LdtkLevels' project?
+
     info!("spawning LdtkWorldBundle");
     #[cfg(not(feature = "develop"))]
     //TODO: use level progress for this?

@@ -12,10 +12,9 @@ use crate::game::items::weapons::components::AttackDamage;
 use crate::game::items::weapons::forms::create_bullet;
 use crate::game::{
     characters::ai::components::{AICombatAggroConfig, AIWanderConfig},
-    AppState,
 };
 use crate::loading::assets::AspenInitHandles;
-use crate::register_types;
+use crate::{playing_game, register_types, AppStage};
 use crate::utilities::EntityCreator;
 
 use super::components::AIAutoShootConfig;
@@ -44,7 +43,7 @@ impl Plugin for SkillusingAiPlugin {
         app.add_systems(
             PreUpdate,
             (ai_patterns_use_system)
-                .run_if(in_state(AppState::PlayingGame))
+                .run_if(playing_game())
                 .in_set(BigBrainSet::Scorers),
         )
         .add_systems(
@@ -53,7 +52,7 @@ impl Plugin for SkillusingAiPlugin {
                 ai_patternskill_action.in_set(BigBrainSet::Actions),
                 shootpatternspawner_system,
             )
-                .run_if(in_state(AppState::PlayingGame)),
+                .run_if(playing_game()),
         );
     }
 }

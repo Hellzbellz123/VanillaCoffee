@@ -38,7 +38,7 @@ pub mod debug_plugin {
             game_world::{components::CharacterSpawner, dungeonator_v2::GeneratorState},
             items::weapons::components::{AttackDamage, CurrentlyDrawnWeapon},
         },
-        register_types, AppState,
+        register_types, AppStage, GameStage,
     };
 
     use std::{
@@ -82,7 +82,11 @@ pub mod debug_plugin {
             );
             // add inspector plugins
             app.add_plugins((
-                StateInspectorPlugin::<AppState>::default().run_if(input_toggle_active(
+                StateInspectorPlugin::<AppStage>::default().run_if(input_toggle_active(
+                    if cfg!(debug_assertions) { true } else { false },
+                    KeyCode::F3,
+                )),
+                StateInspectorPlugin::<GameStage>::default().run_if(input_toggle_active(
                     if cfg!(debug_assertions) { true } else { false },
                     KeyCode::F3,
                 )),
@@ -112,8 +116,8 @@ pub mod debug_plugin {
             .add_systems(
                 Update,
                 (
-                    (debug_visualize_spawner, debug_visualize_weapon_spawn_point)
-                        .run_if(in_state(AppState::PlayingGame)),
+                    // (debug_visualize_spawner, debug_visualize_weapon_spawn_point)
+                    //     .run_if(in_state(AppStage::Running)),
                     world_inspector_ui.run_if(input_toggle_active(
                         if cfg!(debug_assertions) { true } else { false },
                         KeyCode::F3,

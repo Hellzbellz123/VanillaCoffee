@@ -17,8 +17,7 @@ use crate::{
     },
     loading::registry::{ActorRegistry, RegistryIdentifier},
     register_types,
-    utilities::vector_to_pi8,
-    AppState,
+    utilities::vector_to_pi8, AppStage,
 };
 
 /// character ai implementation
@@ -52,7 +51,7 @@ impl Plugin for CharactersPlugin {
         app.add_systems(
             Update,
             (
-                (update_character_move_state,).run_if(in_state(AppState::PlayingGame)),
+                (update_character_move_state,).run_if(in_state(AppStage::Running)),
                 spawn_character_on_event.run_if(on_event::<EventSpawnCharacter>()),
             ),
         );

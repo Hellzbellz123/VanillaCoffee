@@ -121,6 +121,7 @@ pub fn hero_location_from_instance(entity_instance: &EntityInstance) -> HeroLoca
     HeroLocation {
         hero_id,
         in_dungeon_hireable,
+        occupied: false,
     }
 }
 

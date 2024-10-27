@@ -11,8 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     game::audio::{AmbienceSoundChannel, GameSoundChannel, MusicSoundChannel},
-    loading::splashscreen::MainCamera,
-    AppState,
+    loading::splashscreen::MainCamera, AppStage, GameStage,
 };
 
 #[cfg(feature = "develop")]
@@ -332,7 +331,7 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
     .insert_resource(cfg_file.general_settings)
     .insert_resource(difficulty_settings);
 
-    asha.init_state::<AppState>();
+    asha.init_state::<AppStage>().add_sub_state::<GameStage>();
     asha.register_type::<ConfigFile>();
 
     asha.add_systems(

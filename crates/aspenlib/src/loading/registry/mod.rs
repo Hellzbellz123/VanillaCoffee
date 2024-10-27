@@ -20,7 +20,7 @@ use crate::{
         custom_assets::actor_definitions::{CharacterDefinition, ItemDefinition},
         registry::utils::{build_character_bundles, build_item_bundles},
     },
-    register_types, AppState,
+    register_types, AppStage,
 };
 
 /// impls for registry and supporting parts
@@ -34,7 +34,7 @@ pub struct RegistryPlugin;
 impl Plugin for RegistryPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         register_types!(app, [ActorRegistry, RegistryIdentifier]);
-        app.add_systems(OnExit(AppState::Loading), create_actor_registry);
+        app.add_systems(OnExit(AppStage::Loading), create_actor_registry);
     }
 }
 

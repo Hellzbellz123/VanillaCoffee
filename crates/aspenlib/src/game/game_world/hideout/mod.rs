@@ -3,17 +3,21 @@ use bevy::{
     log::{error, info},
     math::Vec2,
     prelude::{
-        in_state, on_event, Commands, DespawnRecursiveExt, Entity, EventReader, GlobalTransform,
-        IntoSystemConfigs, OnExit, OrthographicProjection, Plugin, Query, Transform, Update, With,
-        Without,
+        in_state, on_event, Assets, Commands, DespawnRecursiveExt, Entity, EventReader,
+        GlobalTransform, IntoSystemConfigs, Main, OnEnter, OnExit, OrthographicProjection, Plugin,
+        Query, Transform, Update, With, Without,
     },
 };
-use bevy_ecs_ldtk::prelude::{LevelEvent, LevelSet};
+use bevy_ecs_ldtk::{
+    prelude::{LdtkExternalLevel, LevelEvent, LevelSet},
+    LevelIid, LevelSelection,
+};
 use bevy_mod_picking::{
     events::{Down, Pointer},
     prelude::{On, PickableBundle},
 };
 use bevy_rapier2d::prelude::CollisionEvent;
+use log::warn;
 
 use crate::{
     consts::ACTOR_Z_INDEX,
@@ -25,12 +29,15 @@ use crate::{
         game_world::{
             components::HeroLocation,
             dungeonator_v2::GeneratorState,
-            hideout::systems::{spawn_world_container, teleporter_collisions},
+            hideout::systems::{spawn_hideout, teleporter_collisions},
         },
         items::weapons::components::AttackDamage,
     },
-    loading::{registry::ActorRegistry, splashscreen::MainCamera},
-    AppState,
+    loading::{
+        registry::{ActorRegistry, RegistryIdentifier},
+        splashscreen::MainCamera,
+    },
+    AppStage,
 };
 
 use self::systems::HideoutTag;
@@ -47,15 +54,15 @@ pub struct HideOutPlugin;
 impl Plugin for HideOutPlugin {
     fn build(&self, app: &mut bevy::app::App) {
         info!("registering ldtk map cells and adding teleport event");
-        app.add_systems(OnExit(AppState::Loading), spawn_world_container);
-        app.add_systems(OnExit(GeneratorState::NoDungeon), despawn_hideout);
+        app.add_systems(OnEnter(AppStage::Starting), spawn_hideout);
+        app.add_systems(OnEnter(GeneratorState::LayoutDungeon), despawn_hideout);
         app.add_systems(
             Update,
             (
                 // TODO: fix scheduling
                 teleporter_collisions.run_if(on_event::<CollisionEvent>()),
                 create_playable_heroes
-                    .run_if(in_state(AppState::StartMenu).and_then(on_event::<LevelEvent>())),
+                    .run_if(in_state(AppStage::Running).and_then(on_event::<LevelEvent>())),
             ),
         );
     }
@@ -63,14 +70,43 @@ impl Plugin for HideOutPlugin {
 
 /// spawns selectable heroes at each available `HeroSpot`
 fn create_playable_heroes(
+    registry: Res<ActorRegistry>,
+    selected_level: Res<LevelSelection>,
+    level_assets: Res<Assets<LdtkExternalLevel>>,
+    hero_spots: Query<&GlobalTransform, With<HeroLocation>>,
     mut level_spawn_events: EventReader<LevelEvent>,
     mut commands: Commands,
-    registry: Res<ActorRegistry>,
-    hero_spots: Query<&GlobalTransform, With<HeroLocation>>,
-    mut camera_query: Query<(&mut Transform, &mut OrthographicProjection), With<MainCamera>>,
+    mut already_spawned_hero: Query<
+        (&RegistryIdentifier, &mut Transform),
+        (With<PlayerSelectedHero>, Without<MainCamera>),
+    >,
+    mut camera_query: Query<
+        (&mut Transform, &mut OrthographicProjection),
+        (With<MainCamera>, Without<PlayerSelectedHero>),
+    >,
 ) {
+    let level = match selected_level.into_inner() {
+        LevelSelection::Identifier(a) => {
+            let level_asset = level_assets
+                .iter()
+                .find(|f| f.1.data().identifier() == a)
+                .expect("msg")
+                .1
+                .data();
+            let level_iid = level_asset.iid();
+            LevelIid::new(level_iid)
+        }
+        LevelSelection::Iid(level_iid) => level_iid.clone(),
+        LevelSelection::Uid(_) => panic!("uid grabbing for levels is unhandled as of yet"),
+        LevelSelection::Indices(_) => panic!("unable too handle multiple level spawning hero spawners as of yet"),
+    };
+
     for event in level_spawn_events.read() {
+        let existing_hero = already_spawned_hero.get_single_mut();
         if let LevelEvent::Transformed(_iid) = event {
+            if _iid != &level {
+                continue;
+            }
             let hero_spots: Vec<&GlobalTransform> = hero_spots.iter().collect();
             if registry.characters.heroes.is_empty() {
                 error!("no heroes too pick from");
@@ -80,8 +116,63 @@ fn create_playable_heroes(
             }
 
             info!("preparing heroes and focusing camera");
-            populate_hero_spots(&registry, &hero_spots, &mut commands);
+            let hero_spots_iter = hero_spots.iter();
+
+            info!("placing heroes");
+            populate_hero_spots(&registry, existing_hero, hero_spots_iter, &mut commands);
+
             adjust_camera_focus(hero_spots, &mut camera_query);
+        }
+    }
+}
+
+/// fills hero slots with selectable heroes
+fn populate_hero_spots(
+    registry: &Res<ActorRegistry>,
+    existing_hero: Result<
+        (&RegistryIdentifier, bevy::prelude::Mut<Transform>),
+        bevy::ecs::query::QuerySingleError,
+    >,
+    mut hero_spots_iter: std::slice::Iter<&GlobalTransform>,
+    commands: &mut Commands,
+) {
+    // TODO: swap this around for better expandability?
+    registry
+        .characters
+        .heroes
+        .values()
+        .filter(|f| {
+            if let Ok((a, _)) = existing_hero {
+                *a != f.identifier
+            } else {
+                true
+            }
+        })
+        .for_each(|thing| {
+            let Some(spot) = hero_spots_iter.next() else {
+                error!("no more hero spots");
+                return;
+            };
+            let mut bundle = thing.clone();
+
+            bundle.aseprite.sprite_bundle.transform.translation =
+                spot.translation().truncate().extend(ACTOR_Z_INDEX);
+
+            commands.spawn((
+                bundle,
+                PickableBundle::default(),
+                On::<Pointer<Down>>::send_event::<SelectThisHeroForPlayer>(),
+            ));
+        });
+
+    if existing_hero.is_ok() {
+        let ((id, mut position)) = existing_hero.unwrap();
+        let new_spot = hero_spots_iter.next();
+        if let Some(new_spot) = new_spot {
+            warn!("moving existing hero too unoccupied hero spot");
+            position.translation = new_spot.translation().truncate().extend(ACTOR_Z_INDEX)
+        } else {
+            warn!("no empty hero spot was found");
         }
     }
 }
@@ -91,10 +182,8 @@ fn create_playable_heroes(
 fn adjust_camera_focus(
     hero_spots: Vec<&GlobalTransform>,
     camera_query: &mut Query<
-        '_,
-        '_,
         (&mut Transform, &mut OrthographicProjection),
-        With<MainCamera>,
+        (With<MainCamera>, Without<PlayerSelectedHero>),
     >,
 ) {
     let hero_spots_amnt = hero_spots.len() as f32;
@@ -107,32 +196,6 @@ fn adjust_camera_focus(
     camera_pos.translation = avg.extend(camera_pos.translation.z);
 }
 
-/// fills hero slots with selectable heroes
-fn populate_hero_spots(
-    registry: &Res<ActorRegistry>,
-    hero_spots: &[&GlobalTransform],
-    commands: &mut Commands,
-) {
-    let mut hero_spots = hero_spots.iter();
-
-    info!("placing heroes");
-    // TODO: swap this around for better expandability?
-    registry.characters.heroes.values().for_each(|thing| {
-        let Some(spot) = hero_spots.next() else {
-            error!("no more hero spots");
-            return;
-        };
-        let mut bundle = thing.clone();
-        bundle.aseprite.sprite_bundle.transform.translation =
-            spot.translation().truncate().extend(ACTOR_Z_INDEX);
-        commands.spawn((
-            bundle,
-            PickableBundle::default(),
-            On::<Pointer<Down>>::send_event::<SelectThisHeroForPlayer>(),
-        ));
-    });
-}
-
 // TODO: find all uses of cmds.spawn(()) and add cleanup component
 // cleanup component should be a system that querys for a specific DespawnComponent and despawns all entitys in the query
 // DespawnWhenStateIs(Option<S: States/State>)
@@ -143,8 +206,9 @@ fn despawn_hideout(
     weapons: Query<Entity, With<AttackDamage>>,
     hideout: Query<(Entity, &LevelSet), With<HideoutTag>>,
 ) {
-    let (hideout, _levelset) = hideout.single();
-    commands.entity(hideout).despawn_recursive();
+    for ((hideout, levelset)) in &hideout {
+        commands.entity(hideout).despawn_recursive();
+    }
 
     for ent in &weapons {
         commands.entity(ent).despawn_recursive();

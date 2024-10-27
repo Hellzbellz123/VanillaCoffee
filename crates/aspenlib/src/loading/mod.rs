@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 
-use crate::{loading::assets::*, AppState};
+use crate::{loading::assets::*, AppStage};
 
 /// holds asset definitions
 pub mod assets;
@@ -34,25 +34,25 @@ impl Plugin for AppLoadingPlugin {
         // make the pack plugin, using bevy_asset_loader and bevy_common_assets
 
         app.add_loading_state(
-            LoadingState::new(AppState::BootingApp)
+            LoadingState::new(AppStage::Loading)
                 .load_collection::<AspenInitHandles>()
                 .load_collection::<AspenTouchHandles>()
                 .set_standard_dynamic_asset_collection_file_endings(["registry"].to_vec())
                 .with_dynamic_assets_file::<StandardDynamicAssetCollection>("init/pack.registry")
-                .continue_to_state(AppState::Loading)
-                .on_failure_continue_to_state(AppState::FailedLoadInit),
+                .continue_to_state(AppStage::Loading)
+                .on_failure_continue_to_state(AppStage::Failed),
         )
         .add_loading_state(
-            LoadingState::new(AppState::Loading)
-                .continue_to_state(AppState::StartMenu)
-                .on_failure_continue_to_state(AppState::FailedLoadMenu)
+            LoadingState::new(AppStage::Loading)
+                .continue_to_state(AppStage::Starting)
+                .on_failure_continue_to_state(AppStage::Failed)
                 .set_standard_dynamic_asset_collection_file_endings(["registry"].to_vec())
                 .with_dynamic_assets_file::<StandardDynamicAssetCollection>(
                     "packs/asha/pack.registry",
                 )
                 .load_collection::<AspenDefinitionHandles>()
                 .load_collection::<AspenAudioHandles>()
-                .load_collection::<AspenMapHandles>()
+                .load_collection::<AspenLevelsetHandles>()
                 .load_collection::<AspenTextureHandles>(),
         );
     }

@@ -25,7 +25,7 @@ use crate::{
             random_point_inside,
         },
     },
-    loading::assets::AspenMapHandles,
+    loading::assets::AspenLevelsetHandles,
     register_types,
 };
 
@@ -88,7 +88,7 @@ impl Plugin for DungeonGeneratorPlugin {
         app.add_systems(
             Update,
             room_database::build_room_presets.run_if(
-                resource_exists::<AspenMapHandles>.and_then(
+                resource_exists::<AspenLevelsetHandles>.and_then(
                     resource_changed::<Assets<LdtkExternalLevel>>
                         .or_else(resource_changed::<Assets<LdtkProject>>),
                 ),
@@ -132,7 +132,7 @@ impl Plugin for DungeonGeneratorPlugin {
 /// spawns dungeon root
 fn spawn_new_dungeon(
     mut cmds: Commands,
-    ldtk_project_handles: Res<AspenMapHandles>,
+    ldtk_project_handles: Res<AspenLevelsetHandles>,
     dungeon_root: Query<(Entity, &Dungeon)>,
 ) {
     // TODO: proper dungeon end system with cleanup

@@ -17,6 +17,8 @@ pub struct HeroLocation {
     pub hero_id: Option<RegistryIdentifier>,
     /// is this hero spot hireable and populated during a dungeon run
     pub in_dungeon_hireable: bool,
+    // has this hero spot been occupied yet?
+    pub occupied: bool,
 }
 
 // TODO: better spawning systems/id system

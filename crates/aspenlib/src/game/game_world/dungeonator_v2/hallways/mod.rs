@@ -12,7 +12,7 @@ use petgraph::prelude::NodeIndex;
 use crate::{
     consts::TILE_SIZE,
     game::game_world::dungeonator_v2::components::{Dungeon, RoomID},
-    loading::assets::AspenMapHandles,
+    loading::assets::AspenLevelsetHandles,
 };
 
 /// hallway creation functions
@@ -51,7 +51,7 @@ pub fn create_hallway_layer(
     mut cmds: Commands,
     dungeon: Query<(Entity, &Dungeon, &GlobalTransform)>,
     project_assets: Res<Assets<LdtkProject>>,
-    level_assets: Res<AspenMapHandles>,
+    level_assets: Res<AspenLevelsetHandles>,
 ) {
     let (dungeon_entity, dungeon_info, dungeon_global_transform) = dungeon.single();
     let Dungeon {

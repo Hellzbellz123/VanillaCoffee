@@ -3,19 +3,17 @@ use bevy_rapier2d::{pipeline::CollisionEvent, prelude::Velocity};
 
 use crate::{
     game::{
-        attributes_stats::EquipmentStats,
-        items::weapons::{
+        attributes_stats::EquipmentStats, characters::player::PlayerSelectedHero, items::weapons::{
             components::{
                 AttackDamage, CurrentAmmo, CurrentlyDrawnWeapon, WeaponCarrier, WeaponDescriptor,
                 WeaponHolder, WeaponTimers,
             },
             forms::GunShootEvent,
             hit_detection::projectile_hits,
-        },
-        AppState,
+        }
     },
     loading::registry::RegistryIdentifier,
-    register_types,
+    register_types, AppStage,
 };
 
 /// combat related components
@@ -50,7 +48,7 @@ impl Plugin for WeaponItemPlugin {
         app.add_event::<EventAttackWeapon>()
             .add_systems(
                 PreUpdate,
-                update_selected_weapon.run_if(in_state(AppState::PlayingGame)),
+                update_selected_weapon.run_if(in_state(AppStage::Running)),
             )
             .add_systems(PreUpdate, prepare_weapons)
             .add_systems(
@@ -62,7 +60,7 @@ impl Plugin for WeaponItemPlugin {
                     equipped_weapon_positioning,
                     weapon_visibility_system,
                 )
-                    .run_if(in_state(AppState::PlayingGame)),
+                    .run_if(in_state(AppStage::Running)),
             );
     }
 }
@@ -163,7 +161,7 @@ fn equipped_weapon_positioning(
     mut weapon_query: Query<
         // all weapons equipped too entity
         (&mut Transform, &mut Velocity),
-        (With<WeaponHolder>, Without<WeaponCarrier>),
+        (With<WeaponHolder>, Without<WeaponCarrier>, Without<PlayerSelectedHero>),
     >,
 ) {
     for character in &characters {

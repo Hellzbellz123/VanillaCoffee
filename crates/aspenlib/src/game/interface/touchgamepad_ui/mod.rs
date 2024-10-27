@@ -13,10 +13,9 @@ use crate::{
     game::{
         input::{action_maps, AspenInputSystemSet},
         interface::InterfaceRootTag,
-        AppState,
     },
     loading::assets::AspenTouchHandles,
-    GeneralSettings,
+    AppStage, GameStage, GeneralSettings,
 };
 
 // TODO: handle controllers on mobile properly
@@ -28,8 +27,8 @@ impl Plugin for TouchInputUIPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(TouchStickPlugin::<TouchStickBinding>::default());
         // TODO: handle menus properly. despawn touch controls when exiting PlayingGame
-        app.add_systems(OnExit(AppState::Loading), spawn_touch_gamepad);
-        app.add_systems(Update, handle_touch_controls_visibility);
+        app.add_systems(OnEnter(AppStage::Starting), spawn_touch_gamepad);
+        app.add_systems(Update, handle_touch_controls_visibility.run_if(any_with_component::<TouchControlsRoot>));
         app.add_systems(
             PreUpdate,
             (
@@ -44,7 +43,7 @@ impl Plugin for TouchInputUIPlugin {
                     shunts::touch_zoom_out,
                     shunts::touch_zoom_in,
                 )
-                    .run_if(in_state(AppState::PlayingGame)),
+                    .run_if(in_state(AppStage::Running)),
             )
                 .in_set(AspenInputSystemSet::TouchInput)
                 .run_if(
@@ -121,7 +120,7 @@ pub enum TouchStickBinding {
 
 /// hides touch controls if menus with buttons should be shown
 fn handle_touch_controls_visibility(
-    game_state: Res<State<AppState>>,
+    game_state: Option<Res<State<GameStage>>>,
     cfg: Res<GeneralSettings>,
     mut touch_root_query: Query<&mut Style, (With<Node>, With<TouchControlsRoot>)>,
 ) {
@@ -130,15 +129,21 @@ fn handle_touch_controls_visibility(
         return;
     };
 
-    match game_state.get() {
-        AppState::PlayingGame => {
-            if cfg.enable_touch_controls {
-                touch_root_style.display = Display::Flex;
-            } else {
-                touch_root_style.display = Display::None;
+    if let Some(gamestate) = game_state {
+        if cfg.enable_touch_controls {
+            match gamestate.get() {
+                GameStage::PlayingGame => {
+                    touch_root_style.display = Display::Flex
+                }
+                _ => {
+                    touch_root_style.display = Display::None
+                }
             }
-        },
-        _ => touch_root_style.display = Display::None,
+        } else {
+            touch_root_style.display = Display::None;
+        }
+    } else {
+        touch_root_style.display = Display::None
     }
 }
 

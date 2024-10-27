@@ -32,7 +32,7 @@ use crate::{
         items::EventSpawnItem,
     },
     loading::registry::RegistryIdentifier,
-    register_types, AppState,
+    register_types, AppStage,
 };
 
 /// tile collider creation systems/tools
@@ -97,7 +97,7 @@ impl Plugin for GameWorldPlugin {
                                 .or_else(in_state(GeneratorState::FinishedDungeonGen)),
                         ),
                     )
-                        .run_if(in_state(AppState::PlayingGame)),
+                        .run_if(in_state(AppStage::Running)),
                 ),
             )
             .add_systems(
@@ -239,7 +239,7 @@ fn handle_teleport_events(
                     "moving player this many: {}",
                     target_tile_transform.translation()
                 );
-                target_transform.translation = target_tile_transform.translation();
+                target_transform.translation = target_tile_transform.translation().truncate().extend(ACTOR_Z_INDEX);
                 move_state.teleport_status = TeleportStatus::Teleporting;
             }
             TpTriggerEffect::Global(pos) => {

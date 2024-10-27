@@ -1,5 +1,6 @@
 use crate::{
-    game::interface::InterfaceRootTag, loading::assets::AspenTouchHandles, register_types, AppState,
+    game::interface::InterfaceRootTag, loading::assets::AspenTouchHandles, playing_game,
+    register_types, AppStage, GameStage,
 };
 use bevy::prelude::*;
 
@@ -18,22 +19,22 @@ pub struct PlayingUiPlugin;
 impl Plugin for PlayingUiPlugin {
     fn build(&self, app: &mut App) {
         register_types!(app, [stat_hud::StatBar, gun_hud::PlayerAmmoBar]);
-        app.add_systems(OnExit(AppState::Loading), spawn_playing_ui)
+        app.add_systems(OnEnter(AppStage::Starting), spawn_playing_ui)
             .add_systems(
                 Update,
-                ((
-                    toggle_playing_ui.run_if(state_changed::<AppState>),
+                (
+                    toggle_playing_ui,
                     (
                         stat_hud::update_player_hp_bar,
                         gun_hud::update_ui_ammo_counter,
                         gun_hud::update_ui_ammo_slots,
-                        gun_hud::gunhud_visibility_system
+                        gun_hud::gunhud_visibility_system,
                     )
-                        .run_if(in_state(AppState::PlayingGame)),
-                ),),
+                        .run_if(playing_game()),
+                ),
             )
             .add_systems(
-                OnExit(AppState::StartMenu),
+                OnExit(GameStage::SelectCharacter),
                 stat_hud::update_player_portrait,
             );
     }
@@ -46,15 +47,25 @@ pub struct PlayingUiTag;
 /// toggles visibility of gameplay ui elements
 fn toggle_playing_ui(
     mut playing_ui_query: Query<&mut Style, (With<Node>, With<PlayingUiTag>)>,
-    game_state: Res<State<AppState>>,
+    game_state: Option<Res<State<GameStage>>>,
 ) {
     let Ok(mut playing_ui_style) = playing_ui_query.get_single_mut() else {
         return;
     };
-    if game_state.get() == &AppState::PlayingGame && playing_ui_style.display != Display::Flex {
-        playing_ui_style.display = Display::Flex;
-    } else {
-        playing_ui_style.display = Display::None;
+
+    if let Some(gamestate) = game_state {
+        match gamestate.get() {
+            GameStage::PlayingGame => {
+                if playing_ui_style.display != Display::Flex {
+                    playing_ui_style.display = Display::Flex
+                }
+            }
+            _ => {
+                if playing_ui_style.display != Display::None {
+                    playing_ui_style.display = Display::None
+                }
+            }
+        }
     }
 }
 

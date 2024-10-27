@@ -1,14 +1,10 @@
 use crate::{
-    game::{
-        interface::{
+    game::interface::{
             random_color,
             settings_menu::SettingsMenuToggleButton,
             ui_widgets::{spawn_button, spawn_menu_title},
             InterfaceRootTag,
-        },
-        AppState,
-    },
-    loading::assets::AspenInitHandles,
+        }, loading::assets::AspenInitHandles, AppStage, GameStage
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -18,7 +14,7 @@ pub struct StartMenuPlugin;
 
 impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnExit(AppState::Loading), spawn_start_menu);
+        app.add_systems(OnEnter(AppStage::Starting), spawn_start_menu);
 
         app.add_systems(
             Update,
@@ -46,17 +42,19 @@ pub struct ExitGameTag;
 /// set start menu container too `Display::Flex` if `AppState` == `StartMenu`
 fn show_start_menu(
     mut start_menu_query: Query<&mut Style, (With<Node>, With<StartMenuTag>)>,
-    game_state: Res<State<AppState>>,
+    game_state: Option<Res<State<GameStage>>>,
 ) {
-    if game_state.is_changed() {
-        let Ok(mut start_menu_style) = start_menu_query.get_single_mut() else {
-            return;
-        };
-        if game_state.get() == &AppState::StartMenu {
-            start_menu_style.display = Display::Flex;
-        } else {
-            start_menu_style.display = Display::None;
-        }
+    let Ok(mut start_menu_style) = start_menu_query.get_single_mut() else {
+        return;
+    };
+    let Some(state) = game_state else { 
+        start_menu_style.display = Display::None;
+        return
+     };
+    if state.get() == &GameStage::StartMenu {
+        start_menu_style.display = Display::Flex;
+    } else {
+        start_menu_style.display = Display::None;
     }
 }
 
@@ -150,14 +148,14 @@ fn spawn_start_menu(
 
 /// updates color of all buttons with text for interactions
 fn start_button_interaction(
-    // mut cmds: Commands,
+    mut cmds: Commands,
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<StartGameTag>)>,
     mut start_menu_query: Query<&mut Style, (With<Node>, With<StartMenuTag>)>,
 ) {
     for interaction in &interaction_query {
         if matches!(interaction, Interaction::Pressed) {
             start_menu_query.single_mut().display = Display::None;
-            // cmds.insert_resource(NextState(Some(AppState::PlayingGame)));
+            cmds.insert_resource(NextState::Pending(GameStage::SelectCharacter));
         }
     }
 }

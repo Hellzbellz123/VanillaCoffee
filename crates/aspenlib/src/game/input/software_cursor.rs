@@ -3,7 +3,7 @@ use bevy::{prelude::*, render::primitives::Aabb, window::CursorGrabMode};
 use crate::{
     game::{characters::player::PlayerSelectedHero, input::AspenCursorPosition},
     loading::{assets::AspenInitHandles, registry::RegistryIdentifier},
-    AppState, WindowSettings,
+    GameStage, WindowSettings,
 };
 
 use super::AspenInputSystemSet;
@@ -141,7 +141,7 @@ fn update_software_cursor_image(
         (&mut SoftWareCursor, &mut UiImage, &mut TextureAtlas, &Node),
         With<Node>,
     >,
-    game_state: Res<State<AppState>>,
+    game_state: Option<Res<State<GameStage>>>,
 ) {
     let Ok((mut cursor_data, mut cursor_color, mut cursor_atlas, node_size)) =
         software_cursor.get_single_mut()
@@ -158,13 +158,15 @@ fn update_software_cursor_image(
                 .distance(os_cursor_pos.world)
         });
 
-    if distance.le(&cursor_data.hide_distance) && game_state.get() == &AppState::PlayingGame {
+    if distance.le(&cursor_data.hide_distance)
+        && game_state.as_ref().is_some_and(|f| f.get() != &GameStage::StartMenu)
+    {
         cursor_color.color = cursor_color.color.with_alpha(cursor_data.hide_alpha);
     } else {
         cursor_color.color = cursor_color.color.with_alpha(cursor_data.show_alpha);
     };
 
-    if game_state.get() == &AppState::PlayingGame {
+    if game_state.is_some_and(|f|f.get() != &GameStage::StartMenu ) {
         // if cursor is over 'interactable actor/enemy' set TextureAtlas.index too 'HasTarget' otherwise 'NoTarget'
         cursor_data.offset = node_size.size() / 2.0;
         for (interactble_pos, interactable_aabb) in &interactables {

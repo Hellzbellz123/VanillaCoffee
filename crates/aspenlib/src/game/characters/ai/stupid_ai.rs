@@ -17,8 +17,7 @@ use big_brain::{
 use rand::{thread_rng, Rng};
 
 use crate::{
-    consts::default_actor_collider,
-    game::{
+    consts::default_actor_collider, game::{
         characters::{
             ai::components::{
                 AIChaseAction, AICombatAggroConfig, AIWanderAction, AIWanderConfig, AttackScorer,
@@ -27,9 +26,7 @@ use crate::{
             player::PlayerSelectedHero,
         },
         combat::{AttackDirection, EventRequestAttack},
-        AppState,
-    },
-    utilities::tiles_to_f32,
+    }, playing_game, utilities::tiles_to_f32,
 };
 
 use super::components::{AIAutoShootConfig, AIShootAction};
@@ -42,13 +39,13 @@ impl Plugin for StupidAiPlugin {
         app.add_systems(
             PreUpdate,
             (stupid_ai_aggro_manager)
-                .run_if(in_state(AppState::PlayingGame))
+                .run_if(playing_game())
                 .in_set(BigBrainSet::Scorers),
         )
         .add_systems(
             Update,
             (wander_action, chase_action, attack_action)
-                .run_if(in_state(AppState::PlayingGame)) // shoot_action,
+                .run_if(playing_game()) // shoot_action,
                 .in_set(BigBrainSet::Actions),
         );
     }

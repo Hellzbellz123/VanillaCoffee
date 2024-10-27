@@ -87,8 +87,18 @@ pub fn camera_movement_system(
             camera_data.player_still_recenter_speed
         };
 
-    // Interpolate (lerp) between the current camera position and the player's position with the adjusted speed
-    camera_trans.translation = camera_transform
-        .lerp(camera_target, movement_speed)
-        .extend(999.0);
+    if camera_transform.is_finite() {
+        let distance = camera_transform.distance(player_transform.translation.truncate());
+
+        if distance > 500.0 {
+            camera_trans.translation = player_transform.translation.truncate().extend(999.0);
+        } else {
+            // Interpolate (lerp) between the current camera position and the player's position with the adjusted speed
+            camera_trans.translation = camera_transform
+                .lerp(camera_target, movement_speed)
+                .extend(999.0);
+        }
+    } else {
+        camera_trans.translation = player_transform.translation.truncate().extend(999.0);
+    }
 }

@@ -22,10 +22,7 @@ mod loading;
 /// misc util functions that cant find a place
 mod utilities;
 
-use crate::{
-    game::{combat::SameUserDataFilter, DungeonFloor},
-    loading::assets::AspenInitHandles,
-};
+use crate::{game::combat::SameUserDataFilter, loading::assets::AspenInitHandles};
 use bevy::prelude::*;
 
 pub use bevy::color::palettes::css as colors;
@@ -33,51 +30,46 @@ use bevy_rapier2d::prelude::{RapierConfiguration, RapierContext};
 pub use loading::config::*;
 
 /// application stages
-pub enum ApplicationStage {
-    // TODO: impl this  stuff
-    /// load client resources
-    LoadingClient, // --> BootingApp
-    /// start client
-    StartingGame, // --> LoadingApp
-    /// succesfully started client
-    GameRunning, // --> add gamestate here
+#[derive(States, Clone, PartialEq, Eq, Hash, Debug, Default, Reflect)]
+pub enum AppStage {
+    /// load required client resources and abort if we cant load them
+    #[default]
+    Loading, // --> BootingApp
+    /// start client and display window
+    Starting, // --> LoadingApp
+    /// succesfully started client and running update loop
+    Running, // --> add gamestate here
     /// Failed too load required assets
-    ClientFailed, // --> FailedLoadInit / FailedLoadMenu
+    Failed, // --> FailedLoadInit / FailedLoadMenu
 }
 
 /// what part of the game we are at
-#[derive(Debug, Default, Clone, Eq, PartialEq, Hash, States, Resource, Reflect)]
+#[derive(SubStates, Clone, PartialEq, Eq, Hash, Debug, Default, Reflect)]
+#[source(AppStage = AppStage::Running)]
 pub enum GameStage {
-    /// no actor related logic, just the main menu
     #[default]
-    NotStarted,
-    /// select character, buy weapons
-    Prepare,
-    /// crawling has 1 value. the dungeon Level
-    Crawling(DungeonFloor),
+    /// showing start menu for game
+    StartMenu,
+    /// choose character
+    SelectCharacter,
+    ///
+    PlayingGame,
+    ///
+    PausedGame,
 }
 
-/// main game state loop
-#[derive(Debug, Default, Clone, Eq, PartialEq, Hash, States, Resource, Reflect)]
-pub enum AppState {
-    /// pre loading state before window is shown.
-    /// Loads REQUIRED resources
-    #[default]
-    BootingApp,
-    /// assets from game pack loaded during this state
-    /// pack configuration from config file is setup here
-    Loading,
-    /// Main menu is drawn
-    /// wait for load-saved-game or new-saved-game
-    StartMenu,
-    /// playing game, some States are inserted here
-    PlayingGame, //(PlaySubStage),
-    /// Game Paused in this state, rapier timestep set too 0.0, no physics, ai is also stopped
-    PauseMenu,
-    /// game failed to load an init asset. fatal error
-    FailedLoadInit,
-    /// game failed too load default pack
-    FailedLoadMenu,
+/// run condition that checks if controllable player should exist
+pub fn playing_game() -> impl FnMut(Option<Res<State<GameStage>>>) -> bool + Clone {
+    move |current_state: Option<Res<State<GameStage>>>| match current_state {
+        Some(current_state) => {
+            if *current_state == GameStage::PlayingGame {
+                true
+            } else {
+                false
+            }
+        }
+        None => false,
+    }
 }
 
 // TODO:
@@ -118,7 +110,8 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
             .run_if(resource_exists::<AspenInitHandles>.and_then(run_once())),),
     );
 
-    vanillacoffee.add_systems(Last, fix_rapier_gravity);
+    vanillacoffee.add_systems(Last, (fix_rapier_gravity,));
+    vanillacoffee.add_systems(OnEnter(AppStage::Starting), start_app_functionality);
 
     vanillacoffee
 }
@@ -126,4 +119,8 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
 fn fix_rapier_gravity(mut rapier_ctx: Query<(&RapierContext, &mut RapierConfiguration)>) {
     let (_rapier_ctx, mut rapier_cfg) = rapier_ctx.single_mut();
     rapier_cfg.gravity = Vec2::ZERO;
+}
+
+fn start_app_functionality(mut cmds: Commands) {
+    cmds.insert_resource(NextState::Pending(AppStage::Running));
 }

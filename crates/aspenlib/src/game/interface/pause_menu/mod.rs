@@ -1,18 +1,18 @@
 use crate::{
     game::{
-        input::action_maps,
-        interface::{
+        characters::player::PlayerSelectedHero, game_world::{dungeonator_v2::components::Dungeon, hideout::systems::HideoutTag}, input::action_maps, interface::{
             random_color,
             settings_menu::SettingsMenuToggleButton,
             ui_widgets::{spawn_button, spawn_menu_title},
             InterfaceRootTag,
-        },
-        AppState,
+        }
     },
-    loading::assets::AspenInitHandles,
+    loading::{assets::{AspenInitHandles, AspenLevelsetHandles}, registry::RegistryIdentifier},
+    AppStage, GameStage,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
+use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkWorldBundle, LevelSet};
 use leafwing_input_manager::prelude::ActionState;
 
 /// pause game functionality and pause menu ui
@@ -21,14 +21,19 @@ pub struct PauseMenuPlugin;
 impl Plugin for PauseMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<EventTogglePause>();
-        app.add_systems(OnExit(AppState::Loading), spawn_pause_menu);
+        app.add_systems(OnEnter(AppStage::Starting), spawn_pause_menu);
         app.add_systems(
             Update,
             (
-                continue_button_interaction,
-                exit_button_interaction,
-                pause_event_handler.run_if(on_event::<EventTogglePause>()),
+                (
+                    back_to_main_menu_interaction,
+                    abandon_button_interaction,
+                    continue_button_interaction,
+                    exit_button_interaction,
+                )
+                    .run_if(in_state(GameStage::PausedGame)),
                 keyboard_pause_sender,
+                pause_event_handler.run_if(on_event::<EventTogglePause>()),
             ),
         );
     }
@@ -45,6 +50,14 @@ pub struct ContinueGameTag;
 /// marks start button for query
 #[derive(Debug, Component)]
 pub struct ExitGameTag;
+
+/// marks abandon dungeon button for query
+#[derive(Debug, Component)]
+pub struct AbandonDungeonTag;
+
+/// marks return too main menu button for query
+#[derive(Debug, Component)]
+pub struct BackToMainMenuTag;
 
 /// spawns start menu with buttons
 fn spawn_pause_menu(
@@ -120,13 +133,25 @@ fn spawn_pause_menu(
                             spawn_button(
                                 buttons,
                                 assets.font_regular.clone(),
+                                "Back to Hideout",
+                                AbandonDungeonTag,
+                            );
+                            spawn_button(
+                                buttons,
+                                assets.font_regular.clone(),
                                 "Settings",
                                 SettingsMenuToggleButton,
                             );
                             spawn_button(
                                 buttons,
                                 assets.font_regular.clone(),
-                                "Exit Game",
+                                "Quit To Main Menu",
+                                BackToMainMenuTag,
+                            );
+                            spawn_button(
+                                buttons,
+                                assets.font_regular.clone(),
+                                "Quit To Desktop",
                                 ExitGameTag,
                             );
                         });
@@ -142,6 +167,84 @@ fn continue_button_interaction(
     for interaction in &interaction_query {
         if matches!(interaction, Interaction::Pressed) {
             pauses.send(EventTogglePause);
+        }
+    }
+}
+
+/// send `EventTogglePause` request when pause menu continue button is pressed
+fn abandon_button_interaction(
+    mut cmds: Commands,
+    mut time: ResMut<Time<Virtual>>,
+    mut player_q: Query<&mut Transform, (With<RegistryIdentifier>, With<PlayerSelectedHero>)>,
+    level_q: Query<Entity, With<Dungeon>>,
+    actor_q: Query<Entity, (With<RegistryIdentifier>, Without<PlayerSelectedHero>, Without<Parent>)>,
+    interaction_query: Query<&Interaction, (Changed<Interaction>, With<AbandonDungeonTag>)>,
+    maps: Res<AspenLevelsetHandles>
+) {
+    for interaction in &interaction_query {
+        if matches!(interaction, Interaction::Pressed) {
+            // despawn dungeon
+            // despawn enemys
+            // respawn hideout
+            // move player too hideout spawn
+            warn!("abandoning dungeon");
+            for actor in &actor_q {
+                cmds.entity(actor).despawn_recursive();
+            }
+            for level in &level_q {
+                cmds.entity(level).despawn_recursive();
+            }
+            time.unpause();
+
+            cmds.spawn((
+                LdtkWorldBundle {
+                    ldtk_handle: maps.default_levels.clone(),
+                    level_set: LevelSet::default(),
+                    transform: Transform {
+                        translation: Vec3 {
+                            x: 0.0,
+                            y: 0.0,
+                            z: 0.0,
+                        },
+                        scale: Vec3 {
+                            x: 1.0,
+                            y: 1.0,
+                            z: 1.0,
+                        },
+                        ..default()
+                    },
+                    ..default()
+                },
+                Name::new("HideOut"),
+                HideoutTag,
+            ));
+        }
+    }
+}
+
+fn back_to_main_menu_interaction(
+    mut cmds: Commands,
+    mut time: ResMut<Time<Virtual>>,
+    mut game_stage: ResMut<NextState<AppStage>>,
+    actor_q: Query<Entity, With<RegistryIdentifier>>,
+    level_q: Query<Entity, With<Handle<LdtkProject>>>,
+    ui_root_q: Query<Entity, (With<Node>, With<InterfaceRootTag>)>,
+    interaction_query: Query<&Interaction, (Changed<Interaction>, With<BackToMainMenuTag>)>,
+) {
+    for interaction in &interaction_query {
+        if matches!(interaction, Interaction::Pressed) {
+            for actor in &actor_q {
+                cmds.entity(actor).despawn_recursive();
+            }
+            for level in &level_q {
+                cmds.entity(level).despawn_recursive();
+            }
+            for entity in &ui_root_q {
+                cmds.entity(entity).despawn_descendants();
+            }
+
+            time.unpause();
+            game_stage.set(AppStage::Starting);
         }
     }
 }
@@ -175,32 +278,26 @@ fn keyboard_pause_sender(
 /// takes pause requests and does things too pause game
 fn pause_event_handler(
     mut pauses: EventReader<EventTogglePause>,
-    game_state: Res<State<AppState>>,
-    mut cmds: Commands,
     mut pause_menu_query: Query<&mut Style, (With<Node>, With<PauseMenuTag>)>,
-    // mut rapier_cfg: Query<&mut RapierConfiguration>,
+    mut time: ResMut<Time<Virtual>>,
+    game_state: Option<Res<State<GameStage>>>,
+    mut next_state: ResMut<NextState<GameStage>>,
 ) {
-    // let mut rapier_cfg = rapier_cfg.single_mut();
-
     for _event in pauses.read() {
+        let Some(game_state) = game_state.as_ref() else {
+            return;
+        };
+
         match game_state.get() {
-            AppState::PlayingGame => {
-                // rapier_cfg.timestep_mode = TimestepMode::Variable {
-                //     max_dt: 1.0 / 144.0,
-                //     time_scale: 0.0,
-                //     substeps: 1,
-                // };
+            GameStage::PlayingGame => {
+                time.pause();
                 pause_menu_query.single_mut().display = Display::Flex;
-                cmds.insert_resource(NextState::Pending(AppState::PauseMenu));
+                next_state.set(GameStage::PausedGame);
             }
-            AppState::PauseMenu => {
-                // rapier_cfg.timestep_mode = TimestepMode::Variable {
-                //     max_dt: 1.0 / 144.0,
-                //     time_scale: 1.0,
-                //     substeps: 1,
-                // };
+            GameStage::PausedGame => {
+                time.unpause();
                 pause_menu_query.single_mut().display = Display::None;
-                cmds.insert_resource(NextState::Pending(AppState::PlayingGame));
+                next_state.set(GameStage::PlayingGame);
             }
             _ => {}
         }

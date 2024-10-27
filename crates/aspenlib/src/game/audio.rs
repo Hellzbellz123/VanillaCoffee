@@ -9,7 +9,10 @@ use bevy_kira_audio::{
 use bevy_rapier2d::dynamics::Velocity;
 
 use crate::{
-    consts::MIN_VELOCITY, game::characters::{components::{CharacterMoveState, CurrentMovement}, player::PlayerSelectedHero}, loading::{assets::AspenAudioHandles, config::SoundSettings, splashscreen::MainCamera}, register_types, AppState
+    consts::MIN_VELOCITY, game::characters::{
+        components::{CharacterMoveState, CurrentMovement},
+        player::PlayerSelectedHero,
+    }, loading::{assets::AspenAudioHandles, config::SoundSettings, splashscreen::MainCamera}, playing_game, register_types, AppStage
 };
 
 /// OST music is played on this channel.
@@ -42,11 +45,7 @@ pub struct AudioPlugin;
 // This plugin is responsible to control the game audio
 impl Plugin for AudioPlugin {
     fn build(&self, app: &mut App) {
-        register_types!(app, [
-            ActorSoundMap,
-            ActorSoundTimers,
-            ActorSoundTimer
-        ]);
+        register_types!(app, [ActorSoundMap, ActorSoundTimers, ActorSoundTimer]);
 
         // pretty sure the max sound amount is different per platform?
         app.insert_resource(AudioSettings {
@@ -60,17 +59,15 @@ impl Plugin for AudioPlugin {
         .insert_resource(SpatialAudio {
             max_distance: 250.0,
         })
-        .add_systems(OnEnter(AppState::Loading), setup_sound_volume)
+        .add_systems(
+            OnExit(AppStage::Loading),
+            (setup_sound_volume, play_background_audio),
+        )
         .add_systems(
             Update,
-            (
-                prepare_actor_spatial_sound,
-                actor_footstep_sound_system.run_if(in_state(AppState::PlayingGame)),
-                play_background_audio.run_if(in_state(AppState::StartMenu).and_then(run_once())),
-            )
-                .run_if(resource_exists::<AspenAudioHandles>),
-        )
-        .add_systems(OnEnter(AppState::Loading), setup_sound_volume);
+            (prepare_actor_spatial_sound, actor_footstep_sound_system)
+                .run_if(playing_game()),
+        );
     }
 }
 
@@ -138,7 +135,9 @@ fn prepare_actor_spatial_sound(
         cmds.entity(actor).insert((
             ActorSoundMap(sound_map),
             ActorSoundTimers(sound_timers),
-            AudioEmitter { instances: vec![footstep_instance] },
+            AudioEmitter {
+                instances: vec![footstep_instance],
+            },
         ));
     }
 }
@@ -160,18 +159,20 @@ pub struct ActorSoundTimers(HashMap<String, ActorSoundTimer>);
 fn actor_footstep_sound_system(
     // mut audio_instances: ResMut<Assets<AudioInstance>>,
     game_sound: Res<AudioChannel<GameSoundChannel>>,
-    mut actor_query: Query<(
-        &CharacterMoveState,
-        &ActorSoundMap,
-        &mut AudioEmitter,
-        &mut ActorSoundTimers,
-        &Velocity,
-    ),
-    // With<PlayerSelectedHero>
+    mut actor_query: Query<
+        (
+            &CharacterMoveState,
+            &ActorSoundMap,
+            &mut AudioEmitter,
+            &mut ActorSoundTimers,
+            &Velocity,
+        ),
+        // With<PlayerSelectedHero>
     >,
     time: Res<Time>,
 ) {
-    for (move_state, sound_map, mut spatial_emmiter, mut sound_timers, velocity) in &mut actor_query {
+    for (move_state, sound_map, mut spatial_emmiter, mut sound_timers, velocity) in &mut actor_query
+    {
         let key = "Footstep".to_string();
         let footstep_timer = sound_timers
             .get_mut(&key)

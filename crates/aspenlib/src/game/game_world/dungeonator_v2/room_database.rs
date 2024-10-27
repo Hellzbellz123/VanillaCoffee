@@ -10,14 +10,14 @@ use crate::{
         try_get_roomlevel, try_get_roomshape, try_get_roomtype, DungeonRoomDatabase,
         RoomDescriptor, RoomPreset, RoomShape, RoomType,
     },
-    loading::assets::AspenMapHandles,
+    loading::assets::AspenLevelsetHandles,
 };
 
 /// maps `level_assets` too a `DungeonRoomDatabase`
 /// dungeons are filtered into vecs based on level custom data
 pub fn build_room_presets(
     mut cmds: Commands,
-    map_projects: Res<AspenMapHandles>,
+    map_projects: Res<AspenLevelsetHandles>,
     ldtk_projects: Res<Assets<LdtkProject>>,
     ldtk_levels: Res<Assets<LdtkExternalLevel>>,
 ) {

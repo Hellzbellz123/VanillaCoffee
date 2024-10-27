@@ -12,7 +12,7 @@ use crate::{
         },
         game_world::dungeonator_v2::components::{BossState, RoomBlueprint},
     },
-    register_types, AppState,
+    register_types, AppStage, GameStage,
 };
 use bevy::prelude::*;
 use big_brain::prelude::{HasThinker, Score};
@@ -24,10 +24,10 @@ impl Plugin for GameProgressPlugin {
     fn build(&self, app: &mut App) {
         register_types!(app, [ProgressManager]);
 
-        app.add_systems(OnEnter(AppState::StartMenu), initialize_progress_manager);
+        app.add_systems(OnExit(AppStage::Loading), spawn_progress_manager);
         app.add_systems(
             FixedUpdate,
-            (update_boss_state, update_player_current_room).run_if(in_state(AppState::PlayingGame)),
+            (update_boss_state, update_player_current_room).run_if(in_state(GameStage::PlayingGame)),
         );
     }
 }
@@ -65,7 +65,7 @@ pub struct OverallProgressState {
 }
 
 /// creates entity for tracking player progress inside dungeon
-fn initialize_progress_manager(mut cmds: Commands) {
+fn spawn_progress_manager(mut cmds: Commands) {
     // load character save state here?
 
     cmds.spawn((

@@ -6,9 +6,8 @@ use crate::{
         custom_assets::actor_definitions::{CharacterDefinition, ItemDefinition},
         registry::RegistryIdentifier,
     },
-    register_types,
+    playing_game, register_types,
     utilities::{scale_to_fit, EntityCreator},
-    AppState,
 };
 
 /// animation functionality
@@ -77,7 +76,7 @@ impl Plugin for AspenHallsPlugin {
             ))
             .add_systems(
                 Update,
-                ((update_actor_size, time_to_live).run_if(in_state(AppState::PlayingGame)),),
+                ((update_actor_size, time_to_live).run_if(playing_game()),),
             );
     }
 }

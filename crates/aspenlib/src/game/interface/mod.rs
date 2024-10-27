@@ -1,6 +1,7 @@
-use crate::game::AppState;
 use bevy::prelude::*;
 use rand::Rng;
+
+use crate::AppStage;
 
 /// pause menu module
 pub mod pause_menu;
@@ -35,8 +36,8 @@ impl Plugin for InterfacePlugin {
             //playing ui
             playing_ui::PlayingUiPlugin,
         ));
-        app.add_systems(OnEnter(AppState::BootingApp), (spawn_interface_root,));
-        app.add_systems(Update, (update_button_color,));
+        app.add_systems(OnExit(AppStage::Loading), spawn_interface_root);
+        app.add_systems(Update, update_button_color);
     }
 }
 

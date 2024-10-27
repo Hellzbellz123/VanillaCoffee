@@ -9,8 +9,7 @@ use crate::{
         characters::ai::components::AIAutoShootConfig,
         components::{ActorColliderType, TimeToLive},
     },
-    loading::assets::AspenInitHandles,
-    AppState,
+    loading::assets::AspenInitHandles, AppStage,
 };
 
 /// handles character attacks if they have no weapons or did not use an action
@@ -21,7 +20,7 @@ impl Plugin for UnArmedPlugin {
         app.add_event::<EventAttackUnarmed>();
         app.add_systems(
             Update,
-            delegate_unarmed_attacks.run_if(in_state(AppState::PlayingGame)),
+            delegate_unarmed_attacks.run_if(in_state(AppStage::Running)),
         );
     }
 }

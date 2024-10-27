@@ -231,7 +231,10 @@ pub fn update_player_portrait(
     >,
 ) {
     let (mut portrait_image, mut portrait_atlas) = player_portrait.single_mut();
-    let (player_atlas, player_image) = player_query.single();
+    let Ok((player_atlas, player_image)) = player_query.get_single() else {
+        warn!("no selected player is available");
+        return;
+    };
 
     if portrait_image.texture != *player_image {
         portrait_image.texture = player_image.clone_weak();
