@@ -55,7 +55,6 @@ fn update_gun_timers(
             firing_timers.refill.tick(time.delta());
 
             if firing_timers.refill.finished() {
-                firing_timers.refill.reset();
                 current_ammo.current = current_ammo.max;
                 current_ammo.reloading = false;
             }
@@ -95,6 +94,7 @@ pub fn receive_gun_shots(
         let cfg = event.settings;
 
         if ammo_counter.current == 0 && !ammo_counter.reloading {
+            timers.refill.reset();
             ammo_counter.reloading = true;
             anim_events.send(EventAnimationChange {
                 anim_handle: vec![GunAnimations::RELOAD, GunAnimations::IDLE],

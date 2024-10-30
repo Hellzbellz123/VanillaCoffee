@@ -122,7 +122,7 @@ fn handle_weapon_attacks(
         match weapon_descriptor {
             WeaponDescriptor::Gun(cfg) => {
                 // get requester and do something?
-                if timers.attack.finished() {
+                if timers.attack.finished() || timers.refill.finished() {
                     gunshoot_events.send(GunShootEvent {
                         gun: weapon_attack.weapon,
                         settings: *cfg,

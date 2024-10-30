@@ -284,6 +284,10 @@ fn populate_start_room(
         spawn_data: (RegistryIdentifier("smallpistol".to_string()), 1),
         requester: dungeon,
     });
+    ew.send(EventSpawnItem {
+        spawn_data: (RegistryIdentifier("autopistol".to_string()), 1),
+        requester: dungeon,
+    });
 }
 
 /// Takes `TileEnumTags` that is added from ldtk editor
