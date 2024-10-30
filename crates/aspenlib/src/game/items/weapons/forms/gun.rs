@@ -5,9 +5,13 @@ use crate::{
     bundles::{Aspen2dPhysicsBundle, AspenColliderBundle, NeedsCollider, ProjectileBundle},
     consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX},
     game::{
-        animations::{EventAnimationChange, GunAnimations}, attributes_stats::{Damage, ProjectileStats}, audio::{EventPlaySpatialSound, S_GUNSHOT}, components::{ActorColliderType, TimeToLive}, items::weapons::components::{
+        animations::{EventAnimationChange, GunAnimations},
+        attributes_stats::{Damage, ProjectileStats},
+        audio::{EventPlaySpatialSound, S_GUNSHOT},
+        components::{ActorColliderType, TimeToLive},
+        items::weapons::components::{
             AttackDamage, CurrentlyDrawnWeapon, GunCfg, WeaponAmmoCount, WeaponHolder, WeaponTimers,
-        }
+        },
     },
     loading::assets::AspenInitHandles,
     utilities::EntityCreator,
@@ -90,7 +94,7 @@ pub fn receive_gun_shots(
         };
         let cfg = event.settings;
 
-        if ammo_counter.current == 0 && ammo_counter.reloading == false {
+        if ammo_counter.current == 0 && !ammo_counter.reloading {
             ammo_counter.reloading = true;
             anim_events.send(EventAnimationChange {
                 anim_handle: vec![GunAnimations::RELOAD, GunAnimations::IDLE],

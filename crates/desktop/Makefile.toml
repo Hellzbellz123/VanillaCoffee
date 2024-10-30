@@ -3,7 +3,11 @@ extend = "../../Makefile.toml"
 
 [tasks.package-release]
 private = true
-dependencies = ["clean-desktop-package", "build-release-windows", "build-release-linux"]
+dependencies = [
+  "clean-desktop-package",
+  "build-release-windows",
+  "build-release-linux",
+]
 workspace = false
 run_task = { name = ["package-artifacts"] }
 
@@ -11,13 +15,18 @@ run_task = { name = ["package-artifacts"] }
 private = true
 dependencies = ["copy-assets", "copy-bin-windows", "copy-bin-linux"]
 workspace = false
-run_task = { name = ["zip-artifacts"]}
+run_task = { name = ["zip-artifacts"] }
 
 [tasks.build-release-linux]
 private = true
 workspace = false
 command = "cargo"
-args = ["build", "--release", "--target=x86_64-unknown-linux-gnu "]
+args = [
+  "build",
+  "--release",
+  "--target=x86_64-unknown-linux-gnu",
+  "--features=develop",
+]
 
 [tasks.build-release-windows]
 private = true
@@ -25,7 +34,13 @@ workspace = false
 # this env fixes Blake3 cross compilation.
 env = { "CARGO_FEATURE_PURE" = "1" }
 command = "cargo"
-args = ["xwin", "build", "--release", "--target=x86_64-pc-windows-msvc"]
+args = [
+  "xwin",
+  "build",
+  "--release",
+  "--target=x86_64-pc-windows-msvc",
+  "--features=develop",
+]
 
 [tasks.clean-desktop-package]
 private = true

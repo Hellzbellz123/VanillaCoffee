@@ -33,7 +33,7 @@ pub mod utils {
 
     use crate::{
         bundles::{AspenColliderBundle, NeedsCollider},
-        consts::{ AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
+        consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
         game::{
             characters::creeps::EventSpawnCreep, components::ActorColliderType,
             game_world::components::CharacterSpawner,

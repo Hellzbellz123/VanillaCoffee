@@ -43,7 +43,12 @@ pub fn spawn_button<T: Component>(
 /// spawns a text bundle with alignment center
 /// styling for this component makes
 /// it a good title for menu like interfaces
-pub fn spawn_menu_title(child_builder: &mut ChildBuilder, font: Handle<Font>, text: &str, font_size: f32) {
+pub fn spawn_menu_title(
+    child_builder: &mut ChildBuilder,
+    font: Handle<Font>,
+    text: &str,
+    font_size: f32,
+) {
     child_builder.spawn((
         Name::new("Title"),
         TextBundle::from_section(

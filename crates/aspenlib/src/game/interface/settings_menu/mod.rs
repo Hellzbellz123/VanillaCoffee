@@ -28,8 +28,9 @@ impl Plugin for SettingsMenuPlugin {
                 settings_menu_visibility,
                 close_settings_interaction,
                 apply_settings_interaction,
-                toggle_settings_interactions
-                    .run_if(in_state(GameStage::PausedGame).or_else(in_state(GameStage::StartMenu))),
+                toggle_settings_interactions.run_if(
+                    in_state(GameStage::PausedGame).or_else(in_state(GameStage::StartMenu)),
+                ),
             ),
         );
     }
@@ -144,9 +145,13 @@ fn settings_menu_visibility(
     game_state: Option<Res<State<GameStage>>>,
     mut settings_menu_query: Query<&mut Style, (With<Node>, With<SettingsMenuTag>)>,
 ) {
-    let Some(state) = game_state else {return;};
+    let Some(state) = game_state else {
+        return;
+    };
     match state.get() {
-        GameStage::PlayingGame | GameStage::SelectCharacter => settings_menu_query.single_mut().display = Display::None,
+        GameStage::PlayingGame | GameStage::SelectCharacter => {
+            settings_menu_query.single_mut().display = Display::None;
+        }
         _ => {}
     }
 }

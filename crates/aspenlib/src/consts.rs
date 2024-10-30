@@ -1,7 +1,4 @@
-use bevy::prelude::Vec2;
-use bevy_rapier2d::{geometry::Group, prelude::Collider};
-
-use crate::bundles::NeedsCollider;
+use bevy_rapier2d::geometry::Group;
 
 #[allow(
     clippy::needless_bool,
@@ -19,8 +16,8 @@ pub const ACTOR_PHYSICS_Z_INDEX: f32 = 10.0;
 /// Z axis for sprites/entities to be positioned on
 pub const ACTOR_Z_INDEX: f32 = 10.0;
 
-/// actor size
-pub const ACTOR_SIZE: Vec2 = Vec2::new(TILE_SIZE, TILE_SIZE);
+// /// actor size
+// pub const ACTOR_SIZE: Vec2 = Vec2::new(TILE_SIZE, TILE_SIZE);
 
 /// smallest velocity not considered moving
 ///

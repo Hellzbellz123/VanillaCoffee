@@ -6,13 +6,19 @@ use bevy_mod_picking::{
 };
 
 use crate::{
-    bundles::{AspenColliderBundle, NeedsCollider}, consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX}, game::{
+    bundles::{AspenColliderBundle, NeedsCollider},
+    consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX},
+    game::{
         characters::components::WeaponSlot, components::ActorColliderType,
         interface::start_menu::StartMenuTag, items::weapons::components::WeaponCarrier,
-    }, loading::{
+    },
+    loading::{
         custom_assets::actor_definitions::CharacterDefinition, registry::RegistryIdentifier,
         splashscreen::MainCamera,
-    }, playing_game, utilities::EntityCreator, AppStage, GameStage, GeneralSettings
+    },
+    playing_game,
+    utilities::EntityCreator,
+    GameStage, GeneralSettings,
 };
 
 use bevy_rapier2d::prelude::CollisionGroups;
@@ -48,7 +54,10 @@ impl Plugin for PlayerPlugin {
                 OnExit(GameStage::SelectCharacter),
                 build_player_from_selected_hero,
             )
-            .add_systems(Update, select_wanted_hero.run_if(in_state(GameStage::SelectCharacter)));
+            .add_systems(
+                Update,
+                select_wanted_hero.run_if(in_state(GameStage::SelectCharacter)),
+            );
     }
 }
 

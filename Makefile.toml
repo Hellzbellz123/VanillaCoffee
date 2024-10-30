@@ -72,4 +72,3 @@ script.pre = "rm -rf crates/desktop/assets && cp -r assets crates/desktop/assets
 
 [tasks.package-release]
 description = "runs package release workflow for each target"
-

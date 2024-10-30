@@ -57,12 +57,12 @@ fn toggle_playing_ui(
         match gamestate.get() {
             GameStage::PlayingGame => {
                 if playing_ui_style.display != Display::Flex {
-                    playing_ui_style.display = Display::Flex
+                    playing_ui_style.display = Display::Flex;
                 }
             }
             _ => {
                 if playing_ui_style.display != Display::None {
-                    playing_ui_style.display = Display::None
+                    playing_ui_style.display = Display::None;
                 }
             }
         }

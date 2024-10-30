@@ -3,19 +3,17 @@ use std::path::PathBuf;
 use bevy::{
     core::Name,
     ecs::system::Res,
-    prelude::{default, AssetServer, Assets, Commands, ResMut, Sprite, Vec2}, sprite::Anchor,
+    prelude::{default, AssetServer, Assets, ResMut, Sprite, Vec2},
+    sprite::Anchor,
 };
 use bevy_aseprite_ultra::prelude::Animation;
-use bevy_egui::egui::epaint::tessellator::Path;
 use bevy_rapier2d::{
     dynamics::{Damping, LockedAxes, RigidBody, Velocity},
     geometry::{ColliderMassProperties, Friction, Restitution},
 };
-use ron::de;
 
 use crate::{
     bundles::{Aspen2dPhysicsBundle, Aspen2dRenderBundle, CharacterBundle, WeaponBundle},
-    
     game::{
         attributes_stats::{Attributes, CharacterStatBundle, EquipmentStats},
         characters::components::CharacterMoveState,
@@ -111,7 +109,7 @@ pub fn build_item_bundles(
         match definition.item_type {
             ItemAssetType::Weapon { damage, form } => {
                 let weapon = form_weapon_bundle(
-                    &asset_server,
+                    asset_server,
                     (definition.actor.identifier.clone(), sprite_json_path),
                     definition.actor.name.clone().into(),
                     damage,

@@ -7,15 +7,13 @@ use std::collections::VecDeque;
 
 use crate::game::attributes_stats::{Damage, ElementalEffect, PhysicalDamage};
 use crate::game::characters::ai::components::ChaseScorer;
+use crate::game::characters::ai::components::{AICombatAggroConfig, AIWanderConfig};
 use crate::game::characters::player::PlayerSelectedHero;
 use crate::game::items::weapons::components::AttackDamage;
 use crate::game::items::weapons::forms::create_bullet;
-use crate::game::{
-    characters::ai::components::{AICombatAggroConfig, AIWanderConfig},
-};
 use crate::loading::assets::AspenInitHandles;
-use crate::{playing_game, register_types, AppStage};
 use crate::utilities::EntityCreator;
+use crate::{playing_game, register_types};
 
 use super::components::AIAutoShootConfig;
 
@@ -280,7 +278,7 @@ pub fn shootpatternspawner_system(
             pattern_spawner.pattern_timer.reset();
             pattern_spawner.runs += 1;
 
-            let mut bullet_spawn = spawner_pos.clone();
+            let mut bullet_spawn = *spawner_pos;
 
             match pattern_spawner.shootpattern {
                 ShootPattern::BulletsOverArc {

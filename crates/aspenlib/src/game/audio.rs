@@ -51,14 +51,7 @@ pub struct AudioPlugin;
 // This plugin is responsible to control the game audio
 impl Plugin for AudioPlugin {
     fn build(&self, app: &mut App) {
-        register_types!(
-            app,
-            [
-                ActorSoundMap,
-                ActorSoundTimers,
-                ActorSoundTimer
-            ]
-        );
+        register_types!(app, [ActorSoundMap, ActorSoundTimers, ActorSoundTimer]);
 
         // pretty sure the max sound amount is different per platform?
         app.add_event::<EventPlaySpatialSound>()
@@ -230,31 +223,23 @@ fn prepare_actor_spatial_sound(
 /// play walking sound
 fn actor_footstep_sounds(
     game_sound: Res<AudioChannel<GameSoundChannel>>,
-    mut actor_query: Query<
-        (
-            &AnimationState,
-            // &Handle<Spritesheet>,
-            &CharacterMoveState,
-            &ActorSoundMap,
-            &mut AudioEmitter,
-            &Velocity,
-            &GlobalTransform,
-        ),
-    >,
+    mut actor_query: Query<(
+        &AnimationState,
+        // &Handle<Spritesheet>,
+        &CharacterMoveState,
+        &ActorSoundMap,
+        &mut AudioEmitter,
+        &Velocity,
+        &GlobalTransform,
+    )>,
     listener: Query<&GlobalTransform, With<AudioReceiver>>,
 ) {
     let Ok(listener) = listener.get_single() else {
         return;
     };
 
-    for (
-        animator_state,
-        move_state,
-        sound_map,
-        mut spatial_emmiter,
-        _velocity,
-        transform,
-    ) in &mut actor_query
+    for (animator_state, move_state, sound_map, mut spatial_emmiter, _velocity, transform) in
+        &mut actor_query
     {
         if _velocity.angvel == 0.0 && _velocity.linvel == Vec2::ZERO
             || move_state.move_status.0 == CurrentMovement::None
@@ -271,14 +256,12 @@ fn actor_footstep_sounds(
 
         let current_frame = animator_state.current_frame();
 
-        if current_frame & 1 != 0 {
-            if spatial_emmiter.instances.is_empty() {
-                let snd = game_sound
-                    .play(footstep_handle)
-                    .with_playback_rate(1.25)
-                    .handle();
-                spatial_emmiter.instances.push(snd);
-            }
+        if current_frame & 1 != 0 && spatial_emmiter.instances.is_empty() {
+            let snd = game_sound
+                .play(footstep_handle)
+                .with_playback_rate(1.25)
+                .handle();
+            spatial_emmiter.instances.push(snd);
         }
     }
 }

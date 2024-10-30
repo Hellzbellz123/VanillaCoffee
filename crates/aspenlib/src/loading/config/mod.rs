@@ -11,7 +11,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     game::audio::{AmbienceSoundChannel, GameSoundChannel, MusicSoundChannel},
-    loading::splashscreen::MainCamera, AppStage, GameStage,
+    loading::splashscreen::MainCamera,
+    AppStage, GameStage,
 };
 
 #[cfg(feature = "develop")]
@@ -209,11 +210,7 @@ impl Default for GeneralSettings {
         Self {
             camera_zoom: 3.5,
             game_difficulty: GameDifficulty::Custom(DifficultyScales::default()),
-            enable_touch_controls: if cfg!(target_os = "android") | cfg!(target_os = "ios") {
-                true
-            } else {
-                false
-            },
+            enable_touch_controls: cfg!(target_os = "android") | cfg!(target_os = "ios"),
         }
     }
 }

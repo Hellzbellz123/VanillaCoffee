@@ -1,10 +1,10 @@
 use bevy::prelude::*;
-use bevy_rapier2d::geometry::{Collider, CollisionGroups};
+use bevy_rapier2d::geometry::CollisionGroups;
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
     bundles::{AspenColliderBundle, NeedsCollider},
-    consts::{ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX, TILE_SIZE},
+    consts::{ACTOR_PHYSICS_Z_INDEX, TILE_SIZE},
     game::{
         characters::{components::WeaponSlot, player::PlayerSelectedHero, EventSpawnCharacter},
         combat::{AttackDirection, EventRequestAttack},

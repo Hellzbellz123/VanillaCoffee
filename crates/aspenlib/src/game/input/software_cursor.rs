@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::primitives::Aabb, window::CursorGrabMode};
+use bevy::{prelude::*, render::primitives::Aabb};
 
 use crate::{
     game::{characters::player::PlayerSelectedHero, input::AspenCursorPosition},
@@ -47,7 +47,7 @@ fn cursor_grab_system(
     };
 
     if !cfg.software_cursor_enabled {
-        if window.cursor.visible == false {
+        if !window.cursor.visible {
             window.cursor.visible = true;
         }
         return;
@@ -159,14 +159,16 @@ fn update_software_cursor_image(
         });
 
     if distance.le(&cursor_data.hide_distance)
-        && game_state.as_ref().is_some_and(|f| f.get() != &GameStage::StartMenu)
+        && game_state
+            .as_ref()
+            .is_some_and(|f| f.get() != &GameStage::StartMenu)
     {
         cursor_color.color = cursor_color.color.with_alpha(cursor_data.hide_alpha);
     } else {
         cursor_color.color = cursor_color.color.with_alpha(cursor_data.show_alpha);
     };
 
-    if game_state.is_some_and(|f|f.get() != &GameStage::StartMenu ) {
+    if game_state.is_some_and(|f| f.get() != &GameStage::StartMenu) {
         // if cursor is over 'interactable actor/enemy' set TextureAtlas.index too 'HasTarget' otherwise 'NoTarget'
         cursor_data.offset = node_size.size() / 2.0;
         for (interactble_pos, interactable_aabb) in &interactables {

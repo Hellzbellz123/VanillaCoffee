@@ -53,22 +53,16 @@ pub enum GameStage {
     StartMenu,
     /// choose character
     SelectCharacter,
-    ///
+    /// game systems running
     PlayingGame,
-    ///
+    /// game systems paused
     PausedGame,
 }
 
 /// run condition that checks if controllable player should exist
 pub fn playing_game() -> impl FnMut(Option<Res<State<GameStage>>>) -> bool + Clone {
     move |current_state: Option<Res<State<GameStage>>>| match current_state {
-        Some(current_state) => {
-            if *current_state == GameStage::PlayingGame {
-                true
-            } else {
-                false
-            }
-        }
+        Some(current_state) => *current_state == GameStage::PlayingGame,
         None => false,
     }
 }
@@ -86,8 +80,6 @@ pub fn playing_game() -> impl FnMut(Option<Res<State<GameStage>>>) -> bool + Clo
 // systems should have querys with "unreachable" panics
 // handle system trigger in run condition and do 'some thing' inside system
 // panic should error "'some assumtion' failed"
-
-
 
 /// main app fn, configures app loop with logging, then
 /// then loads settings from config.toml and adds

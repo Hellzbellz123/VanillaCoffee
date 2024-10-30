@@ -28,9 +28,7 @@ bevy = { version = "*", features = [
 # this target cfg hides the rust-analyzer error.
 # cargo apk wraps the build inside NDK's toolchain which accepts the required gcc flags
 [target.'cfg(target_os = "android")'.dependencies]
-oboe = { version = "0.6.1", features = [
-  "shared-stdcxx"
-] }
+oboe = { version = "0.6.1", features = ["shared-stdcxx"] }
 # ndk-context = "0.1.1"
 # jni = { version = "0.21.1", features = ["invocation"] }
 

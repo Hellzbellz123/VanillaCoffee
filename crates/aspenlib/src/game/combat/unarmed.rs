@@ -2,14 +2,15 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    bundles::{NeedsCollider,Aspen2dPhysicsBundle, AspenColliderBundle,ProjectileBundle},
+    bundles::{Aspen2dPhysicsBundle, AspenColliderBundle, NeedsCollider, ProjectileBundle},
     consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
     game::{
         attributes_stats::{Damage, ElementalEffect, PhysicalDamage, ProjectileStats},
         characters::ai::components::AIAutoShootConfig,
         components::{ActorColliderType, TimeToLive},
     },
-    loading::assets::AspenInitHandles, AppStage,
+    loading::assets::AspenInitHandles,
+    AppStage,
 };
 
 /// handles character attacks if they have no weapons or did not use an action
@@ -94,7 +95,7 @@ pub fn delegate_unarmed_attacks(
                             ..default()
                         },
                         tag: ActorColliderType::Projectile,
-                        collider: NeedsCollider,//Collider::ball(10.0),
+                        collider: NeedsCollider, //Collider::ball(10.0),
                         collision_groups: CollisionGroups::new(
                             AspenCollisionLayer::PROJECTILE,
                             AspenCollisionLayer::WORLD | AspenCollisionLayer::ACTOR,

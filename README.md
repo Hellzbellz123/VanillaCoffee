@@ -66,11 +66,11 @@ Host Specs:
 Benchmarks:
 
 - hyperfine 'RUSTFLAGS="-Z threads=1" cargo clippy'
-  - Time (mean ± σ):     40.598 s ±  0.501 s    [User: 218.603 s, System: 25.618 s]
-  - Range (min … max):   40.094 s … 41.304 s    5 runs
+  - Time (mean ± σ): 40.598 s ± 0.501 s [User: 218.603 s, System: 25.618 s]
+  - Range (min … max): 40.094 s … 41.304 s 5 runs
 - hyperfine 'RUSTFLAGS="-Z threads=8" cargo clippy' --prepare 'cargo clean' --runs=3 --warmup=2
-  - Time (mean ± σ):     40.703 s ±  0.738 s    [User: 219.198 s, System: 26.808 s]
-  - Range (min … max):   39.491 s … 41.354 s    5 runs
+  - Time (mean ± σ): 40.703 s ± 0.738 s [User: 219.198 s, System: 26.808 s]
+  - Range (min … max): 39.491 s … 41.354 s 5 runs
 - hyperfine 'cargo clippy' --prepare 'cargo clean' --runs=3 --warmup=2
-  - Time (mean ± σ):     38.928 s ±  0.467 s    [User: 217.681 s, System: 25.882 s]
-  - Range (min … max):   38.531 s … 39.443 s    3 runs
+  - Time (mean ± σ): 38.928 s ± 0.467 s [User: 217.681 s, System: 25.882 s]
+  - Range (min … max): 38.531 s … 39.443 s 3 runs

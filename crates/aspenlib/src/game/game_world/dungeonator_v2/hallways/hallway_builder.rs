@@ -8,10 +8,7 @@ use crate::game::{
             walls::{spawn_corner_section, spawn_straight_section},
             HallWayBlueprint, HallwayLayer,
         },
-        tile_graph::{
-            r#impl::{output_graph_dot, output_graph_image},
-            TileGraph, TileGraphEdge, TileType,
-        },
+        tile_graph::{TileGraph, TileGraphEdge, TileType},
         GeneratorState,
     },
 };

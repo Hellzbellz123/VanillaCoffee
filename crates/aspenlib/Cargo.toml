@@ -86,7 +86,7 @@ bevy = { path = "../../deps/bevy", default-features = false, features = [
 # seldom_map_nav = { path = "../../deps/seldom_map_nav", features = ["bevy"] }
 big-brain = { path = "../../deps/big_brain" }
 # bevy_asepritesheet = { path = "../../deps/bevy_asepritesheet" }
-bevy_aseprite_ultra = {path = "../../deps/bevy_aseprite_ultra"}
+bevy_aseprite_ultra = { path = "../../deps/bevy_aseprite_ultra" }
 bevy_console = { path = "../../deps/bevy_console" }
 bevy_framepace = { path = "../../deps/bevy_framepace" }
 bevy_touch_stick = { path = "../../deps/bevy_touch_stick" }

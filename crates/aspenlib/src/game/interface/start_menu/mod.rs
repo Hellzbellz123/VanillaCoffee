@@ -1,10 +1,12 @@
 use crate::{
     game::interface::{
-            random_color,
-            settings_menu::SettingsMenuToggleButton,
-            ui_widgets::{spawn_button, spawn_menu_title},
-            InterfaceRootTag,
-        }, loading::assets::AspenInitHandles, AppStage, GameStage
+        random_color,
+        settings_menu::SettingsMenuToggleButton,
+        ui_widgets::{spawn_button, spawn_menu_title},
+        InterfaceRootTag,
+    },
+    loading::assets::AspenInitHandles,
+    AppStage, GameStage,
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -31,7 +33,6 @@ impl Plugin for StartMenuPlugin {
 #[derive(Component)]
 pub struct StartMenuTag;
 
-
 // TODO: maybe use this comment structure elsewhere?
 // button tags
 //---------------------------------------------------------//
@@ -43,13 +44,13 @@ pub struct StartGameTag;
 #[derive(Debug, Component)]
 pub struct ExitGameTag;
 
-/// marks load game button for query
-#[derive(Debug, Component)]
-pub struct LoadGameTag;
+// /// marks load game button for query
+// #[derive(Debug, Component)]
+// pub struct LoadGameTag;
 
-/// marks save game button for query
-#[derive(Debug, Component)]
-pub struct SaveGameTag;
+// /// marks save game button for query
+// #[derive(Debug, Component)]
+// pub struct SaveGameTag;
 
 //------------------------------------------------------------//
 
@@ -61,10 +62,10 @@ fn show_start_menu(
     let Ok(mut start_menu_style) = start_menu_query.get_single_mut() else {
         return;
     };
-    let Some(state) = game_state else { 
+    let Some(state) = game_state else {
         start_menu_style.display = Display::None;
-        return
-     };
+        return;
+    };
     if state.get() == &GameStage::StartMenu {
         start_menu_style.display = Display::Flex;
     } else {

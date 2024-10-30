@@ -167,11 +167,7 @@ pub fn create_actor_registry(
 ) {
     let mut registry = ActorRegistry::default();
 
-    build_item_bundles(
-        weapon_definition,
-        &asset_server,
-        &mut registry.items,
-    );
+    build_item_bundles(weapon_definition, &asset_server, &mut registry.items);
 
     build_character_bundles(
         character_definitions,
@@ -180,7 +176,6 @@ pub fn create_actor_registry(
     );
 
     cmds.insert_resource(registry);
-
 
     // TODO: if all collections exist and actor registry is finished, continue on too starting,
     // else pass too appfail with reason for failure

@@ -3,14 +3,16 @@ use bevy_rapier2d::{pipeline::CollisionEvent, prelude::Velocity};
 
 use crate::{
     game::{
-        attributes_stats::EquipmentStats, characters::player::PlayerSelectedHero, items::weapons::{
+        attributes_stats::EquipmentStats,
+        characters::player::PlayerSelectedHero,
+        items::weapons::{
             components::{
-                AttackDamage, WeaponAmmoCount, CurrentlyDrawnWeapon, WeaponCarrier, WeaponDescriptor,
-                WeaponHolder, WeaponTimers,
+                AttackDamage, CurrentlyDrawnWeapon, WeaponAmmoCount, WeaponCarrier,
+                WeaponDescriptor, WeaponHolder, WeaponTimers,
             },
             forms::GunShootEvent,
             hit_detection::projectile_hits,
-        }
+        },
     },
     loading::registry::RegistryIdentifier,
     register_types, AppStage,
@@ -167,7 +169,11 @@ fn equipped_weapon_positioning(
     mut weapon_query: Query<
         // all weapons equipped too entity
         (&mut Transform, &mut Velocity),
-        (With<WeaponHolder>, Without<WeaponCarrier>, Without<PlayerSelectedHero>),
+        (
+            With<WeaponHolder>,
+            Without<WeaponCarrier>,
+            Without<PlayerSelectedHero>,
+        ),
     >,
 ) {
     for character in &characters {

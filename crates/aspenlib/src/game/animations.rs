@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::{Animation, AnimationRepeat, Aseprite};
 use bevy_rapier2d::prelude::Velocity;
@@ -24,8 +22,8 @@ pub struct CharacterAnimations;
 impl GunAnimations {
     /// gun still movement
     pub const IDLE: &str = "idle";
-    /// gun vibrate with movement anim
-    pub const WIGGLE: &str = "wiggle";
+    // /// gun vibrate with movement anim
+    // pub const WIGGLE: &str = "wiggle";
     /// gun fire animation index
     pub const FIRE: &str = "fire";
     /// gun reload animation index
@@ -118,7 +116,7 @@ fn handle_animation_changes(
         if animator.tag.is_some() {
             continue;
         } else {
-            animator.tag = Some("idle".to_string())
+            animator.tag = Some("idle".to_string());
         }
     }
 
@@ -134,12 +132,12 @@ fn handle_animation_changes(
                 .get(aseprite_handle)
                 .expect("sprite sheet should exist for this actor");
 
-            if !aseprite_file.tags.contains_key(&tag.to_string()) {
+            if !aseprite_file.tags.contains_key(&(*tag).to_string()) {
                 warn!("animation id does not exist in spritesheet");
                 continue;
             }
 
-            animator.tag = Some(tag.to_string());
+            animator.tag = Some((*tag).to_string());
         } else if event.anim_handle.len() > 1 {
             animator.clear_queue();
             animator.tag = None;
@@ -151,7 +149,7 @@ fn handle_animation_changes(
                 .enumerate()
                 .for_each(|(_idx, tag)| {
                     animator.queue.push_back((
-                        tag.to_string(),
+                        (*tag).to_string(),
                         if _idx == event.anim_handle.len() - 1 {
                             AnimationRepeat::Loop
                         } else {
@@ -172,10 +170,10 @@ pub struct EventAnimationChange {
     pub actor: Entity,
 }
 
-// TODO: use this
-pub struct ActorAnimation {
-    tag: String,
-    speed: f32,
-    repeat: AnimationRepeat,
-    queue: VecDeque<ActorAnimation>,
-}
+// TODO: use this for animation system
+// pub struct ActorAnimation {
+//     tag: String,
+//     speed: f32,
+//     repeat: AnimationRepeat,
+//     queue: VecDeque<ActorAnimation>,
+// }

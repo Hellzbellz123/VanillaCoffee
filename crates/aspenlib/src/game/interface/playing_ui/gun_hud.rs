@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::game::{
     characters::{components::WeaponSlot, player::PlayerSelectedHero},
-    items::weapons::components::{WeaponAmmoCount, CurrentlyDrawnWeapon, WeaponCarrier},
+    items::weapons::components::{CurrentlyDrawnWeapon, WeaponAmmoCount, WeaponCarrier},
 };
 
 /// creates player weapon information display
@@ -191,7 +191,7 @@ pub fn gunhud_visibility_system(
     let all_slots_empty = player_slots
         .weapon_slots
         .values()
-        .all(|value| value.is_none());
+        .all(std::option::Option::is_none);
 
     if all_slots_empty || player_slots.drawn_slot.is_none() && !all_slots_empty {
         gunhud_style.display = Display::None;

@@ -236,7 +236,10 @@ fn handle_teleport_events(
                     "moving player this many: {}",
                     target_tile_transform.translation()
                 );
-                target_transform.translation = target_tile_transform.translation().truncate().extend(ACTOR_Z_INDEX);
+                target_transform.translation = target_tile_transform
+                    .translation()
+                    .truncate()
+                    .extend(ACTOR_Z_INDEX);
                 move_state.teleport_status = TeleportStatus::Teleporting;
             }
             TpTriggerEffect::Global(pos) => {

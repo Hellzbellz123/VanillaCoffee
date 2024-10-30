@@ -4,12 +4,8 @@ use bevy_rapier2d::prelude::Collider;
 use crate::{
     bundles::NeedsCollider,
     game::components::{ActorColliderType, TimeToLive},
-    loading::{
-        custom_assets::actor_definitions::{CharacterDefinition, ItemDefinition},
-        registry::RegistryIdentifier,
-    },
     playing_game, register_types,
-    utilities::{scale_to_fit, EntityCreator},
+    utilities::EntityCreator,
 };
 
 /// animation functionality
@@ -79,14 +75,7 @@ impl Plugin for AspenHallsPlugin {
                 interface::InterfacePlugin,
                 animations::AnimationsPlugin,
             ))
-            .add_systems(
-                Update,
-                ((
-                    // update_actor_size,
-                    time_to_live
-                )
-                    .run_if(playing_game()),),
-            )
+            .add_systems(Update, time_to_live.run_if(playing_game()))
             .add_systems(
                 PreUpdate,
                 add_aabb_based_colliders.run_if(any_with_component::<NeedsCollider>),
@@ -135,46 +124,5 @@ fn add_aabb_based_colliders(
         cmds.entity(needs_collider)
             .remove::<NeedsCollider>()
             .insert(collider);
-    }
-}
-
-/// modifys all actors in game such that the actors image asset is rendered relative too pixel size
-fn update_actor_size(
-    mut query: Query<(&mut Sprite, &TextureAtlas, &RegistryIdentifier)>,
-    texture_atlasses: Res<Assets<TextureAtlasLayout>>,
-    obje_assets: Res<Assets<ItemDefinition>>,
-    char_assets: Res<Assets<CharacterDefinition>>,
-) {
-    for (mut sprite, texture_atlas, registry_identifier) in &mut query {
-        if sprite.custom_size.is_some() {
-            continue;
-        }
-
-        let Some(atlas) = texture_atlasses.get(texture_atlas.layout.id()) else {
-            error!("texture atlas layout for this spritesheet is missing");
-            continue;
-        };
-        let original_size = atlas.textures.first().expect("no textures in atlas").size();
-
-        let final_size: Vec2 = {
-            let maybe_characer = char_assets
-                .iter()
-                .find(|(_, asset)| asset.actor.identifier == *registry_identifier);
-            let maybe_item = obje_assets
-                .iter()
-                .find(|(_, asset)| asset.actor.identifier == *registry_identifier);
-
-            if let Some((_, def)) = maybe_characer {
-                Vec2::splat(def.actor.tile_size)
-            } else if let Some((_, def)) = maybe_item {
-                Vec2::splat(def.actor.tile_size)
-            } else {
-                warn!("character has no asset");
-                continue;
-            }
-        };
-
-        let new_custom_size = scale_to_fit(original_size.as_vec2(), final_size);
-        sprite.custom_size = Some(new_custom_size);
     }
 }

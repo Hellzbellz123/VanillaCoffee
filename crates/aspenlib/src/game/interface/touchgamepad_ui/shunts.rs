@@ -100,10 +100,11 @@ pub fn touch_trigger_sprint(
 ) {
     let Some(stick_ui) = sticks
         .iter()
-        .find(|f| f.id == TouchStickBinding::MoveTouchInput) else {
-            warn!("no touchstick available");
-            return;
-        };
+        .find(|f| f.id == TouchStickBinding::MoveTouchInput)
+    else {
+        warn!("no touchstick available");
+        return;
+    };
 
     let magnitude = stick_ui.value.length();
 
@@ -120,10 +121,11 @@ pub fn touch_trigger_attack(
 ) {
     let Some(stick_ui) = sticks
         .iter()
-        .find(|f| f.id == TouchStickBinding::LookTouchInput) else {
-            warn!("no look touchstick");
-            return;
-        };
+        .find(|f| f.id == TouchStickBinding::LookTouchInput)
+    else {
+        warn!("no look touchstick");
+        return;
+    };
 
     let magnitude = stick_ui.value.length();
 

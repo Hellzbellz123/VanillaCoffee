@@ -3,10 +3,11 @@ use bevy::{
     log::{error, info},
     math::Vec2,
     prelude::{
-        default, in_state, on_event, Assets, Commands, DespawnRecursiveExt, Entity, EventReader, GlobalTransform, IntoSystemConfigs, Main, OnEnter, OnExit, OrthographicProjection, Parent, Plugin, Query, SpatialBundle, Transform, Update, With, Without
+        in_state, on_event, Assets, Commands, DespawnRecursiveExt, Entity, EventReader,
+        GlobalTransform, IntoSystemConfigs, OnEnter, OrthographicProjection, Parent, Plugin, Query,
+        SpatialBundle, Transform, Update, With, Without,
     },
 };
-use bevy_aseprite_ultra::prelude::AsepriteAnimationBundle;
 use bevy_ecs_ldtk::{
     prelude::{LdtkExternalLevel, LevelEvent, LevelSet},
     LevelIid, LevelSelection,
@@ -19,7 +20,6 @@ use bevy_rapier2d::prelude::CollisionEvent;
 use log::warn;
 
 use crate::{
-    bundles::{Aspen2dRenderBundle, CharacterBundle},
     consts::ACTOR_Z_INDEX,
     game::{
         characters::{
@@ -171,7 +171,7 @@ fn populate_hero_spots(
         let new_spot = hero_spots_iter.next();
         if let Some(new_spot) = new_spot {
             warn!("moving existing hero too unoccupied hero spot");
-            position.translation = new_spot.translation().truncate().extend(ACTOR_Z_INDEX)
+            position.translation = new_spot.translation().truncate().extend(ACTOR_Z_INDEX);
         } else {
             warn!("no empty hero spot was found");
         }
@@ -207,7 +207,7 @@ fn despawn_hideout(
     weapons: Query<Entity, (With<AttackDamage>, Without<Parent>)>,
     hideout: Query<(Entity, &LevelSet), With<HideoutTag>>,
 ) {
-    for ((hideout, levelset)) in &hideout {
+    for (hideout, levelset) in &hideout {
         commands.entity(hideout).despawn_recursive();
     }
 

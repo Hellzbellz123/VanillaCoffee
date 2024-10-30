@@ -28,12 +28,12 @@ pub struct EventSpawnBoss {
 /// boss spawn function
 pub mod utils {
     use bevy::prelude::*;
-    use bevy_aseprite_ultra::prelude::AsepriteAnimationBundle;
+
     use bevy_rapier2d::geometry::CollisionGroups;
 
     use crate::{
         bundles::{AspenColliderBundle, NeedsCollider},
-        consts::{ AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
+        consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
         game::{
             characters::boss::EventSpawnBoss, components::ActorColliderType,
             game_world::components::CharacterSpawner,

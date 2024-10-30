@@ -28,7 +28,10 @@ impl Plugin for TouchInputUIPlugin {
         app.add_plugins(TouchStickPlugin::<TouchStickBinding>::default());
         // TODO: handle menus properly. despawn touch controls when exiting PlayingGame
         app.add_systems(OnEnter(AppStage::Starting), spawn_touch_gamepad);
-        app.add_systems(Update, handle_touch_controls_visibility.run_if(any_with_component::<TouchControlsRoot>));
+        app.add_systems(
+            Update,
+            handle_touch_controls_visibility.run_if(any_with_component::<TouchControlsRoot>),
+        );
         app.add_systems(
             PreUpdate,
             (
@@ -133,17 +136,17 @@ fn handle_touch_controls_visibility(
         if cfg.enable_touch_controls {
             match gamestate.get() {
                 GameStage::PlayingGame => {
-                    touch_root_style.display = Display::Flex
+                    touch_root_style.display = Display::Flex;
                 }
                 _ => {
-                    touch_root_style.display = Display::None
+                    touch_root_style.display = Display::None;
                 }
             }
         } else {
             touch_root_style.display = Display::None;
         }
     } else {
-        touch_root_style.display = Display::None
+        touch_root_style.display = Display::None;
     }
 }
 
@@ -531,7 +534,7 @@ fn spawn_touchstick<
                 TouchStickUiKnob,
                 ImageBundle {
                     image: UiImage {
-                        texture: images.0.clone().into(),
+                        texture: images.0.clone(),
                         color: crate::colors::ORANGE.with_alpha(0.3).into(),
                         ..default()
                     },
@@ -552,7 +555,7 @@ fn spawn_touchstick<
                 TouchStickUiOutline,
                 ImageBundle {
                     image: UiImage {
-                        texture: images.1.clone().into(),
+                        texture: images.1.clone(),
                         color: crate::colors::ORANGE.with_alpha(0.3).into(),
                         ..default()
                     },

@@ -72,7 +72,7 @@ bevy_a11y = { path = "deps/bevy/crates/bevy_a11y" }
 bevy_app = { path = "deps/bevy/crates/bevy_app" }
 bevy_asset = { path = "deps/bevy/crates/bevy_asset" }
 bevy_audio = { path = "deps/bevy/crates/bevy_audio" }
-bevy_color = {path = "deps/bevy/crates/bevy_color"}
+bevy_color = { path = "deps/bevy/crates/bevy_color" }
 bevy_core = { path = "deps/bevy/crates/bevy_core" }
 bevy_core_pipeline = { path = "deps/bevy/crates/bevy_core_pipeline" }
 bevy_derive = { path = "deps/bevy/crates/bevy_derive" }
@@ -99,7 +99,7 @@ bevy_render = { path = "deps/bevy/crates/bevy_render" }
 bevy_scene = { path = "deps/bevy/crates/bevy_scene" }
 bevy_sprite = { path = "deps/bevy/crates/bevy_sprite" }
 bevy_tasks = { path = "deps/bevy/crates/bevy_tasks" }
-bevy_state = {path = "deps/bevy/crates/bevy_state"}
+bevy_state = { path = "deps/bevy/crates/bevy_state" }
 bevy_text = { path = "deps/bevy/crates/bevy_text" }
 bevy_time = { path = "deps/bevy/crates/bevy_time" }
 bevy_transform = { path = "deps/bevy/crates/bevy_transform" }

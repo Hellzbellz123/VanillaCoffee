@@ -1,13 +1,9 @@
 use bevy::prelude::*;
-use bevy_aseprite_ultra::{
-    prelude::{Animation, AsepriteAnimationBundle},
-    NotLoaded,
-};
-use bevy_rapier2d::geometry::{Collider, CollisionGroups};
+use bevy_rapier2d::geometry::CollisionGroups;
 use rand::{thread_rng, Rng};
 
 use crate::{
-    bundles::{Aspen2dRenderBundle, AspenColliderBundle, NeedsCollider},
+    bundles::{AspenColliderBundle, NeedsCollider},
     consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
     game::components::ActorColliderType,
     loading::{
@@ -24,7 +20,7 @@ pub fn spawn_weapon(
     spawn_position: Vec2,
     commands: &mut Commands,
 ) {
-    let (_, item_def) = item_assets
+    let (_, _item_def) = item_assets
         .iter()
         .find(|(_, asset)| asset.actor.identifier == spawn_data.0)
         .expect("Spawned characters asset definition did not exist");
@@ -57,7 +53,7 @@ pub fn spawn_weapon(
                 child.spawn(AspenColliderBundle {
                     tag: ActorColliderType::Item,
                     name: Name::new(collider_name),
-                    collider: NeedsCollider, 
+                    collider: NeedsCollider,
                     collision_groups: CollisionGroups::new(
                         AspenCollisionLayer::ACTOR,
                         AspenCollisionLayer::EVERYTHING,

@@ -4,10 +4,13 @@ use crate::game::{
         components::CharacterType,
         player::PlayerSelectedHero,
     },
-    game_world::{dungeonator_v2::{
-        components::{BossState, RoomBlueprint},
-        GeneratorState,
-    }, RegenReason, RegenerateDungeonEvent},
+    game_world::{
+        dungeonator_v2::{
+            components::{BossState, RoomBlueprint},
+            GeneratorState,
+        },
+        RegenReason, RegenerateDungeonEvent,
+    },
     progress::ProgressManager,
 };
 use bevy::prelude::*;
@@ -56,7 +59,7 @@ pub fn update_boss_state(
         .iter()
         .find(|(_, _, character_type)| **character_type == CharacterType::Boss);
 
-    if 
+    if
     // actor_query
     //     .iter()
     //     .filter(|f| {
@@ -65,12 +68,14 @@ pub fn update_boss_state(
     //             || *f.2 == CharacterType::MiniBoss
     //     }).next()
     //     .is_none()
-    //     && 
-        *generator_state.get() == GeneratorState::FinishedDungeonGen
+    //     &&
+    *generator_state.get() == GeneratorState::FinishedDungeonGen
         && progress_manager.current.boss_state == BossState::Defeated
     {
         progress_manager.current.boss_state = BossState::UnSpawned;
-        regen_event.send(RegenerateDungeonEvent { reason: RegenReason::BossDefeat });
+        regen_event.send(RegenerateDungeonEvent {
+            reason: RegenReason::BossDefeat,
+        });
         return;
     }
 
@@ -104,7 +109,7 @@ pub fn update_boss_state(
             {
                 progress_manager.current.boss_state = BossState::Engaged;
             } else if progress_manager.current.boss_state == BossState::UnSpawned {
-                progress_manager.current.boss_state = BossState::Idle
+                progress_manager.current.boss_state = BossState::Idle;
             }
         }
         None => {

@@ -24,7 +24,7 @@ args = [
   "build",
   "--release",
   "--package=aspen_halls_mobile",
-  "--features=develop",
+  # "--features=develop",
 ]
 
 [tasks.clean-old-artifacts]
@@ -32,5 +32,3 @@ private = true
 workspace = false
 script_runner = "@shell"
 script.main = "rm -rf ../../package/AspenHalls.apk"
-
-

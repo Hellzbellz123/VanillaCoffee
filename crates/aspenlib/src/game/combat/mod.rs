@@ -13,9 +13,11 @@ use crate::{
         items::weapons::{
             components::{WeaponDescriptor, WeaponHolder},
             EventAttackWeapon,
-        }, progress::CurrentRunInformation,
+        },
+        progress::CurrentRunInformation,
     },
-    utilities::EntityCreator, AppStage,
+    utilities::EntityCreator,
+    AppStage,
 };
 
 /// handles attacks from characters without weapons

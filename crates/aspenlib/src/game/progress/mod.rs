@@ -15,10 +15,17 @@ pub struct GameProgressPlugin;
 
 impl Plugin for GameProgressPlugin {
     fn build(&self, app: &mut App) {
-        register_types!(app, [ProgressManager, CurrentRunInformation, PlayerSaveInformation]);
+        register_types!(
+            app,
+            [
+                ProgressManager,
+                CurrentRunInformation,
+                PlayerSaveInformation
+            ]
+        );
 
         app.insert_resource(CurrentRunInformation::default())
-        .insert_resource(PlayerSaveInformation::default());
+            .insert_resource(PlayerSaveInformation::default());
 
         app.add_systems(OnExit(AppStage::Loading), spawn_progress_manager);
         app.add_systems(
