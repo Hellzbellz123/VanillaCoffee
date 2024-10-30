@@ -101,6 +101,7 @@ pub mod debug_plugin {
             ))
             // add other debug plugins
             .add_plugins((
+                #[cfg(debug_assertions)]
                 RapierDebugRenderPlugin::default(),
                 FrameTimeDiagnosticsPlugin,
                 LogDiagnosticsPlugin {
