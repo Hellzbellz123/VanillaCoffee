@@ -1,7 +1,6 @@
 use std::fmt::Debug;
 
 use bevy::{asset::ReflectAsset, prelude::*};
-use bevy_asepritesheet::core::AsepritesheetPlugin;
 use bevy_common_assets::{ron::RonAssetPlugin, toml::TomlAssetPlugin};
 
 use crate::{
@@ -12,6 +11,8 @@ use crate::{
     },
     loading::registry::RegistryIdentifier,
 };
+
+// use bevy_asepritesheet::core::AsepritesheetPlugin;
 
 /// plugin for actor asset definitions
 pub struct ActorAssetPlugin;
@@ -29,7 +30,11 @@ impl Plugin for ActorAssetPlugin {
                 TomlAssetPlugin::<ItemDefinition>::new(&["weapon.toml"]),
                 RonAssetPlugin::<ItemDefinition>::new(&["weapon.ron"]),
                 // actor sprite sheet data
-                AsepritesheetPlugin::new(&["sprite.json"]),
+                // AsepritesheetPlugin::new(&["sprite.json"]),
+                bevy_aseprite_ultra::BevySprityPlugin
+                // bevy_aseprite_ultra::BevyAsepriteUltraPlugin {
+                //     max_atlas_size: UVec2::splat(8192),
+                // }
             ));
     }
 }
@@ -50,6 +55,10 @@ pub struct CharacterDefinition {
     pub actor: ActorData,
 }
 
+// TODO: resource for actor specific audio file handles?
+// insert key too overide default audio handle from game
+// load said files from actor folder
+
 /// item actor asset definition
 #[derive(Debug, Asset, Reflect, serde::Deserialize, serde::Serialize)]
 #[reflect(Asset)]
@@ -69,10 +78,10 @@ pub struct ActorData {
     pub identifier: RegistryIdentifier,
     /// path too aseprite containing animations and images
     pub aseprite_path: String,
-    /// optional custom scale for weapon
-    pub pixel_size: Vec2,
     /// npc stats
     pub stats: Attributes,
+    /// optional custom scale for weapon
+    pub tile_size: f32,
 }
 
 /// information used too decide assets function
@@ -178,7 +187,7 @@ pub fn write_weapon_def(def: Option<ItemDefinition>) {
             name: "ExampleWeapon".to_owned(),
             identifier: RegistryIdentifier("exampleweapon".to_owned()),
             aseprite_path: "sprite_sheet.png".to_owned(),
-            pixel_size: Vec2 { x: 32.0, y: 32.0 },
+            tile_size: 32.0,
             stats: Attributes::WEAPON_DEFAULT,
         },
     });
@@ -198,7 +207,7 @@ pub fn write_character_def(def: Option<CharacterDefinition>) {
             name: "ExampleNpc".to_owned(),
             identifier: RegistryIdentifier("examplenpc".to_owned()),
             aseprite_path: "sprite_sheet.png".to_owned(),
-            pixel_size: Vec2 { x: 32.0, y: 32.0 },
+            tile_size: 32.0,
             stats: Attributes::CREEP_DEFAULT,
         },
     });

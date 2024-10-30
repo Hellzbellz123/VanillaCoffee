@@ -1,4 +1,5 @@
 #![feature(let_chains)]
+#![feature(trivial_bounds)]
 #![doc = r"
 AspenHalls, My video game.
 A Dungeon Crawler in the vibes of 'Into The Gungeon' or 'Soul-knight'
@@ -78,6 +79,15 @@ pub fn playing_game() -> impl FnMut(Option<Res<State<GameStage>>>) -> bool + Clo
 // add a system that takes these definitions and then adds them too the game, items that should ONLY be spawned OR placed in game
 // world WILL NOT have a [LOOT] component/tag listed in the definitions, Items that should be obtainable in a play through should
 // have the [Loot] component/tag and should be added too a "leveled list" (skyrim) like system
+
+// TODO: use standard system ordering across lib.
+// document all cases for why non standard
+// run system based on conditions
+// systems should have querys with "unreachable" panics
+// handle system trigger in run condition and do 'some thing' inside system
+// panic should error "'some assumtion' failed"
+
+
 
 /// main app fn, configures app loop with logging, then
 /// then loads settings from config.toml and adds

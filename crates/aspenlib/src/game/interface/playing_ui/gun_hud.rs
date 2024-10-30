@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::game::{
     characters::{components::WeaponSlot, player::PlayerSelectedHero},
-    items::weapons::components::{CurrentAmmo, CurrentlyDrawnWeapon, WeaponCarrier},
+    items::weapons::components::{WeaponAmmoCount, CurrentlyDrawnWeapon, WeaponCarrier},
 };
 
 /// creates player weapon information display
@@ -237,12 +237,12 @@ pub fn update_ui_ammo_slots(
 pub fn update_ui_ammo_counter(
     mut ammo_bar_query: Query<(&mut Style, &mut PlayerAmmoBar)>,
     player_query: Query<&WeaponCarrier, With<PlayerSelectedHero>>,
-    weapon_query: Query<&CurrentAmmo, With<CurrentlyDrawnWeapon>>,
+    weapon_query: Query<&WeaponAmmoCount, With<CurrentlyDrawnWeapon>>,
 ) {
     let Ok(player) = player_query.get_single() else {
         return;
     };
-    let ammo_counts: Option<&CurrentAmmo> = {
+    let ammo_counts: Option<&WeaponAmmoCount> = {
         let Some(slot) = player.drawn_slot else {
             return;
         };

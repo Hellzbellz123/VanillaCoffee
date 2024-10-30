@@ -258,7 +258,7 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
                 cfg_file.log_filter.unwrap_or_default()
             },
             level: bevy::log::Level::TRACE,
-            custom_layer: |_| None,
+            custom_layer: bevy_console::make_layer,
         },
         AssetPlugin {
             file_path: "assets".to_string(),

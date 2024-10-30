@@ -28,11 +28,12 @@ pub struct EventSpawnBoss {
 /// boss spawn function
 pub mod utils {
     use bevy::prelude::*;
+    use bevy_aseprite_ultra::prelude::AsepriteAnimationBundle;
     use bevy_rapier2d::geometry::CollisionGroups;
 
     use crate::{
-        bundles::ActorColliderBundle,
-        consts::{actor_collider, AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
+        bundles::{AspenColliderBundle, NeedsCollider},
+        consts::{ AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
         game::{
             characters::boss::EventSpawnBoss, components::ActorColliderType,
             game_world::components::CharacterSpawner,
@@ -56,8 +57,7 @@ pub mod utils {
                 .find(|(_, asset)| asset.actor.identifier == spawn_event.actor_id)
                 .expect("Spawned characters asset definition did not exist");
 
-            let Some(mut character) = registry.characters.get_character(&spawn_event.actor_id)
-            else {
+            let Some(character) = registry.characters.get_character(&spawn_event.actor_id) else {
                 error!(
                     "could not get CharacterBundle from character registry: {:?}",
                     spawn_event.actor_id
@@ -65,41 +65,45 @@ pub mod utils {
                 return;
             };
 
-            character.aseprite.sprite_bundle.transform =
-                Transform::from_translation(spawn_event.position.extend(ACTOR_Z_INDEX));
-
-            commands.spawn(character.clone()).with_children(|child| {
-                let collider_name = format!("{}Collider", character.name.clone().as_str());
-                let spawned_enemy = child
-                    .spawn((
-                        EntityCreator(child.parent_entity()),
-                        ActorColliderBundle {
-                            tag: ActorColliderType::Character,
-                            name: Name::new(collider_name),
-                            transform_bundle: TransformBundle {
-                                local: (Transform {
-                                    translation: (Vec3 {
-                                        x: 0.0,
-                                        y: 0.0,
-                                        z: ACTOR_PHYSICS_Z_INDEX,
+            commands
+                .spawn((
+                    character.clone(),
+                    SpatialBundle::from_transform(Transform::from_translation(
+                        spawn_event.position.extend(ACTOR_Z_INDEX),
+                    )),
+                ))
+                .with_children(|child| {
+                    let collider_name = format!("{}Collider", character.name.clone().as_str());
+                    let spawned_enemy = child
+                        .spawn((
+                            EntityCreator(child.parent_entity()),
+                            AspenColliderBundle {
+                                tag: ActorColliderType::Character,
+                                name: Name::new(collider_name),
+                                transform_bundle: TransformBundle {
+                                    local: (Transform {
+                                        translation: (Vec3 {
+                                            x: 0.0,
+                                            y: 0.0,
+                                            z: ACTOR_PHYSICS_Z_INDEX,
+                                        }),
+                                        ..default()
                                     }),
                                     ..default()
-                                }),
-                                ..default()
+                                },
+                                collider: NeedsCollider,
+                                collision_groups: CollisionGroups {
+                                    memberships: AspenCollisionLayer::ACTOR,
+                                    filters: AspenCollisionLayer::EVERYTHING,
+                                },
                             },
-                            collider: actor_collider(char_def.actor.pixel_size),
-                            collision_groups: CollisionGroups {
-                                memberships: AspenCollisionLayer::ACTOR,
-                                filters: AspenCollisionLayer::EVERYTHING,
-                            },
-                        },
-                    ))
-                    .id();
+                        ))
+                        .id();
 
-                if let Ok(mut spawner_state) = spawners.get_mut(spawn_event.spawner) {
-                    spawner_state.spawned_characters.push(spawned_enemy);
-                }
-            });
+                    if let Ok(mut spawner_state) = spawners.get_mut(spawn_event.spawner) {
+                        spawner_state.spawned_characters.push(spawned_enemy);
+                    }
+                });
         }
     }
 }

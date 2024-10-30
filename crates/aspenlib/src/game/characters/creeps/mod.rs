@@ -28,11 +28,12 @@ pub struct EventSpawnCreep {
 /// creep spawn function
 pub mod utils {
     use bevy::prelude::*;
+
     use bevy_rapier2d::geometry::CollisionGroups;
 
     use crate::{
-        bundles::ActorColliderBundle,
-        consts::{actor_collider, AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
+        bundles::{AspenColliderBundle, NeedsCollider},
+        consts::{ AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
         game::{
             characters::creeps::EventSpawnCreep, components::ActorColliderType,
             game_world::components::CharacterSpawner,
@@ -56,8 +57,7 @@ pub mod utils {
                 .find(|(_, asset)| asset.actor.identifier == spawn_event.actor_id)
                 .expect("Spawned characters asset definition did not exist");
 
-            let Some(mut character) = registry.characters.get_character(&spawn_event.actor_id)
-            else {
+            let Some(character) = registry.characters.get_character(&spawn_event.actor_id) else {
                 error!(
                     "could not get CharacterBundle from character registry: {:?}",
                     spawn_event.actor_id
@@ -65,16 +65,17 @@ pub mod utils {
                 return;
             };
 
-            character.aseprite.sprite_bundle.transform =
-                Transform::from_translation(spawn_event.position.extend(ACTOR_Z_INDEX));
-
             let spawned_enemy = cmds
-                .spawn(character.clone())
+                .spawn((
+                    character.clone(),
+                    SpatialBundle::from_transform(Transform::from_translation(
+                        spawn_event.position.extend(ACTOR_Z_INDEX),
+                    )),
+                ))
                 .with_children(|child| {
-                    let collider_name = format!("{}Collider", character.name.clone().as_str());
-                    child.spawn(ActorColliderBundle {
+                    child.spawn(AspenColliderBundle {
                         tag: ActorColliderType::Character,
-                        name: Name::new(collider_name),
+                        name: Name::new(format!("{}Collider", character.name.clone().as_str())),
                         transform_bundle: TransformBundle {
                             local: (Transform {
                                 translation: (Vec3 {
@@ -86,7 +87,7 @@ pub mod utils {
                             }),
                             ..default()
                         },
-                        collider: actor_collider(char_def.actor.pixel_size),
+                        collider: NeedsCollider,
                         collision_groups: CollisionGroups {
                             memberships: AspenCollisionLayer::ACTOR,
                             filters: AspenCollisionLayer::EVERYTHING,

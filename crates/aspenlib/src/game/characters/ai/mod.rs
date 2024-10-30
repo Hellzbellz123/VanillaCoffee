@@ -97,7 +97,7 @@ fn insert_stupid_ai(commands: &mut Commands<'_, '_>, character: Entity, pos: &Gl
             chase_start: 6,
             chase_end: 13,
             shoot_range: 8,
-            personal_space: 3,
+            personal_space: 2,
             runaway_hp: 20.0,
         },
         wander_config: AIWanderConfig {

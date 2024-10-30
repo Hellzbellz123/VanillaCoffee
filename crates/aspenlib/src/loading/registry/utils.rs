@@ -3,56 +3,44 @@ use std::path::PathBuf;
 use bevy::{
     core::Name,
     ecs::system::Res,
-    log::info,
-    prelude::{default, AssetServer, Assets, Commands},
+    prelude::{default, AssetServer, Assets, Commands, ResMut, Sprite, Vec2}, sprite::Anchor,
 };
-use bevy_asepritesheet::{
-    animator::AnimatedSpriteBundle,
-    prelude::{load_spritesheet_then, AnimHandle, SpriteAnimator},
-};
+use bevy_aseprite_ultra::prelude::Animation;
+use bevy_egui::egui::epaint::tessellator::Path;
 use bevy_rapier2d::{
     dynamics::{Damping, LockedAxes, RigidBody, Velocity},
     geometry::{ColliderMassProperties, Friction, Restitution},
 };
+use ron::de;
 
 use crate::{
-    bundles::{CharacterBundle, RigidBodyBundle, WeaponBundle},
+    bundles::{Aspen2dPhysicsBundle, Aspen2dRenderBundle, CharacterBundle, WeaponBundle},
+    
     game::{
         attributes_stats::{Attributes, CharacterStatBundle, EquipmentStats},
-        characters::{components::CharacterMoveState, utils::format_character_animations},
-        items::weapons::{
-            components::{AttackDamage, WeaponDescriptor, WeaponHolder},
-            forms::format_gun_animations,
-        },
+        characters::components::CharacterMoveState,
+        items::weapons::components::{AttackDamage, WeaponDescriptor, WeaponHolder},
     },
     loading::{
         custom_assets::actor_definitions::{CharacterAssetType, ItemAssetType},
-        registry::{CharacterDefinition, ItemDefinition, RegistryIdentifier},
-        registry::{CharacterRegistry, ItemRegistry},
+        registry::{
+            CharacterDefinition, CharacterRegistry, ItemDefinition, ItemRegistry,
+            RegistryIdentifier,
+        },
     },
 };
 
 /// adds characters too `CharacterRegistry` with character definitions loaded from disk
 pub fn build_character_bundles(
-    cmds: &mut Commands,
     character_definitions: Res<'_, Assets<CharacterDefinition>>,
-    asset_server: Res<'_, AssetServer>,
+    asset_server: &ResMut<AssetServer>,
     character_registry: &mut CharacterRegistry,
 ) {
     for (id, character_def) in character_definitions.iter() {
         let asset_path = asset_server.get_path(id).unwrap();
         let folder_path = asset_path.path().parent().unwrap();
-        let sprite_json_path = folder_path.join(character_def.actor.aseprite_path.clone());
-
-        info!("loading sprite json: {:?}", sprite_json_path);
-        // load the spritesheet and get it's handle
-        let sheet_handle = load_spritesheet_then(
-            cmds,
-            &asset_server,
-            sprite_json_path,
-            bevy::sprite::Anchor::TopCenter,
-            format_character_animations,
-        );
+        let aseprite_path = folder_path.join(character_def.actor.aseprite_path.clone());
+        let aseprite_handle = asset_server.load(aseprite_path);
 
         let actor_bundle = CharacterBundle {
             name: Name::new(character_def.actor.name.clone()),
@@ -60,13 +48,18 @@ pub fn build_character_bundles(
             actor_type: character_def.character_type.as_charactertype(),
             stats: CharacterStatBundle::from_attrs(character_def.actor.stats),
             move_state: CharacterMoveState::DEFAULT,
-            aseprite: AnimatedSpriteBundle {
-                spritesheet: sheet_handle,
-                animator: SpriteAnimator::from_anim(AnimHandle::from_index(0)),
+            physics: Aspen2dPhysicsBundle::DEFAULT_CHARACTER,
+            controller: character_def.character_type.get_ai(),
+            render: Aspen2dRenderBundle {
+                handle: aseprite_handle,
+                animation: Animation::default().with_tag("idle"),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(character_def.actor.tile_size)),
+                    anchor: Anchor::BottomCenter,
+                    ..default()
+                },
                 ..default()
             },
-            rigidbody_bundle: RigidBodyBundle::DEFAULT_CHARACTER,
-            controller: character_def.character_type.get_ai(),
         };
 
         match character_def.character_type {
@@ -103,11 +96,11 @@ pub fn build_character_bundles(
     }
 }
 
+// TODO: are weapons items?
 /// adds items too `ItemRegistry` with item definitions loaded from disk
 pub fn build_item_bundles(
-    cmds: &mut Commands,
     item_defs: Res<'_, Assets<ItemDefinition>>,
-    asset_server: &Res<'_, AssetServer>,
+    asset_server: &ResMut<AssetServer>,
     item_registry: &mut ItemRegistry,
 ) {
     for (id, definition) in item_defs.iter() {
@@ -117,19 +110,18 @@ pub fn build_item_bundles(
 
         match definition.item_type {
             ItemAssetType::Weapon { damage, form } => {
-                insert_weapon_into_registry(
-                    cmds,
-                    item_registry,
-                    asset_server,
-                    sprite_json_path,
-                    (
-                        definition.actor.name.clone().into(),
-                        definition.actor.identifier.clone(),
-                        damage,
-                        form,
-                        definition.actor.stats,
-                    ),
+                let weapon = form_weapon_bundle(
+                    &asset_server,
+                    (definition.actor.identifier.clone(), sprite_json_path),
+                    definition.actor.name.clone().into(),
+                    damage,
+                    form,
+                    definition.actor.stats,
+                    definition.actor.tile_size,
                 );
+                item_registry
+                    .weapons
+                    .insert(weapon.identifier.clone(), weapon);
             }
             ItemAssetType::Trinket {} => todo!("trinket items not implmented"),
             ItemAssetType::Armor {} => todo!("armor items not implmented"),
@@ -139,52 +131,42 @@ pub fn build_item_bundles(
 }
 
 /// creates weapon bundle from an item definition and then adds it too item registry
-fn insert_weapon_into_registry(
-    cmds: &mut Commands,
-    item_registry: &mut ItemRegistry,
-    asset_server: &Res<'_, AssetServer>,
-    sprite_json_path: PathBuf,
-    weapon: (
-        Name,
-        RegistryIdentifier,
-        AttackDamage,
-        WeaponDescriptor,
-        Attributes,
-    ),
-) {
-    let sheet_handle = match weapon.3 {
-        WeaponDescriptor::Gun { .. } => load_spritesheet_then(
-            cmds,
-            asset_server,
-            sprite_json_path,
-            bevy::sprite::Anchor::Center,
-            format_gun_animations,
-        ),
-    };
+fn form_weapon_bundle(
+    asset_server: &ResMut<'_, AssetServer>,
+    asset_data: (RegistryIdentifier, PathBuf),
+    name: Name,
+    damage: AttackDamage,
+    descriptor: WeaponDescriptor,
+    attributes: Attributes,
+    tile_size: f32,
+) -> WeaponBundle {
+    let aseprite_handle = asset_server.load(asset_data.1);
 
-    item_registry.weapons.insert(
-        weapon.1.clone(),
-        WeaponBundle {
-            name: weapon.0,
-            identifier: weapon.1,
-            holder: WeaponHolder::default(),
-            damage: weapon.2,
-            weapon_type: weapon.3,
-            sprite: AnimatedSpriteBundle {
-                spritesheet: sheet_handle,
-                animator: SpriteAnimator::from_anim(AnimHandle::from_index(1)),
+    WeaponBundle {
+        name,
+        identifier: asset_data.0,
+        holder: WeaponHolder::default(),
+        damage,
+        weapon_type: descriptor,
+        stats: EquipmentStats::from_attrs(attributes, None),
+        render: Aspen2dRenderBundle {
+            handle: aseprite_handle,
+            animation: Animation::default().with_tag("idle"),
+            sprite: Sprite {
+                anchor: Anchor::default(),
+                custom_size: Some(Vec2::splat(tile_size)),
                 ..default()
             },
-            rigidbody_bundle: RigidBodyBundle {
-                rigidbody: RigidBody::default(),
-                velocity: Velocity::default(),
-                friction: Friction::default(),
-                how_bouncy: Restitution::default(),
-                mass_prop: ColliderMassProperties::default(),
-                rotation_locks: LockedAxes::default(),
-                damping_prop: Damping::default(),
-            },
-            stats: EquipmentStats::from_attrs(weapon.4, None),
+            ..default()
         },
-    );
+        physics: Aspen2dPhysicsBundle {
+            rigidbody: RigidBody::default(),
+            velocity: Velocity::default(),
+            friction: Friction::default(),
+            how_bouncy: Restitution::default(),
+            mass_prop: ColliderMassProperties::default(),
+            rotation_locks: LockedAxes::default(),
+            damping_prop: Damping::default(),
+        },
+    }
 }

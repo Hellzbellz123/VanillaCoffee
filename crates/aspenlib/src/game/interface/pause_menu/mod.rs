@@ -1,13 +1,19 @@
 use crate::{
     game::{
-        characters::player::PlayerSelectedHero, game_world::{dungeonator_v2::components::Dungeon, hideout::systems::HideoutTag}, input::action_maps, interface::{
+        characters::player::PlayerSelectedHero,
+        game_world::{dungeonator_v2::components::Dungeon, hideout::systems::HideoutTag},
+        input::action_maps,
+        interface::{
             random_color,
             settings_menu::SettingsMenuToggleButton,
             ui_widgets::{spawn_button, spawn_menu_title},
             InterfaceRootTag,
-        }
+        },
     },
-    loading::{assets::{AspenInitHandles, AspenLevelsetHandles}, registry::RegistryIdentifier},
+    loading::{
+        assets::{AspenInitHandles, AspenLevelsetHandles},
+        registry::RegistryIdentifier,
+    },
     AppStage, GameStage,
 };
 use bevy::app::AppExit;
@@ -33,6 +39,7 @@ impl Plugin for PauseMenuPlugin {
                 )
                     .run_if(in_state(GameStage::PausedGame)),
                 keyboard_pause_sender,
+                pause_menu_visibility.run_if(state_changed::<GameStage>),
                 pause_event_handler.run_if(on_event::<EventTogglePause>()),
             ),
         );
@@ -175,18 +182,24 @@ fn continue_button_interaction(
 fn abandon_button_interaction(
     mut cmds: Commands,
     mut time: ResMut<Time<Virtual>>,
-    mut player_q: Query<&mut Transform, (With<RegistryIdentifier>, With<PlayerSelectedHero>)>,
+    // mut player_q: Query<&mut Transform, (With<RegistryIdentifier>, With<PlayerSelectedHero>)>,
+    // mut pause_menu_query: Query<&mut Style, (With<Node>, With<PauseMenuTag>)>,
+    mut next_state: ResMut<NextState<GameStage>>,
     level_q: Query<Entity, With<Dungeon>>,
-    actor_q: Query<Entity, (With<RegistryIdentifier>, Without<PlayerSelectedHero>, Without<Parent>)>,
+    actor_q: Query<
+        Entity,
+        (
+            With<RegistryIdentifier>,
+            Without<PlayerSelectedHero>,
+            Without<Parent>,
+        ),
+    >,
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<AbandonDungeonTag>)>,
-    maps: Res<AspenLevelsetHandles>
+    hideout_q: Query<Entity, With<HideoutTag>>,
+    maps: Res<AspenLevelsetHandles>,
 ) {
     for interaction in &interaction_query {
         if matches!(interaction, Interaction::Pressed) {
-            // despawn dungeon
-            // despawn enemys
-            // respawn hideout
-            // move player too hideout spawn
             warn!("abandoning dungeon");
             for actor in &actor_q {
                 cmds.entity(actor).despawn_recursive();
@@ -196,28 +209,35 @@ fn abandon_button_interaction(
             }
             time.unpause();
 
-            cmds.spawn((
-                LdtkWorldBundle {
-                    ldtk_handle: maps.default_levels.clone(),
-                    level_set: LevelSet::default(),
-                    transform: Transform {
-                        translation: Vec3 {
-                            x: 0.0,
-                            y: 0.0,
-                            z: 0.0,
-                        },
-                        scale: Vec3 {
-                            x: 1.0,
-                            y: 1.0,
-                            z: 1.0,
+            // TODO: most recent todo tag doesnt reflect my thoughts/feelings correctly
+            // the below code should not be allowed by style.
+            // this is a hack to fix a random issue that should not exist
+            if hideout_q.is_empty() {
+                cmds.spawn((
+                    LdtkWorldBundle {
+                        ldtk_handle: maps.default_levels.clone(),
+                        level_set: LevelSet::default(),
+                        transform: Transform {
+                            translation: Vec3 {
+                                x: 0.0,
+                                y: 0.0,
+                                z: 0.0,
+                            },
+                            scale: Vec3 {
+                                x: 1.0,
+                                y: 1.0,
+                                z: 1.0,
+                            },
+                            ..default()
                         },
                         ..default()
                     },
-                    ..default()
-                },
-                Name::new("HideOut"),
-                HideoutTag,
-            ));
+                    Name::new("HideOut"),
+                    HideoutTag,
+                ));
+            }
+
+            next_state.set(GameStage::PlayingGame);
         }
     }
 }
@@ -275,10 +295,27 @@ fn keyboard_pause_sender(
     }
 }
 
+fn pause_menu_visibility(
+    game_state: Option<Res<State<GameStage>>>,
+    mut pause_menu_query: Query<&mut Style, (With<Node>, With<PauseMenuTag>)>,
+) {
+    let Some(game_state) = game_state else {
+        return;
+    };
+    let Ok(mut pause_menu) = pause_menu_query.get_single_mut() else {
+        return;
+    };
+
+    match game_state.get() {
+        GameStage::PausedGame => pause_menu.display = Display::Flex,
+        _ => pause_menu.display = Display::None,
+    }
+}
+
 /// takes pause requests and does things too pause game
 fn pause_event_handler(
     mut pauses: EventReader<EventTogglePause>,
-    mut pause_menu_query: Query<&mut Style, (With<Node>, With<PauseMenuTag>)>,
+    // mut pause_menu_query: Query<&mut Style, (With<Node>, With<PauseMenuTag>)>,
     mut time: ResMut<Time<Virtual>>,
     game_state: Option<Res<State<GameStage>>>,
     mut next_state: ResMut<NextState<GameStage>>,
@@ -291,15 +328,35 @@ fn pause_event_handler(
         match game_state.get() {
             GameStage::PlayingGame => {
                 time.pause();
-                pause_menu_query.single_mut().display = Display::Flex;
+                // pause_menu_query.single_mut().display = Display::Flex;
                 next_state.set(GameStage::PausedGame);
             }
             GameStage::PausedGame => {
                 time.unpause();
-                pause_menu_query.single_mut().display = Display::None;
+                // pause_menu_query.single_mut().display = Display::None;
                 next_state.set(GameStage::PlayingGame);
             }
             _ => {}
         }
     }
 }
+
+// match game_state {
+//     Some(state) => {
+//         match state.get() {
+//             GameStage::StartMenu => {
+//                 // do the continue event?
+//             },
+//             GameStage::SelectCharacter => {
+//                 // pause here may break stuff?
+//             },
+//             GameStage::PlayingGame => {
+
+//             },
+//             GameStage::PausedGame => todo!(),
+//         }
+//     },
+//     None => {
+//         return;
+//     },
+// }

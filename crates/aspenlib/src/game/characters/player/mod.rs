@@ -6,7 +6,7 @@ use bevy_mod_picking::{
 };
 
 use crate::{
-    bundles::ActorColliderBundle, consts::{actor_collider, AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX}, game::{
+    bundles::{AspenColliderBundle, NeedsCollider}, consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX}, game::{
         characters::components::WeaponSlot, components::ActorColliderType,
         interface::start_menu::StartMenuTag, items::weapons::components::WeaponCarrier,
     }, loading::{
@@ -125,7 +125,7 @@ pub fn build_player_from_selected_hero(
         .with_children(|child| {
             child.spawn((
                 EntityCreator(selected_hero),
-                ActorColliderBundle {
+                AspenColliderBundle {
                     tag: ActorColliderType::Character,
                     name: Name::new("PlayerCollider"),
                     transform_bundle: TransformBundle {
@@ -140,7 +140,7 @@ pub fn build_player_from_selected_hero(
                         }),
                         ..default()
                     },
-                    collider: actor_collider(char_def.actor.pixel_size),
+                    collider: NeedsCollider,
                     collision_groups: CollisionGroups::new(
                         AspenCollisionLayer::ACTOR,
                         AspenCollisionLayer::EVERYTHING,

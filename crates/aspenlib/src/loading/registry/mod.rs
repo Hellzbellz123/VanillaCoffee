@@ -7,7 +7,7 @@ use bevy::{
         reflect::{ReflectComponent, ReflectResource},
         system::{Res, Resource},
     },
-    prelude::{AssetServer, Assets, Commands, OnExit},
+    prelude::{AssetServer, Assets, Commands, OnExit, ResMut},
     reflect::Reflect,
     utils::HashMap,
 };
@@ -161,25 +161,27 @@ impl ItemRegistry {
 /// creates an actor registry and populates it from actor asset definitons
 pub fn create_actor_registry(
     mut cmds: Commands,
-    asset_server: Res<AssetServer>,
+    asset_server: ResMut<AssetServer>,
     character_definitions: Res<Assets<CharacterDefinition>>,
     weapon_definition: Res<Assets<ItemDefinition>>,
 ) {
     let mut registry = ActorRegistry::default();
 
     build_item_bundles(
-        &mut cmds,
         weapon_definition,
         &asset_server,
         &mut registry.items,
     );
 
     build_character_bundles(
-        &mut cmds,
         character_definitions,
-        asset_server,
+        &asset_server,
         &mut registry.characters,
     );
 
     cmds.insert_resource(registry);
+
+
+    // TODO: if all collections exist and actor registry is finished, continue on too starting,
+    // else pass too appfail with reason for failure
 }

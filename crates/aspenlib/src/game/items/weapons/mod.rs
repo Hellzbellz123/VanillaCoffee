@@ -5,7 +5,7 @@ use crate::{
     game::{
         attributes_stats::EquipmentStats, characters::player::PlayerSelectedHero, items::weapons::{
             components::{
-                AttackDamage, CurrentAmmo, CurrentlyDrawnWeapon, WeaponCarrier, WeaponDescriptor,
+                AttackDamage, WeaponAmmoCount, CurrentlyDrawnWeapon, WeaponCarrier, WeaponDescriptor,
                 WeaponHolder, WeaponTimers,
             },
             forms::GunShootEvent,
@@ -37,7 +37,7 @@ impl Plugin for WeaponItemPlugin {
                 AttackDamage,
                 EquipmentStats,
                 WeaponCarrier,
-                CurrentAmmo,
+                WeaponAmmoCount,
                 WeaponTimers,
                 WeaponHolder,
                 WeaponDescriptor
@@ -87,7 +87,8 @@ fn prepare_weapons(
                         refill: Timer::from_seconds(cfg.reload_time, TimerMode::Once),
                         duration: Timer::from_seconds(cfg.fire_rate, TimerMode::Once),
                     },
-                    CurrentAmmo {
+                    WeaponAmmoCount {
+                        reloading: false,
                         current: cfg.max_ammo,
                         max: cfg.max_ammo,
                     },
@@ -107,20 +108,25 @@ fn prepare_weapons(
 fn handle_weapon_attacks(
     mut gunshoot_events: EventWriter<GunShootEvent>,
     mut weapon_attack_events: EventReader<EventAttackWeapon>,
-    weapon_query: Query<(&WeaponDescriptor, &WeaponHolder), With<Parent>>,
+    weapon_query: Query<(&WeaponDescriptor, &WeaponHolder, &WeaponTimers), With<Parent>>,
 ) {
+    // player pressed attack button
     for weapon_attack in weapon_attack_events.read() {
-        let Ok((weapon_descriptor, _)) = weapon_query.get(weapon_attack.weapon) else {
+        let Ok((weapon_descriptor, _, timers)) = weapon_query.get(weapon_attack.weapon) else {
             warn!("invalid weapon");
             continue;
         };
 
         match weapon_descriptor {
             WeaponDescriptor::Gun(cfg) => {
-                gunshoot_events.send(GunShootEvent {
-                    gun: weapon_attack.weapon,
-                    settings: *cfg,
-                });
+                // get requester and do something?
+                if timers.attack.finished() {
+                    gunshoot_events.send(GunShootEvent {
+                        gun: weapon_attack.weapon,
+                        settings: *cfg,
+                    });
+                }
+                // TODO: handle gun timer updates here?
             } // WeaponDescriptor::Flail { .. } => {}
               // WeaponDescriptor::Blade { .. } => {}
         }
@@ -173,6 +179,8 @@ fn equipped_weapon_positioning(
                 if weapon_velocity.angvel != 0.0 {
                     weapon_velocity.angvel = 0.0;
                 }
+                // get holder and offset by holders +aabb.y / 2
+                // allow changing anchor on weapon between 3 options
                 weapon_transform.translation = Vec3 {
                     x: 0.0,
                     y: 12.0,

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    bundles::{ActorColliderBundle, ProjectileBundle, RigidBodyBundle},
+    bundles::{NeedsCollider,Aspen2dPhysicsBundle, AspenColliderBundle,ProjectileBundle},
     consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
     game::{
         attributes_stats::{Damage, ElementalEffect, PhysicalDamage, ProjectileStats},
@@ -67,7 +67,7 @@ pub fn delegate_unarmed_attacks(
                         },
                         ..default()
                     },
-                    rigidbody_bundle: RigidBodyBundle {
+                    rigidbody_bundle: Aspen2dPhysicsBundle {
                         velocity: Velocity::linear(attack.direction * 250.0),
                         rigidbody: RigidBody::Dynamic,
                         friction: Friction::coefficient(0.2),
@@ -84,7 +84,7 @@ pub fn delegate_unarmed_attacks(
             .with_children(|bullet_parts| {
                 bullet_parts.spawn((
                     ActiveEvents::COLLISION_EVENTS,
-                    ActorColliderBundle {
+                    AspenColliderBundle {
                         name: Name::new("MonsterProjectileCollider"),
                         transform_bundle: TransformBundle {
                             local: (Transform {
@@ -94,7 +94,7 @@ pub fn delegate_unarmed_attacks(
                             ..default()
                         },
                         tag: ActorColliderType::Projectile,
-                        collider: Collider::ball(10.0),
+                        collider: NeedsCollider,//Collider::ball(10.0),
                         collision_groups: CollisionGroups::new(
                             AspenCollisionLayer::PROJECTILE,
                             AspenCollisionLayer::WORLD | AspenCollisionLayer::ACTOR,

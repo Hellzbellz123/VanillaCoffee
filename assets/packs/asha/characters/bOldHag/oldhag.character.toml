@@ -3,8 +3,8 @@ character_type = { Boss = { ai = "Boss" } }
 [actor]
 name = "Old Hag"
 identifier = "oldhag"
-aseprite_path = "oldhag.sprite.json"
-pixel_size = [18.0, 30.0]
+aseprite_path = "oldhag.aseprite"
+tile_size = 32.0
 
 [actor.stats]
 max_hp = 1000

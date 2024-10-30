@@ -41,13 +41,13 @@ impl Plugin for SkillusingAiPlugin {
         );
 
         app.add_systems(
-            PreUpdate,
+            FixedUpdate,
             (ai_patterns_use_system)
                 .run_if(playing_game())
                 .in_set(BigBrainSet::Scorers),
         )
         .add_systems(
-            Update,
+            FixedUpdate,
             (
                 ai_patternskill_action.in_set(BigBrainSet::Actions),
                 shootpatternspawner_system,

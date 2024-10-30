@@ -43,8 +43,6 @@ pub mod components;
 pub mod dungeonator_v2;
 /// hideout plugin, spawns home area for before and after dungeons
 pub mod hideout;
-/// player progression module
-pub mod progress;
 /// bundles for entities that are defined inside ldtk
 mod world_objects;
 /// game world plugin handles home area and dungeon generator functions
@@ -74,7 +72,6 @@ impl Plugin for GameWorldPlugin {
         app.add_event::<RegenerateDungeonEvent>()
             .add_event::<ActorTeleportEvent>()
             .add_plugins((
-                progress::GameProgressPlugin,
                 hideout::HideOutPlugin,
                 dungeonator_v2::DungeonGeneratorPlugin,
             ))

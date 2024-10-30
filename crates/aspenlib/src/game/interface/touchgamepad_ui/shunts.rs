@@ -98,10 +98,12 @@ pub fn touch_trigger_sprint(
     sticks: Query<&TouchStick<TouchStickBinding>, Changed<TouchStick<TouchStickBinding>>>,
     mut actions: ResMut<ActionState<action_maps::Gameplay>>,
 ) {
-    let stick_ui = sticks
+    let Some(stick_ui) = sticks
         .iter()
-        .find(|f| f.id == TouchStickBinding::MoveTouchInput)
-        .expect("always exists at this point");
+        .find(|f| f.id == TouchStickBinding::MoveTouchInput) else {
+            warn!("no touchstick available");
+            return;
+        };
 
     let magnitude = stick_ui.value.length();
 
@@ -116,10 +118,12 @@ pub fn touch_trigger_attack(
     sticks: Query<&TouchStick<TouchStickBinding>, Changed<TouchStick<TouchStickBinding>>>,
     mut actions: ResMut<ActionState<action_maps::Gameplay>>,
 ) {
-    let stick_ui = sticks
+    let Some(stick_ui) = sticks
         .iter()
-        .find(|f| f.id == TouchStickBinding::LookTouchInput)
-        .expect("always exists at this point");
+        .find(|f| f.id == TouchStickBinding::LookTouchInput) else {
+            warn!("no look touchstick");
+            return;
+        };
 
     let magnitude = stick_ui.value.length();
 

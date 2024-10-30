@@ -11,7 +11,9 @@ use crate::game::{attributes_stats::Damage, characters::components::WeaponSlot};
 /// current ammo count for weapons clip
 #[derive(Debug, Clone, Copy, Component, Default, Reflect, Deref, DerefMut)]
 #[reflect(Component)]
-pub struct CurrentAmmo {
+pub struct WeaponAmmoCount {
+    /// are we actively ticking down refil; timer
+    pub reloading: bool,
     /// how much ammo this weapon currently has
     #[deref]
     pub current: u32,
@@ -126,6 +128,7 @@ impl Default for WeaponDescriptor {
 }
 
 /// timers used for weapon attacks
+/// all timers should need a reset
 #[derive(Debug, Clone, Default, Reflect, Component, serde::Deserialize, serde::Serialize)]
 #[reflect(Component)]
 pub struct WeaponTimers {

@@ -1,9 +1,13 @@
 use bevy::prelude::*;
+use bevy_aseprite_ultra::{
+    prelude::{Animation, AsepriteAnimationBundle},
+    NotLoaded,
+};
 use bevy_rapier2d::geometry::{Collider, CollisionGroups};
 use rand::{thread_rng, Rng};
 
 use crate::{
-    bundles::ActorColliderBundle,
+    bundles::{Aspen2dRenderBundle, AspenColliderBundle, NeedsCollider},
     consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
     game::components::ActorColliderType,
     loading::{
@@ -40,29 +44,20 @@ pub fn spawn_weapon(
             y: spawn_position.y + rng.gen_range(-100.0..=100.0),
         };
 
-        let mut modified_weapon_ref = weapon_bundle.clone();
-        modified_weapon_ref.sprite.sprite_bundle.transform =
-            Transform::from_translation(position.extend(ACTOR_Z_INDEX));
         info!("spawning weapon");
         commands
-            .spawn(modified_weapon_ref.clone())
+            .spawn((
+                weapon_bundle.clone(),
+                SpatialBundle::from_transform(Transform::from_translation(
+                    position.extend(ACTOR_Z_INDEX),
+                )),
+            ))
             .with_children(|child| {
-                let collider_name = format!("{}Collider", modified_weapon_ref.name.as_str());
-                let size = item_def.actor.pixel_size;
-                child.spawn(ActorColliderBundle {
+                let collider_name = format!("{}Collider", weapon_bundle.name.as_str());
+                child.spawn(AspenColliderBundle {
                     tag: ActorColliderType::Item,
                     name: Name::new(collider_name),
-                    collider: Collider::capsule(
-                        Vec2 {
-                            x: size.x / 2.0,
-                            y: 0.0,
-                        },
-                        Vec2 {
-                            x: -(size.x / 2.0),
-                            y: 0.0,
-                        },
-                        2.0,
-                    ),
+                    collider: NeedsCollider, 
                     collision_groups: CollisionGroups::new(
                         AspenCollisionLayer::ACTOR,
                         AspenCollisionLayer::EVERYTHING,

@@ -95,6 +95,15 @@ pub struct AspenAudioHandles {
     /// looping background soundtrack
     #[asset(key = "ost")]
     pub game_soundtrack: Handle<bevy_kira_audio::AudioSource>,
+
+    /// default actor foostep sound
+    #[asset(key = "footstep_light")]
+    pub footstep_light: Handle<bevy_kira_audio::AudioSource>,
+
+    /// default gun shoot sound
+    #[asset(key = "gunshot_quiet")]
+    pub gunshot_quiet: Handle<bevy_kira_audio::AudioSource>,
+
     /// a vector of footstep files, currently 8
     #[asset(key = "footsteps", collection(typed))]
     pub footsteps: Vec<Handle<bevy_kira_audio::AudioSource>>,

@@ -3,11 +3,10 @@ use bevy::{
     log::{error, info},
     math::Vec2,
     prelude::{
-        in_state, on_event, Assets, Commands, DespawnRecursiveExt, Entity, EventReader,
-        GlobalTransform, IntoSystemConfigs, Main, OnEnter, OnExit, OrthographicProjection, Plugin,
-        Query, Transform, Update, With, Without,
+        default, in_state, on_event, Assets, Commands, DespawnRecursiveExt, Entity, EventReader, GlobalTransform, IntoSystemConfigs, Main, OnEnter, OnExit, OrthographicProjection, Parent, Plugin, Query, SpatialBundle, Transform, Update, With, Without
     },
 };
+use bevy_aseprite_ultra::prelude::AsepriteAnimationBundle;
 use bevy_ecs_ldtk::{
     prelude::{LdtkExternalLevel, LevelEvent, LevelSet},
     LevelIid, LevelSelection,
@@ -20,6 +19,7 @@ use bevy_rapier2d::prelude::CollisionEvent;
 use log::warn;
 
 use crate::{
+    bundles::{Aspen2dRenderBundle, CharacterBundle},
     consts::ACTOR_Z_INDEX,
     game::{
         characters::{
@@ -98,7 +98,9 @@ fn create_playable_heroes(
         }
         LevelSelection::Iid(level_iid) => level_iid.clone(),
         LevelSelection::Uid(_) => panic!("uid grabbing for levels is unhandled as of yet"),
-        LevelSelection::Indices(_) => panic!("unable too handle multiple level spawning hero spawners as of yet"),
+        LevelSelection::Indices(_) => {
+            panic!("unable too handle multiple level spawning hero spawners as of yet")
+        }
     };
 
     for event in level_spawn_events.read() {
@@ -148,25 +150,24 @@ fn populate_hero_spots(
                 true
             }
         })
-        .for_each(|thing| {
+        .for_each(|bundle| {
             let Some(spot) = hero_spots_iter.next() else {
                 error!("no more hero spots");
                 return;
             };
-            let mut bundle = thing.clone();
-
-            bundle.aseprite.sprite_bundle.transform.translation =
-                spot.translation().truncate().extend(ACTOR_Z_INDEX);
 
             commands.spawn((
-                bundle,
+                bundle.clone(),
                 PickableBundle::default(),
                 On::<Pointer<Down>>::send_event::<SelectThisHeroForPlayer>(),
+                SpatialBundle::from_transform(Transform::from_translation(
+                    spot.translation().truncate().extend(ACTOR_Z_INDEX),
+                )),
             ));
         });
 
     if existing_hero.is_ok() {
-        let ((id, mut position)) = existing_hero.unwrap();
+        let (_id, mut position) = existing_hero.unwrap();
         let new_spot = hero_spots_iter.next();
         if let Some(new_spot) = new_spot {
             warn!("moving existing hero too unoccupied hero spot");
@@ -203,7 +204,7 @@ fn adjust_camera_focus(
 fn despawn_hideout(
     mut commands: Commands,
     characters_not_player: Query<Entity, (With<CharacterMoveState>, Without<PlayerSelectedHero>)>,
-    weapons: Query<Entity, With<AttackDamage>>,
+    weapons: Query<Entity, (With<AttackDamage>, Without<Parent>)>,
     hideout: Query<(Entity, &LevelSet), With<HideoutTag>>,
 ) {
     for ((hideout, levelset)) in &hideout {

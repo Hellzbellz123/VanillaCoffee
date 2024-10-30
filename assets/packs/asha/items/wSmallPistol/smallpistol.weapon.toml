@@ -13,8 +13,8 @@ fire_rate = 0.60
 [actor]
 name = "Small Pistol"
 identifier = "smallpistol"
-aseprite_path = "smallpistol.sprite.json"
-pixel_size =  [10.0, 10.0]
+aseprite_path = "smallpistol.aseprite"
+tile_size = 20.0
 
 [actor.stats]
 max_hp = 10

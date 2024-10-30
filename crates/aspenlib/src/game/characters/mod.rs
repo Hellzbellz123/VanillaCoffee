@@ -1,12 +1,11 @@
 use bevy::prelude::*;
-use bevy_asepritesheet::sprite::AnimHandle;
+// use bevy_asepritesheet::sprite::AnimHandle;
 use bevy_rapier2d::dynamics::Velocity;
 use rand::prelude::{thread_rng, Rng};
 
 use crate::{
     consts::{MIN_VELOCITY, WALK_MODIFIER},
     game::{
-        animations::{CharacterAnimations, EventAnimationChange},
         attributes_stats::CharacterStats,
         characters::{
             boss::EventSpawnBoss,
@@ -17,7 +16,8 @@ use crate::{
     },
     loading::registry::{ActorRegistry, RegistryIdentifier},
     register_types,
-    utilities::vector_to_pi8, AppStage,
+    utilities::vector_to_pi8,
+    AppStage,
 };
 
 /// character ai implementation
@@ -30,8 +30,6 @@ pub mod components;
 pub mod creeps;
 /// player plugin
 pub mod player;
-/// utilities for charactor entities
-pub mod utils;
 
 /// character functionality for game
 pub struct CharactersPlugin;
@@ -168,13 +166,12 @@ fn handle_character_spawn(
 
 /// updates actors move status component based on actors velocity and speed attribute
 fn update_character_move_state(
-    mut anim_events: EventWriter<EventAnimationChange>,
     mut actor_query: Query<
-        (Entity, &mut CharacterMoveState, &Velocity, &CharacterStats),
+        (&mut CharacterMoveState, &Velocity, &CharacterStats),
         Changed<Velocity>,
     >,
 ) {
-    for (actor, mut move_state, velocity, stats) in &mut actor_query {
+    for (mut move_state, velocity, stats) in &mut actor_query {
         let stats = stats.attrs();
         let total_velocity = velocity.linvel.abs();
         let velocity = velocity.linvel;
@@ -200,10 +197,6 @@ fn update_character_move_state(
             // not moving
             if move_state.move_status.0 != CurrentMovement::None {
                 move_state.move_status.0 = CurrentMovement::None;
-                anim_events.send(EventAnimationChange {
-                    anim_handle: AnimHandle::from_index(CharacterAnimations::IDLE),
-                    actor,
-                });
                 continue;
             }
         }

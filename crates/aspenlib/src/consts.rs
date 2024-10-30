@@ -1,6 +1,8 @@
 use bevy::prelude::Vec2;
 use bevy_rapier2d::{geometry::Group, prelude::Collider};
 
+use crate::bundles::NeedsCollider;
+
 #[allow(
     clippy::needless_bool,
     reason = "allows easier enabling of the bool for testing spawners"
@@ -19,45 +21,6 @@ pub const ACTOR_Z_INDEX: f32 = 10.0;
 
 /// actor size
 pub const ACTOR_SIZE: Vec2 = Vec2::new(TILE_SIZE, TILE_SIZE);
-
-/// common actor capsule dimensions
-pub const ACTOR_COLLIDER_DIMENSIONS: (bevy::prelude::Vec2, bevy::prelude::Vec2, f32) = (
-    Vec2 {
-        x: 0.0,
-        y: ACTOR_SIZE.y / 3.0,
-    },
-    Vec2 {
-        x: 0.0,
-        y: -ACTOR_SIZE.y / 5.0,
-    },
-    ACTOR_SIZE.x / 2.0,
-);
-
-/// creates a collider for a character given a size
-#[must_use]
-pub fn actor_collider(size: Vec2) -> Collider {
-    Collider::capsule(
-        Vec2 {
-            x: 0.0,
-            y: (size.x / 2.0) - 2.0,
-        },
-        Vec2 {
-            x: 0.0,
-            y: size.y / 1.5,
-        },
-        size.x / 2.0,
-    )
-}
-
-/// default actor collider shape for most entities
-#[must_use]
-pub fn default_actor_collider() -> Collider {
-    Collider::capsule(
-        ACTOR_COLLIDER_DIMENSIONS.0,
-        ACTOR_COLLIDER_DIMENSIONS.1,
-        ACTOR_COLLIDER_DIMENSIONS.2,
-    )
-}
 
 /// smallest velocity not considered moving
 ///

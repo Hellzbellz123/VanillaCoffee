@@ -17,7 +17,8 @@ use big_brain::{
 use rand::{thread_rng, Rng};
 
 use crate::{
-    consts::default_actor_collider, game::{
+    consts::TILE_SIZE,
+    game::{
         characters::{
             ai::components::{
                 AIChaseAction, AICombatAggroConfig, AIWanderAction, AIWanderConfig, AttackScorer,
@@ -26,7 +27,9 @@ use crate::{
             player::PlayerSelectedHero,
         },
         combat::{AttackDirection, EventRequestAttack},
-    }, playing_game, utilities::tiles_to_f32,
+    },
+    playing_game,
+    utilities::tiles_to_f32,
 };
 
 use super::components::{AIAutoShootConfig, AIShootAction};
@@ -37,13 +40,13 @@ pub struct StupidAiPlugin;
 impl Plugin for StupidAiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            PreUpdate,
+            FixedUpdate,
             (stupid_ai_aggro_manager)
                 .run_if(playing_game())
                 .in_set(BigBrainSet::Scorers),
         )
         .add_systems(
-            Update,
+            FixedUpdate,
             (wander_action, chase_action, attack_action)
                 .run_if(playing_game()) // shoot_action,
                 .in_set(BigBrainSet::Actions),
@@ -89,10 +92,13 @@ fn stupid_ai_aggro_manager(
         return;
     };
 
-    let player_collider = children
+    let Some(player_collider_ent) = children
         .iter_descendants(player)
         .find(|f| colliders.get(*f).is_ok())
-        .expect("player should always have a collider");
+    else {
+        warn!("could not get collider for player");
+        return;
+    };
 
     for (this_actor, enemy_transform, combat_cfg) in &can_attack_query {
         let player_pos = player_transform.translation.truncate();
@@ -104,7 +110,7 @@ fn stupid_ai_aggro_manager(
             enemy_pos,
             Rot::MIN,
             direction_to_target,
-            &default_actor_collider(),
+            &Collider::ball(TILE_SIZE),
             ShapeCastOptions {
                 max_time_of_impact: distance_to_target,
                 target_distance: 0.0,
@@ -122,7 +128,7 @@ fn stupid_ai_aggro_manager(
 
         let can_reach_target: bool = match ray {
             None => false,
-            Some((entity, _distance)) => entity == player_collider,
+            Some((entity, _distance)) => entity == player_collider_ent,
         };
 
         if ray.is_some() {
@@ -282,41 +288,37 @@ fn wander_action(
         if let Ok((enemy_transform, mut velocity, _sprite, mut can_meander_tag)) =
             enemy_query.get_mut(*actor)
         {
+            let mut rng = thread_rng();
+            let target_pos = can_meander_tag.wander_target;
+            let wander_distance = can_meander_tag.wander_distance as f32 * TILE_SIZE;
+            let target_deviation = rng.gen_range(25.0..=75.0);
+            let enemy_pos = enemy_transform.translation.truncate();
+
             let spawn_pos = can_meander_tag
                 .spawn_position
                 .expect("theres always a spawn position, this can be expected");
-            let mut rng = thread_rng();
 
-            let target_pos = can_meander_tag.wander_target;
-            let enemy_pos = enemy_transform.translation.truncate();
             match *state {
                 ActionState::Init => {}
                 ActionState::Cancelled => {
                     *state = ActionState::Failure;
                 }
                 ActionState::Requested => {
-                    // pick a random target within range of home and current position
-                    if let Some(target_pos) = target_pos {
-                        let target_deviation = rng.gen_range(0.0..=50.0);
-                        let distance = enemy_pos.distance(target_pos).abs();
-                        if distance <= target_deviation {
-                            can_meander_tag.wander_target = None;
-                            *state = ActionState::Success;
-                        } else {
-                            *state = ActionState::Executing;
-                        }
-                    } else {
+                    if target_pos.is_some_and(|f| f.distance(enemy_pos).abs() <= target_deviation)
+                        || target_pos.is_none()
+                    {
                         can_meander_tag.wander_target = Some(Vec2 {
-                            x: (spawn_pos.x + rng.gen_range(-300.0..=300.0)),
-                            y: (spawn_pos.y + rng.gen_range(-300.0..=300.0)),
+                            x: (spawn_pos.x + rng.gen_range(-wander_distance..=wander_distance)),
+                            y: (spawn_pos.y + rng.gen_range(-wander_distance..=wander_distance)),
                         });
-                        *state = ActionState::Executing;
+                        *state = ActionState::Requested;
                     }
+                    *state = ActionState::Executing;
                 }
                 ActionState::Executing => {
                     let Some(target_pos) = target_pos else {
-                        *state = ActionState::Failure;
-                        return;
+                        *state = ActionState::Requested;
+                        continue;
                     };
                     let direction = (target_pos - enemy_pos).normalize_or_zero();
                     let distance = enemy_pos.distance(target_pos).abs();
@@ -325,9 +327,9 @@ fn wander_action(
                         enemy_pos,
                         Rot::MIN,
                         direction,
-                        &default_actor_collider(),
+                        &Collider::ball(TILE_SIZE),
                         ShapeCastOptions {
-                            max_time_of_impact: distance,
+                            max_time_of_impact: distance * 0.1,
                             target_distance: 0.0,
                             stop_at_penetration: true,
                             compute_impact_geometry_on_penetration: false,
@@ -337,12 +339,12 @@ fn wander_action(
                             .exclude_rigid_body(*actor),
                     );
 
-                    if ray.is_some() {
+                    if ray.is_some_and(|f| f.1.time_of_impact <= distance * 0.1) {
                         can_meander_tag.wander_target = None;
                         *state = ActionState::Requested;
                     }
-                    if distance <= 60.0 {
-                        can_meander_tag.wander_target = None;
+
+                    if distance <= target_deviation {
                         *state = ActionState::Requested;
                     } else {
                         *velocity = Velocity::linear(direction * 100.);
@@ -350,8 +352,9 @@ fn wander_action(
                 }
                 ActionState::Success | ActionState::Failure => {
                     // clear target, set velocity to None  // we actually don't want too succeed at this action because then the ai will just do nothing. if i set it too not be last resort action i bet it would work
-                    *velocity = Velocity::linear(velocity.linvel.lerp(Vec2::ZERO, 1.0));
+                    *velocity = Velocity::linear(Vec2::ZERO);
                     can_meander_tag.wander_target = None;
+                    *state = ActionState::Requested;
                 }
             }
         }

@@ -3,8 +3,8 @@ use bevy_rapier2d::geometry::{Collider, CollisionGroups};
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
-    bundles::ActorColliderBundle,
-    consts::TILE_SIZE,
+    bundles::{AspenColliderBundle, NeedsCollider},
+    consts::{ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX, TILE_SIZE},
     game::{
         characters::{components::WeaponSlot, player::PlayerSelectedHero, EventSpawnCharacter},
         combat::{AttackDirection, EventRequestAttack},
@@ -241,19 +241,16 @@ pub fn equip_closest_weapon(
             warn!("slots full, unequipping drawn weapon");
             // TODO: recreate weapon collider properly?
             let weapon_ent = slot_value.unwrap();
-            weapon_pos.translation = Vec3 {
-                x: 50.0,
-                y: 0.0,
-                z: 0.0,
-            };
-            cmds.entity(weapon_ent).remove_parent();
+            cmds.entity(weapon_ent).remove_parent_in_place();
             cmds.entity(weapon_ent).with_children(|f| {
-                f.spawn(ActorColliderBundle {
+                f.spawn(AspenColliderBundle {
                     name: Name::new("DroppedWeaponCollider"),
                     tag: ActorColliderType::Item,
-                    collider: Collider::default(),
+                    collider: NeedsCollider,
                     collision_groups: CollisionGroups::default(),
-                    transform_bundle: TransformBundle::default(),
+                    transform_bundle: TransformBundle::from_transform(Transform::from_translation(
+                        Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
+                    )),
                 });
             });
         } else {

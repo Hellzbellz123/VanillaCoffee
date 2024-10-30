@@ -31,6 +31,10 @@ impl Plugin for StartMenuPlugin {
 #[derive(Component)]
 pub struct StartMenuTag;
 
+
+// TODO: maybe use this comment structure elsewhere?
+// button tags
+//---------------------------------------------------------//
 /// marks start button for query
 #[derive(Debug, Component)]
 pub struct StartGameTag;
@@ -38,6 +42,16 @@ pub struct StartGameTag;
 /// marks start button for query
 #[derive(Debug, Component)]
 pub struct ExitGameTag;
+
+/// marks load game button for query
+#[derive(Debug, Component)]
+pub struct LoadGameTag;
+
+/// marks save game button for query
+#[derive(Debug, Component)]
+pub struct SaveGameTag;
+
+//------------------------------------------------------------//
 
 /// set start menu container too `Display::Flex` if `AppState` == `StartMenu`
 fn show_start_menu(

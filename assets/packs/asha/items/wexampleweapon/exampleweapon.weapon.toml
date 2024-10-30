@@ -16,7 +16,7 @@ fire_rate = 0.25
 name = "ExampleWeapon"
 identifier = "exampleweapon"
 aseprite_path = "sprite_sheet.png"
-pixel_size = [32.0, 32.0]
+tile_size = 32.0
 
 [actor.stats]
 max_hp = 10

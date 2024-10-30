@@ -85,10 +85,11 @@ bevy = { path = "../../deps/bevy", default-features = false, features = [
 # Bevy Dependencies are located in deps folder
 # seldom_map_nav = { path = "../../deps/seldom_map_nav", features = ["bevy"] }
 big-brain = { path = "../../deps/big_brain" }
+# bevy_asepritesheet = { path = "../../deps/bevy_asepritesheet" }
+bevy_aseprite_ultra = {path = "../../deps/bevy_aseprite_ultra"}
 bevy_console = { path = "../../deps/bevy_console" }
 bevy_framepace = { path = "../../deps/bevy_framepace" }
 bevy_touch_stick = { path = "../../deps/bevy_touch_stick" }
-bevy_asepritesheet = { path = "../../deps/bevy_asepritesheet" }
 bevy_prototype_lyon = { path = "../../deps/bevy_prototype_lyon" }
 bevy_rapier2d = { path = "../../deps/bevy_rapier/bevy_rapier2d" }
 bevy-inspector-egui = { path = "../../deps/bevy_inspector_egui/crates/bevy-inspector-egui", default-features = false, features = [

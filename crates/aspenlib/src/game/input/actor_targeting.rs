@@ -21,6 +21,16 @@ impl Plugin for ActorTargetingPlugin {
 
 #[derive(Debug, Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct AspenTargetingReticle {
-    current_target: Option<Entity>,
-}
+pub struct AspenTargetingReticle {}
+
+#[derive(Debug, Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct TargetConsiderationOutline;
+
+// store list of targetable enemys,
+// filter list based on player aim direction and then sort the list by distance,
+// the first actor in the list is the Target enemy
+// target enemy
+// maybe use a shape based raycast too collect entities?
+
+// option

@@ -13,7 +13,7 @@ use crate::{
         items::weapons::{
             components::{WeaponDescriptor, WeaponHolder},
             EventAttackWeapon,
-        },
+        }, progress::CurrentRunInformation,
     },
     utilities::EntityCreator, AppStage,
 };
@@ -28,9 +28,7 @@ impl Plugin for CombatPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugins(unarmed::UnArmedPlugin);
 
-        app.add_event::<EventRequestAttack>()
-            .insert_resource(CurrentRunInformation::default())
-            .insert_resource(PlayerSaveInformation::default());
+        app.add_event::<EventRequestAttack>();
 
         app.add_systems(
             PreUpdate,
@@ -93,6 +91,8 @@ fn handle_death_system(
 ) {
     for (ent, mut stats, _transform, player_control) in &mut damaged_query {
         if stats.get_current_health() <= 0.0 {
+            // should probably despawn player and rebuild.
+            // or auto use postion and if dead restart
             if player_control.is_some() {
                 info!("player died, resetting player");
                 stats.set_health(150.0);
@@ -158,41 +158,6 @@ pub enum AttackDirection {
     FromWeapon(Entity),
     /// weapon attack direction is calculated from a target position
     FromVector(Vec2),
-}
-
-/// information tracked for current run
-#[derive(Debug, Clone, Copy, Default, Resource)]
-pub struct CurrentRunInformation {
-    /// damage dealt by player this run
-    pub enemy_physical_damage_taken: f32,
-    /// damage dealt too player this run
-    pub player_physical_damage_taken: f32,
-    /// enemies killed by player this run
-    pub enemies_deaths: i32,
-    /// times player has died
-    pub player_deaths: i32,
-    /// amount of damage enemy's have fired that hit player and didn't get counted
-    pub enemy_damage_sent: f32,
-    /// amount of damage player have fired that hit enemy and didn't get counted
-    pub player_damage_sent: f32,
-}
-
-//TODO: save this too file, load from file when rebooting game
-/// information tracked for player save state
-#[derive(Debug, Clone, Copy, Default, Resource)]
-pub struct PlayerSaveInformation {
-    /// damage player has cause with this save
-    pub all_time_damage: f32,
-    /// amount of times player has finishes a run
-    pub runs_completed: i32,
-    /// amount of times play has started a run
-    pub runs_started: i32,
-    /// amount of money player has earned
-    pub player_money: i32,
-    /// total amount of player deaths
-    pub total_deaths: i32,
-    /// total amonut of items player has collected
-    pub items_got: i32,
 }
 
 /// A custom filter that ignores contacts if both contact entities share the same '`EntityCreator`'

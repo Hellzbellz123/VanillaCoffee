@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use bevy_asepritesheet::animator::AnimatedSpriteBundle;
+use bevy_aseprite_ultra::{
+    prelude::{Animation, AnimationState, Aseprite},
+    NotLoaded,
+};
 use bevy_rapier2d::prelude::*;
 
 use crate::{
@@ -26,16 +29,16 @@ pub struct CharacterBundle {
     pub move_state: CharacterMoveState,
     /// actor type
     pub actor_type: CharacterType,
-    /// actor stats
+    /// actor stat
     pub stats: CharacterStatBundle,
     /// is character ai controlled or player controlled
     pub controller: AiType,
-    /// texture and animations
     #[reflect(ignore)]
-    pub aseprite: AnimatedSpriteBundle,
+    /// required components too render an Aseprite file as an Actor
+    pub render: Aspen2dRenderBundle,
+    #[reflect(ignore)]
     /// actor collisions and movement
-    #[reflect(ignore)]
-    pub rigidbody_bundle: RigidBodyBundle,
+    pub physics: Aspen2dPhysicsBundle,
 }
 
 /// bundle for spawning weapons
@@ -53,12 +56,12 @@ pub struct WeaponBundle {
     pub weapon_type: WeaponDescriptor,
     /// stats applied too holder
     pub stats: EquipmentStats,
-    /// sprite for weapon
     #[reflect(ignore)]
-    pub sprite: AnimatedSpriteBundle,
+    /// requirements too render weapon
+    pub render: Aspen2dRenderBundle,
+    #[reflect(ignore)]
     /// weapon physics
-    #[reflect(ignore)]
-    pub rigidbody_bundle: RigidBodyBundle,
+    pub physics: Aspen2dPhysicsBundle,
 }
 
 /// bundle too spawn projectiles
@@ -73,18 +76,40 @@ pub struct ProjectileBundle {
     /// projectile Sprite
     pub sprite_bundle: SpriteBundle,
     /// projectile collisions and movement
-    pub rigidbody_bundle: RigidBodyBundle,
+    pub rigidbody_bundle: Aspen2dPhysicsBundle,
 }
 
+/// The `AspenRenderBundle` holds all components needed to render Aseprite files as Actors.
+#[derive(Bundle, Default, Clone)]
+pub struct Aspen2dRenderBundle {
+    pub handle: Handle<Aseprite>,
+    pub animation: Animation,
+    pub animation_state: AnimationState,
+    pub not_loaded: NotLoaded,
+    pub atlas: TextureAtlas,
+    pub sprite: Sprite,
+}
+
+impl std::fmt::Debug for Aspen2dRenderBundle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Aspen2dRenderBundle")
+            .field("file handle", &self.handle)
+            .finish()
+    }
+}
+
+#[derive(Debug, Clone, Component)]
+pub struct NeedsCollider;
+
 /// collider bundle for actors
-#[derive(Bundle)]
-pub struct ActorColliderBundle {
+#[derive(Debug, Bundle)]
+pub struct AspenColliderBundle {
     /// name of collider
     pub name: Name,
     /// type of collider
     pub tag: ActorColliderType,
     /// collider shape
-    pub collider: Collider,
+    pub collider: NeedsCollider,
     /// collision groups
     pub collision_groups: CollisionGroups,
     /// collider transform
@@ -94,7 +119,7 @@ pub struct ActorColliderBundle {
 /// bundle for collisions and movement
 /// REQUIRES child collider too work properly
 #[derive(Bundle, Clone)]
-pub struct RigidBodyBundle {
+pub struct Aspen2dPhysicsBundle {
     /// rigidbody
     pub rigidbody: RigidBody,
     /// velocity
@@ -111,7 +136,7 @@ pub struct RigidBodyBundle {
     pub damping_prop: Damping,
 }
 
-impl RigidBodyBundle {
+impl Aspen2dPhysicsBundle {
     /// default enemy rigidbody stats
     pub const DEFAULT_CHARACTER: Self = Self {
         rigidbody: bevy_rapier2d::prelude::RigidBody::Dynamic,
@@ -127,7 +152,7 @@ impl RigidBodyBundle {
     };
 }
 
-impl Default for RigidBodyBundle {
+impl Default for Aspen2dPhysicsBundle {
     fn default() -> Self {
         Self::DEFAULT_CHARACTER
     }
@@ -142,8 +167,8 @@ impl std::fmt::Debug for WeaponBundle {
             .field("damage", &self.damage)
             .field("weapon_type", &self.weapon_type)
             .field("stats", &self.stats)
-            .field("sprite", &self.sprite.spritesheet)
-            .field("rigidbody_bundle", &self.rigidbody_bundle.rigidbody)
+            .field("render", &self.render)
+            .field("rigidbody_bundle", &self.physics.rigidbody)
             .finish()
     }
 }

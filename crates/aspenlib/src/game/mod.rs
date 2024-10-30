@@ -1,6 +1,8 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::primitives::Aabb};
+use bevy_rapier2d::prelude::Collider;
 
 use crate::{
+    bundles::NeedsCollider,
     game::components::{ActorColliderType, TimeToLive},
     loading::{
         custom_assets::actor_definitions::{CharacterDefinition, ItemDefinition},
@@ -30,6 +32,8 @@ pub mod input;
 pub mod interface;
 /// game item spawning and functionality
 pub mod items;
+/// player progression module
+pub mod progress;
 
 /// are we in dungeon yet?
 #[derive(Debug, Clone, Eq, PartialEq, Hash, States, Resource, Default, Reflect)]
@@ -65,6 +69,7 @@ impl Plugin for AspenHallsPlugin {
         app
             // actual game plugin
             .add_plugins((
+                progress::GameProgressPlugin,
                 audio::AudioPlugin,
                 combat::CombatPlugin,
                 characters::CharactersPlugin,
@@ -76,7 +81,15 @@ impl Plugin for AspenHallsPlugin {
             ))
             .add_systems(
                 Update,
-                ((update_actor_size, time_to_live).run_if(playing_game()),),
+                ((
+                    // update_actor_size,
+                    time_to_live
+                )
+                    .run_if(playing_game()),),
+            )
+            .add_systems(
+                PreUpdate,
+                add_aabb_based_colliders.run_if(any_with_component::<NeedsCollider>),
             );
     }
 }
@@ -90,14 +103,42 @@ fn time_to_live(
     for (entity, mut timer) in &mut query {
         if timer.tick(time.delta()).finished() {
             let Some(a) = commands.get_entity(entity) else {
-                return;
+                continue;
             };
             a.despawn_recursive();
         }
     }
 }
 
-/// update actor size if its custom size is not already set
+fn add_aabb_based_colliders(
+    mut cmds: Commands,
+    needscollider_q: Query<(Entity, &Parent), (Without<Collider>, With<NeedsCollider>)>,
+    aabbs_q: Query<&Aabb>,
+    // names_q: Query<&Name>,
+) {
+    for (needs_collider, parent) in &needscollider_q {
+        let Ok(aabb) = aabbs_q.get(parent.get()) else {
+            continue;
+        };
+        let start = Vec2::ZERO
+            + Vec2 {
+                x: 0.0,
+                y: aabb.half_extents.x / 2.0,
+            };
+        let end = Vec2::ZERO
+            + Vec2 {
+                x: 0.0,
+                y: aabb.half_extents.y,
+            };
+
+        let collider = Collider::capsule(start, end, aabb.half_extents.x / 2.0);
+        cmds.entity(needs_collider)
+            .remove::<NeedsCollider>()
+            .insert(collider);
+    }
+}
+
+/// modifys all actors in game such that the actors image asset is rendered relative too pixel size
 fn update_actor_size(
     mut query: Query<(&mut Sprite, &TextureAtlas, &RegistryIdentifier)>,
     texture_atlasses: Res<Assets<TextureAtlasLayout>>,
@@ -124,9 +165,9 @@ fn update_actor_size(
                 .find(|(_, asset)| asset.actor.identifier == *registry_identifier);
 
             if let Some((_, def)) = maybe_characer {
-                def.actor.pixel_size
+                Vec2::splat(def.actor.tile_size)
             } else if let Some((_, def)) = maybe_item {
-                def.actor.pixel_size
+                Vec2::splat(def.actor.tile_size)
             } else {
                 warn!("character has no asset");
                 continue;

@@ -2,15 +2,12 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    bundles::{ActorColliderBundle, ProjectileBundle, RigidBodyBundle},
+    bundles::{Aspen2dPhysicsBundle, AspenColliderBundle, NeedsCollider, ProjectileBundle},
     consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX},
     game::{
-        animations::{EventAnimationChange, GunAnimations},
-        attributes_stats::{Damage, ProjectileStats},
-        components::{ActorColliderType, TimeToLive},
-        items::weapons::components::{
-            AttackDamage, CurrentAmmo, CurrentlyDrawnWeapon, GunCfg, WeaponHolder, WeaponTimers,
-        },
+        animations::{EventAnimationChange, GunAnimations}, attributes_stats::{Damage, ProjectileStats}, audio::{EventPlaySpatialSound, S_GUNSHOT}, components::{ActorColliderType, TimeToLive}, items::weapons::components::{
+            AttackDamage, CurrentlyDrawnWeapon, GunCfg, WeaponAmmoCount, WeaponHolder, WeaponTimers,
+        }
     },
     loading::assets::AspenInitHandles,
     utilities::EntityCreator,
@@ -44,26 +41,19 @@ pub struct GunShootEvent {
 /// updates weapon timers
 fn update_gun_timers(
     time: Res<Time>,
-    mut anim_events: EventWriter<EventAnimationChange>,
     mut weapon_query: Query<
-        (Entity, &mut CurrentAmmo, &mut WeaponTimers),
+        (&mut WeaponAmmoCount, &mut WeaponTimers),
         (With<Parent>, With<CurrentlyDrawnWeapon>),
     >,
 ) {
-    for (weapon, mut current_ammo, mut firing_timers) in &mut weapon_query {
-        if current_ammo.current == 0 {
-            if firing_timers.refill.remaining_secs() < 0.7 {
-                anim_events.send(EventAnimationChange {
-                    anim_handle: AnimHandle::from_index(GunAnimations::RELOAD),
-                    actor: weapon,
-                });
-            }
+    for (mut current_ammo, mut firing_timers) in &mut weapon_query {
+        if current_ammo.reloading {
             firing_timers.refill.tick(time.delta());
 
             if firing_timers.refill.finished() {
-                // warn!("finished reloading");
                 firing_timers.refill.reset();
                 current_ammo.current = current_ammo.max;
+                current_ammo.reloading = false;
             }
         } else {
             firing_timers.attack.tick(time.delta());
@@ -78,11 +68,12 @@ pub fn receive_gun_shots(
     assets: Res<AspenInitHandles>,
     mut gun_shoot_events: EventReader<GunShootEvent>,
     mut anim_events: EventWriter<EventAnimationChange>,
+    mut sound_events: EventWriter<EventPlaySpatialSound>,
     mut weapon_query: Query<
         (
             Entity,
             &GlobalTransform,
-            &mut CurrentAmmo,
+            &mut WeaponAmmoCount,
             &mut WeaponTimers,
             &WeaponHolder,
             &AttackDamage,
@@ -91,7 +82,7 @@ pub fn receive_gun_shots(
     >,
 ) {
     for event in &mut gun_shoot_events.read() {
-        let Ok((weapon, global_transform, mut current_ammo, mut timers, holder, attack)) =
+        let Ok((weapon, global_transform, mut ammo_counter, mut timers, holder, attack)) =
             weapon_query.get_mut(event.gun)
         else {
             error!("invalid gun");
@@ -99,19 +90,20 @@ pub fn receive_gun_shots(
         };
         let cfg = event.settings;
 
-        if current_ammo.current == 0 {
-            if timers.refill.remaining_secs() < 0.5 {
-                anim_events.send(EventAnimationChange {
-                    anim_handle: AnimHandle::from_index(GunAnimations::RELOAD),
-                    actor: weapon,
-                });
-            }
-            // warn!("reloading");
-            continue;
-        } else if timers.attack.finished() || current_ammo.current == cfg.max_ammo {
-            // info!("bang!");
+        if ammo_counter.current == 0 && ammo_counter.reloading == false {
+            ammo_counter.reloading = true;
             anim_events.send(EventAnimationChange {
-                anim_handle: AnimHandle::from_index(GunAnimations::FIRE),
+                anim_handle: vec![GunAnimations::RELOAD, GunAnimations::IDLE],
+                actor: weapon,
+            });
+            continue;
+        } else if timers.attack.finished() && ammo_counter.current != 0 {
+            sound_events.send(EventPlaySpatialSound {
+                emitter_id: weapon,
+                sound_id: S_GUNSHOT,
+            });
+            anim_events.send(EventAnimationChange {
+                anim_handle: vec![GunAnimations::FIRE, GunAnimations::IDLE],
                 actor: weapon,
             });
 
@@ -121,8 +113,7 @@ pub fn receive_gun_shots(
             let transform =
                 Transform::from_translation(translation + offset).with_rotation(rotation);
 
-            timers.attack.reset();
-            current_ammo.current -= 1;
+            ammo_counter.current -= 1;
             create_bullet(
                 requester,
                 &mut cmds,
@@ -131,6 +122,7 @@ pub fn receive_gun_shots(
                 transform,
                 (cfg.projectile_speed, cfg.projectile_size),
             );
+            timers.attack.reset();
         }
     }
 }
@@ -174,7 +166,7 @@ pub fn create_bullet(
                 },
                 ..default()
             },
-            rigidbody_bundle: RigidBodyBundle {
+            rigidbody_bundle: Aspen2dPhysicsBundle {
                 velocity: Velocity::linear(velocity_direction * projectile_speed),
                 rigidbody: RigidBody::Dynamic,
                 friction: Friction::coefficient(0.2),
@@ -192,7 +184,7 @@ pub fn create_bullet(
     .with_children(|child| {
         child.spawn((
             EntityCreator(entity),
-            ActorColliderBundle {
+            AspenColliderBundle {
                 name: Name::new("GunProjectileCollider"),
                 transform_bundle: TransformBundle {
                     local: (Transform {
@@ -201,7 +193,7 @@ pub fn create_bullet(
                     }),
                     ..default()
                 },
-                collider: Collider::ball(3.0),
+                collider: NeedsCollider, //Collider::ball(3.0),
                 collision_groups: CollisionGroups::new(
                     AspenCollisionLayer::PROJECTILE,
                     AspenCollisionLayer::WORLD | AspenCollisionLayer::ACTOR,
@@ -214,34 +206,29 @@ pub fn create_bullet(
     });
 }
 
-use bevy_asepritesheet::{
-    prelude::Spritesheet,
-    sprite::{AnimEndAction, AnimHandle},
-};
+// /// format gun animations with proper speed and transitions
+// pub fn format_gun_animations(sheet: &mut Spritesheet) {
+//     let handle_idle = sheet.get_anim_handle("idle");
+//     let handle_wiggle = sheet.get_anim_handle("wiggle");
+//     let handle_fire = sheet.get_anim_handle("fire");
+//     let handle_reload = sheet.get_anim_handle("reload");
 
-/// format gun animations with proper speed and transitions
-pub fn format_gun_animations(sheet: &mut Spritesheet) {
-    let handle_idle = sheet.get_anim_handle("idle");
-    let handle_wiggle = sheet.get_anim_handle("wiggle");
-    let handle_fire = sheet.get_anim_handle("fire");
-    let handle_reload = sheet.get_anim_handle("reload");
-
-    if let Ok(anim_idle) = sheet.get_anim_mut(&handle_idle) {
-        anim_idle.end_action = AnimEndAction::Loop;
-    }
-    if let Ok(anim_wiggle) = sheet.get_anim_mut(&handle_wiggle) {
-        anim_wiggle.time_scale = 1.0;
-        anim_wiggle.end_action = AnimEndAction::Next(handle_idle);
-    }
-    if let Ok(anim_fire) = sheet.get_anim_mut(&handle_fire) {
-        anim_fire.time_scale = 2.0;
-        anim_fire.end_action = AnimEndAction::Next(handle_idle);
-    }
-    if let Ok(anim_reload) = sheet.get_anim_mut(&handle_reload) {
-        anim_reload.time_scale = 0.5;
-        anim_reload.end_action = AnimEndAction::Next(handle_idle);
-    }
-}
+//     if let Ok(anim_idle) = sheet.get_anim_mut(&handle_idle) {
+//         anim_idle.end_action = AnimEndAction::Loop;
+//     }
+//     if let Ok(anim_wiggle) = sheet.get_anim_mut(&handle_wiggle) {
+//         anim_wiggle.time_scale = 1.0;
+//         anim_wiggle.end_action = AnimEndAction::Next(handle_idle);
+//     }
+//     if let Ok(anim_fire) = sheet.get_anim_mut(&handle_fire) {
+//         anim_fire.time_scale = 2.0;
+//         anim_fire.end_action = AnimEndAction::Next(handle_idle);
+//     }
+//     if let Ok(anim_reload) = sheet.get_anim_mut(&handle_reload) {
+//         anim_reload.time_scale = 0.5;
+//         anim_reload.end_action = AnimEndAction::Next(handle_idle);
+//     }
+// }
 
 // use bevy::{
 //     ecs::{query::Without, schedule::IntoSystemConfigs},

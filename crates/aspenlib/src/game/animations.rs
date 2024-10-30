@@ -1,8 +1,7 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
-use bevy_asepritesheet::{
-    animator::SpriteAnimator,
-    prelude::{AnimHandle, Spritesheet},
-};
+use bevy_aseprite_ultra::prelude::{Animation, AnimationRepeat, Aseprite};
 use bevy_rapier2d::prelude::Velocity;
 
 use crate::{
@@ -23,23 +22,25 @@ pub struct GunAnimations;
 pub struct CharacterAnimations;
 
 impl GunAnimations {
-    // pub const IDLE: usize = 0;
-    // pub const WIGGLE: usize = 1;
+    /// gun still movement
+    pub const IDLE: &str = "idle";
+    /// gun vibrate with movement anim
+    pub const WIGGLE: &str = "wiggle";
     /// gun fire animation index
-    pub const FIRE: usize = 2;
+    pub const FIRE: &str = "fire";
     /// gun reload animation index
-    pub const RELOAD: usize = 3;
+    pub const RELOAD: &str = "reload";
 }
 
 impl CharacterAnimations {
     /// character idle animation index
-    pub const IDLE: usize = 0;
+    pub const IDLE: &str = "idle";
     /// character walk down animation index
-    pub const WALK_DOWN: usize = 1;
+    pub const WALK_SOUTH: &str = "walk_south";
     /// character walk up animation index
-    pub const WALK_UP: usize = 2;
+    pub const WALK_NORTH: &str = "walk_north";
     /// character walk horizontal animation index
-    pub const WALK_RIGHT: usize = 3;
+    pub const WALK_EAST: &str = "walk_east";
 }
 
 impl Plugin for AnimationsPlugin {
@@ -67,20 +68,20 @@ fn change_character_animations(
         match move_status {
             CurrentMovement::None => {
                 change_events.send(EventAnimationChange {
-                    anim_handle: AnimHandle::from_index(CharacterAnimations::IDLE),
+                    anim_handle: vec![CharacterAnimations::IDLE],
                     actor: character,
                 });
             }
             _ => match move_direction {
                 MoveDirection::South => {
                     change_events.send(EventAnimationChange {
-                        anim_handle: AnimHandle::from_index(CharacterAnimations::WALK_DOWN),
+                        anim_handle: vec![CharacterAnimations::WALK_SOUTH],
                         actor: character,
                     });
                 }
                 MoveDirection::North => {
                     change_events.send(EventAnimationChange {
-                        anim_handle: AnimHandle::from_index(CharacterAnimations::WALK_UP),
+                        anim_handle: vec![CharacterAnimations::WALK_NORTH],
                         actor: character,
                     });
                 }
@@ -88,7 +89,7 @@ fn change_character_animations(
                     let mut sprite = sprite_query.get_mut(character).expect("msg");
                     sprite.flip_x = false;
                     change_events.send(EventAnimationChange {
-                        anim_handle: AnimHandle::from_index(CharacterAnimations::WALK_RIGHT),
+                        anim_handle: vec![CharacterAnimations::WALK_EAST],
                         actor: character,
                     });
                 }
@@ -97,7 +98,7 @@ fn change_character_animations(
                     sprite.flip_x = true;
 
                     change_events.send(EventAnimationChange {
-                        anim_handle: AnimHandle::from_index(CharacterAnimations::WALK_RIGHT),
+                        anim_handle: vec![CharacterAnimations::WALK_EAST],
                         actor: character,
                     });
                 }
@@ -110,31 +111,55 @@ fn change_character_animations(
 /// updates actors animations
 fn handle_animation_changes(
     mut change_events: EventReader<EventAnimationChange>,
-    mut animateable: Query<(&mut SpriteAnimator, &Handle<Spritesheet>)>,
-    sprite_sheets: Res<Assets<Spritesheet>>,
+    mut animateable: Query<(&mut Animation, &Handle<Aseprite>)>,
+    aseprites: Res<Assets<Aseprite>>,
 ) {
+    for (mut animator, _) in &mut animateable {
+        if animator.tag.is_some() {
+            continue;
+        } else {
+            animator.tag = Some("idle".to_string())
+        }
+    }
+
     for event in change_events.read() {
-        let Ok((mut animator, sheet_handle)) = animateable.get_mut(event.actor) else {
+        let Ok((mut animator, aseprite_handle)) = animateable.get_mut(event.actor) else {
             return;
         };
 
-        let sprite_sheet = sprite_sheets
-            .get(sheet_handle)
-            .expect("sprite sheet should exist for this actor");
+        if event.anim_handle.len() == 1
+            && let Some(tag) = event.anim_handle.first()
+        {
+            let aseprite_file = aseprites
+                .get(aseprite_handle)
+                .expect("sprite sheet should exist for this actor");
 
-        let Ok(animation) = sprite_sheet
-            .get_anim(&event.anim_handle) else {
+            if !aseprite_file.tags.contains_key(&tag.to_string()) {
                 warn!("animation id does not exist in spritesheet");
                 continue;
-            };
-        let anim_time = animation.total_time();
+            }
 
-        if animator.is_cur_anim(event.anim_handle) && animator.cur_time() < anim_time
-            || animator.cur_anim().unwrap_or(AnimHandle::from_index(0)) == event.anim_handle
-        {
-            continue;
+            animator.tag = Some(tag.to_string());
+        } else if event.anim_handle.len() > 1 {
+            animator.clear_queue();
+            animator.tag = None;
+            animator.repeat = AnimationRepeat::Count(1);
+            animator.playing = true;
+            event
+                .anim_handle
+                .iter()
+                .enumerate()
+                .for_each(|(_idx, tag)| {
+                    animator.queue.push_back((
+                        tag.to_string(),
+                        if _idx == event.anim_handle.len() - 1 {
+                            AnimationRepeat::Loop
+                        } else {
+                            AnimationRepeat::Count(0)
+                        },
+                    ));
+                });
         }
-        animator.set_anim(event.anim_handle);
     }
 }
 
@@ -142,7 +167,15 @@ fn handle_animation_changes(
 #[derive(Debug, Event)]
 pub struct EventAnimationChange {
     /// animation too set
-    pub anim_handle: AnimHandle,
+    pub anim_handle: Vec<&'static str>,
     /// what actor too change animation on
     pub actor: Entity,
+}
+
+// TODO: use this
+pub struct ActorAnimation {
+    tag: String,
+    speed: f32,
+    repeat: AnimationRepeat,
+    queue: VecDeque<ActorAnimation>,
 }
