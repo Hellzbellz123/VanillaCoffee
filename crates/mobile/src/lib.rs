@@ -15,13 +15,14 @@ fn main() {
         window_settings: WindowSettings {
             software_cursor_enabled: true,
             v_sync: true,
-            frame_rate_target: 144.0,
+            frame_rate_target: 120.0,
             full_screen: true,
             resolution: Vec2 {
                 x: 1920.0,
                 y: 1080.0,
             },
-            window_scale_override: 1.75,
+            window_scale: 2.0,
+            ui_scale: 1.0,
         },
         sound_settings: SoundSettings {
             master_volume: 1.0,
@@ -31,7 +32,7 @@ fn main() {
         },
         general_settings: GeneralSettings {
             enable_touch_controls: true,
-            camera_zoom: 3.5,
+            camera_zoom: 5.5,
             game_difficulty: GameDifficulty::Medium,
         },
         render_settings: RenderSettings { msaa: false },

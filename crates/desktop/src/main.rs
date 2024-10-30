@@ -75,7 +75,8 @@ pub fn load_settings() -> ConfigFile {
                     v_sync: cfg.window_settings.v_sync,
                     frame_rate_target: cfg.window_settings.frame_rate_target,
                     full_screen: cfg.window_settings.full_screen,
-                    window_scale_override: cfg.window_settings.window_scale_override,
+                    window_scale: cfg.window_settings.window_scale,
+                    ui_scale: cfg.window_settings.ui_scale,
                 },
 
                 sound_settings: SoundSettings {

@@ -92,8 +92,8 @@ fn spawn_pause_menu(
                             margin: UiRect {
                                 left: Val::Percent(40.0),
                                 right: Val::Px(0.0),
-                                top: Val::Percent(10.0),
-                                bottom: Val::Percent(10.0),
+                                top: Val::Px(50.0),
+                                bottom: Val::Auto,
                             },
                             padding: UiRect::all(Val::Px(0.0)).with_top(Val::Px(5.0)),
                             ..default()

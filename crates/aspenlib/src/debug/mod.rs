@@ -16,7 +16,7 @@ pub mod debug_plugin {
         input::common_conditions::input_toggle_active,
         prelude::*,
     };
-    use bevy_debug_text_overlay::OverlayPlugin;
+    // use bevy_debug_text_overlay::OverlayPlugin;
     use bevy_ecs_ldtk::{assets::LdtkProject, GridCoords, IntGridCell, LayerMetadata};
     use bevy_inspector_egui::{
         bevy_inspector::{ui_for_all_assets, ui_for_resources, ui_for_world_entities_filtered},
@@ -107,10 +107,10 @@ pub mod debug_plugin {
                     wait_duration: Duration::from_secs(20),
                     ..Default::default()
                 },
-                OverlayPlugin {
-                    font_size: 32.0,
-                    ..Default::default()
-                },
+                // OverlayPlugin {
+                //     font_size: 32.0,
+                //     ..Default::default()
+                // },
             ))
             // TODO: refactor these systems into nice sets and stages
             .add_systems(

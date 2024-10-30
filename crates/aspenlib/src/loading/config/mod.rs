@@ -5,6 +5,7 @@ use bevy::{
     window::{Cursor, PresentMode, WindowMode, WindowResized, WindowResolution},
 };
 use bevy_ecs_ldtk::assets::LdtkProject;
+use bevy_framepace::{FramepaceSettings, Limiter};
 use bevy_kira_audio::{AudioChannel, AudioControl};
 
 use serde::{Deserialize, Serialize};
@@ -63,7 +64,9 @@ pub struct WindowSettings {
     /// full screen yes/no
     pub full_screen: bool,
     /// window scale factor, only set upon start
-    pub window_scale_override: f64,
+    pub window_scale: f64,
+    /// game ui scale
+    pub ui_scale: f64,
     /// display resolution
     pub resolution: Vec2,
 }
@@ -227,7 +230,8 @@ impl Default for WindowSettings {
                 x: 1200.0,
                 y: 720.0,
             },
-            window_scale_override: 1.0,
+            window_scale: 1.0,
+            ui_scale: 1.0,
         }
     }
 }
@@ -285,9 +289,9 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
                     resolution: WindowResolution::new(
                         cfg_file.window_settings.resolution.x,
                         cfg_file.window_settings.resolution.y,
-                    ), // .with_scale_factor_override(
-                    //     cfg_file.window_settings.window_scale_override,
-                    // )
+                    ).with_scale_factor_override(
+                        cfg_file.window_settings.window_scale as f32,
+                    ),
                     mode: {
                         if cfg_file.window_settings.full_screen {
                             // if full screen is true, use borderless full screen
@@ -353,30 +357,32 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
 fn apply_window_settings(
     // winit: NonSend<bevy::winit::WinitWindows>,
     window_settings: Res<WindowSettings>,
-    // mut frame_limiter_cfg: ResMut<FramepaceSettings>,
+    mut ui_scale: ResMut<UiScale>,
+    mut frame_limiter_cfg: ResMut<FramepaceSettings>,
     mut mut_window_entity: Query<(Entity, &mut Window)>,
     mut last_resolution: Local<Vec2>,
 ) {
     let (_w_ent, mut b_window) = mut_window_entity.single_mut();
 
     // TODO: fix this system too work better?
-    if window_settings.resolution == *last_resolution
+    if window_settings.resolution != *last_resolution
         && *last_resolution
-            == (Vec2 {
+            != (Vec2 {
                 x: b_window.width(),
                 y: b_window.height(),
             })
     {
-        return;
+        *last_resolution = window_settings.resolution;
     }
-    *last_resolution = window_settings.resolution;
+
+    *ui_scale = UiScale(window_settings.ui_scale as f32);
 
     // let w_window = winit.get_window(w_ent).unwrap();
 
-    // let requested_limiter = Limiter::from_framerate(window_settings.frame_rate_target);
-    // if frame_limiter_cfg.limiter != requested_limiter {
-    //     frame_limiter_cfg.limiter = requested_limiter;
-    // }
+    let requested_limiter = Limiter::from_framerate(window_settings.frame_rate_target);
+    if frame_limiter_cfg.limiter != requested_limiter {
+        frame_limiter_cfg.limiter = requested_limiter;
+    }
 
     if window_settings.full_screen && b_window.mode != WindowMode::BorderlessFullscreen {
         b_window.mode = WindowMode::BorderlessFullscreen;

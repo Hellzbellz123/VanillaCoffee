@@ -9,7 +9,11 @@ use crate::{
         attributes_stats::{CharacterStats, DamageQueue},
         characters::player::PlayerSelectedHero,
         combat::unarmed::EventAttackUnarmed,
-        game_world::{RegenReason, RegenerateDungeonEvent},
+        game_world::{
+            components::{ActorTeleportEvent, TpTriggerEffect},
+            dungeonator_v2::GeneratorState,
+            RegenReason, RegenerateDungeonEvent,
+        },
         items::weapons::{
             components::{WeaponDescriptor, WeaponHolder},
             EventAttackWeapon,
@@ -89,7 +93,9 @@ fn handle_death_system(
         ),
         Changed<CharacterStats>,
     >,
+    dungeon_state: Res<State<GeneratorState>>,
     mut regen_event: EventWriter<RegenerateDungeonEvent>,
+    mut tp_event: EventWriter<ActorTeleportEvent>,
 ) {
     for (ent, mut stats, _transform, player_control) in &mut damaged_query {
         if stats.get_current_health() <= 0.0 {
@@ -100,9 +106,17 @@ fn handle_death_system(
                 stats.set_health(150.0);
                 game_info.player_deaths += 1;
 
-                regen_event.send(RegenerateDungeonEvent {
-                    reason: RegenReason::PlayerDeath,
-                });
+                if *dungeon_state.get() == GeneratorState::FinishedDungeonGen {
+                    regen_event.send(RegenerateDungeonEvent {
+                        reason: RegenReason::PlayerDeath,
+                    });
+                } else {
+                    tp_event.send(ActorTeleportEvent {
+                        tp_type: TpTriggerEffect::Event("TeleportStartLocation".to_string()),
+                        target: Some(ent),
+                        sender: Some(ent),
+                    });
+                }
                 continue;
             }
 

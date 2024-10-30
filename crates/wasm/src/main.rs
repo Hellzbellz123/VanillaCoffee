@@ -42,7 +42,8 @@ fn main() {
             frame_rate_target: 60.0,
             full_screen: false,
             resolution: Vec2::new(1920.0, 1080.0),
-            window_scale_override: 1.0,
+            window_scale: 1.0,
+            ui_scale: 1.0,
         },
         sound_settings: SoundSettings {
             master_volume: 0.5,

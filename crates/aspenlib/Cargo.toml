@@ -124,9 +124,9 @@ bevy_kira_audio = { path = "../../deps/bevy_kira_audio", default-features = fals
 bevy_mod_debugdump = { path = "../../deps/bevy_mod_debugdump", features = [
   "render_graph",
 ] }
-bevy-debug-text-overlay = { path = "../../deps/bevy_debug_text_overlay", default-features = false, features = [
-  "debug",
-] }
+# bevy-debug-text-overlay = { path = "../../deps/bevy_debug_text_overlay", default-features = false, features = [
+#   "debug",
+# ] }
 bevy_mod_picking = { path = "../../deps/bevy_mod_picking/", default-features = false, features = [
   "backend_raycast",
   "backend_sprite",
