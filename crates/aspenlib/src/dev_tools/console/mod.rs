@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use bevy_console::{AddConsoleCommand, ConsoleConfiguration, ConsolePlugin};
+use bevy_console::{
+    AddConsoleCommand, ConsoleConfiguration, ConsolePlugin,
+};
+use tracing_subscriber::Registry;
 
 /// holds definitions of commands
 mod commands;
@@ -30,8 +33,14 @@ impl Plugin for QuakeConPlugin {
     }
 }
 
-// TODO make a global subscriber that takes this line and prints it
-// too a tab in the console page, 3 tabs, a repl like tab, cmds tab, and a log tab
-// fn write_to_console(mut console_line: EventWriter<PrintConsoleLine>) {
-//     console_line.send(PrintConsoleLine::new("Hello".to_string()));
-// }
+/// initializes log capture too ingame console unless your on a wasm target
+/// wasm doesnt support std:time and somewhere in the log chain its used, causing a crash.
+pub fn init_log_layers(
+    app: &mut App,
+) -> Option<Box<dyn tracing_subscriber::Layer<Registry> + Send + Sync>> {
+    if cfg!(not(target_family = "wasm")) {
+        bevy_console::make_layer(app)
+    } else {
+        None
+    }
+}

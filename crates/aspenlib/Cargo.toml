@@ -134,3 +134,4 @@ bevy_mod_picking = { path = "../../deps/bevy_mod_picking/", default-features = f
   "selection",
   "highlight",
 ] }
+tracing-subscriber = "0.3.18"

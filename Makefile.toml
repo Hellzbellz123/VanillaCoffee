@@ -41,7 +41,7 @@ script.main = '''
 '''
 
 [tasks.run-native]
-dependencies = ["copy-assets"]
+dependencies = ["copy-crate-assets"]
 cwd = "crates/desktop/"
 workspace = false
 description = ""
@@ -49,7 +49,7 @@ command = "cargo"
 args = ["run", "--features=develop,dynamic"]
 
 [tasks.run-web]
-dependencies = ["copy-assets"]
+dependencies = ["copy-crate-assets"]
 cwd = "crates/wasm/"
 workspace = false
 description = ""
@@ -57,7 +57,7 @@ command = "trunk"
 args = ["serve", "--open", "--features", "develop"]
 
 [tasks.run-mobile]
-dependencies = ["copy-assets"]
+dependencies = ["copy-crate-assets"]
 cwd = "crates/mobile/"
 workspace = false
 description = ""
@@ -65,7 +65,7 @@ condition.env_set = ["BUNDLETOOL_PATH", "ANDROID_NDK_ROOT", "JAVA_HOME"]
 command = "cargo"
 args = ["apk", "run", "--package=aspen_halls_mobile", "--features=develop"]
 
-[tasks.copy-assets]
+[tasks.copy-crate-assets]
 workspace = false
 script_runner = "@shell"
 script.main = "echo 'refreshing desktop assets' && rm -rf crates/desktop/assets && cp -r assets crates/desktop/assets"

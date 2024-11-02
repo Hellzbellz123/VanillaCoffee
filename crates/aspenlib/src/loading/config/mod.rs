@@ -1,3 +1,6 @@
+use std::sync::{Arc, Mutex};
+
+use bevy_console::BevyLogBuffer;
 use serde::{Deserialize, Serialize};
 
 use bevy::{
@@ -10,6 +13,7 @@ use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_framepace::{FramepaceSettings, Limiter};
 use bevy_inspector_egui::prelude::*;
 use bevy_kira_audio::{AudioChannel, AudioControl};
+use tracing_subscriber::Registry;
 
 use crate::{
     game::audio::{AmbienceSoundChannel, GameSoundChannel, MusicSoundChannel},
@@ -232,10 +236,7 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
                 cfg_file.log_filter.unwrap_or_default()
             },
             level: bevy::log::Level::TRACE,
-            #[cfg(target_family = "wasm")]
-            custom_layer: None,
-            #[cfg(not(target_family = "wasm"))]
-            custom_layer: bevy_console::make_layer,
+            custom_layer: crate::dev_tools::console::init_log_layers
         },
         AssetPlugin {
             file_path: "assets".to_string(),

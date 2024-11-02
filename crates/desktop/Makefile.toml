@@ -13,7 +13,7 @@ run_task = { name = ["package-artifacts"] }
 
 [tasks.package-artifacts]
 private = true
-dependencies = ["copy-assets", "copy-bin-windows", "copy-bin-linux"]
+dependencies = ["copy-package-assets", "copy-bin-windows", "copy-bin-linux"]
 workspace = false
 run_task = { name = ["zip-artifacts"] }
 
@@ -49,7 +49,7 @@ script_runner = "@shell"
 script.pre = "echo 'copying linux binary too package directory and stripping symbols'"
 script.main = "cp ../../target/x86_64-unknown-linux-gnu/release/aspen_halls_desktop ../../package/desktop && strip ../../package/desktop/aspen_halls_desktop"
 
-[tasks.copy-assets]
+[tasks.copy-package-assets]
 private = true
 script_runner = "@shell"
 script.pre = "echo 'copying game assets too package directory'"
