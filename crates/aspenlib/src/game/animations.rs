@@ -114,15 +114,18 @@ fn handle_animation_changes(
 ) {
     for event in change_events.read() {
         let Ok((mut animator, aseprite_handle)) = animateable.get_mut(event.actor) else {
-            return;
+            error!("animation event requested for entity that did not have required animation components");
+            continue;
         };
 
         if event.anim_handle.len() == 1
             && let Some(tag) = event.anim_handle.first()
         {
-            let aseprite_file = aseprites
-                .get(aseprite_handle)
-                .expect("sprite sheet should exist for this actor");
+            let Some(aseprite_file) = aseprites
+                .get(aseprite_handle) else {
+                    warn!("sprite sheet should exist for this actor");
+                    continue;
+                };
 
             if !aseprite_file.tags.contains_key(&(*tag).to_string()) {
                 warn!("animation id does not exist in spritesheet");

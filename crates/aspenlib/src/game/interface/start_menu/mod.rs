@@ -150,6 +150,7 @@ fn spawn_start_menu(
                                 "Settings",
                                 SettingsMenuToggleButton,
                             );
+                            #[cfg(not(target_family = "wasm"))]
                             spawn_button(
                                 buttons,
                                 assets.font_regular.clone(),

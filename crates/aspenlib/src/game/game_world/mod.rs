@@ -24,8 +24,8 @@ use crate::{
             },
             dungeonator_v2::{components::Dungeon, GeneratorState},
             world_objects::{
-                LdtkCharacterSpawner, LdtkHeroLocation, LdtkSpawnerWave, LdtkStartLocation,
-                LdtkTeleporter, LdtkWeaponSpawner,
+                all_levels_transformed, LdtkCharacterSpawner, LdtkHeroLocation, LdtkSpawnerWave,
+                LdtkStartLocation, LdtkTeleporter, LdtkWeaponSpawner,
             },
         },
         input::action_maps,
@@ -89,10 +89,14 @@ impl Plugin for GameWorldPlugin {
                     (
                         listen_rebuild_dungeon_request,
                         debug_regen_dungeon,
-                        game_world::world_objects::character_spawners_system.run_if(
-                            in_state(GeneratorState::NoDungeon)
-                                .or_else(in_state(GeneratorState::FinishedDungeonGen)),
-                        ),
+                        game_world::world_objects::character_spawners_system
+                            .after(TransformSystem::TransformPropagate)
+                            .run_if(
+                                all_levels_transformed.and_then(
+                                    in_state(GeneratorState::NoDungeon)
+                                        .or_else(in_state(GeneratorState::FinishedDungeonGen)),
+                                ),
+                            ),
                     )
                         .run_if(in_state(AppStage::Running)),
                 ),

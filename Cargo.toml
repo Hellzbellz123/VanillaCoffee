@@ -8,12 +8,6 @@ exclude = ["deps"]
 missing-docs = { level = "deny" }
 
 [workspace.lints.clippy]
-### warned lints ###
-too-many-lines = "warn"
-missing_errors_doc = "warn"
-missing_panics_doc = "warn"
-missing_safety_doc = "warn"
-
 ### denied lints ###
 missing_docs_in_private_items = { level = "deny" }
 correctness = { level = "deny", priority = -1 }
@@ -24,6 +18,12 @@ style = { level = "deny", priority = -1 }
 pedantic = { level = "deny", priority = -1 }
 nursery = { level = "deny", priority = -1 }
 cargo = { level = "deny", priority = -1 }
+
+### warned lints ###
+too-many-lines = "warn"
+missing_errors_doc = "warn"
+missing_panics_doc = "warn"
+missing_safety_doc = "warn"
 
 ### allowed lints from clippy pedantic ###
 multiple-crate-versions = { level = "allow" }

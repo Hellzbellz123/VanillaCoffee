@@ -40,7 +40,7 @@ fn main() {
             v_sync: true,
             frame_rate_target: 60.0,
             full_screen: false,
-            resolution: Vec2::new(1920.0, 1080.0),
+            resolution: Vec2::new(1280.0, 720.0),
             window_scale: 1.0,
             ui_scale: 1.0,
         },

@@ -155,6 +155,7 @@ fn spawn_pause_menu(
                                 "Main Menu",
                                 BackToMainMenuTag,
                             );
+                            #[cfg(not(target_family = "wasm"))]
                             spawn_button(
                                 buttons,
                                 assets.font_regular.clone(),

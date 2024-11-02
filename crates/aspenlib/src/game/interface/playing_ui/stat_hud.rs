@@ -47,6 +47,7 @@ fn create_hero_portrait(hud_parts: &mut ChildBuilder) {
                 style: Style {
                     width: Val::Percent(35.0),
                     height: Val::Percent(100.0),
+                    justify_content: JustifyContent::Center,
                     overflow: Overflow::clip(),
                     ..default()
                 },
@@ -63,6 +64,8 @@ fn create_hero_portrait(hud_parts: &mut ChildBuilder) {
                 },
                 ImageBundle {
                     style: Style {
+                        margin: UiRect::top(Val::Percent(60.0)),
+                        align_self: AlignSelf::Center,
                         width: Val::Percent(200.0),
                         height: Val::Percent(200.0),
                         ..default()

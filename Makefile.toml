@@ -68,7 +68,9 @@ args = ["apk", "run", "--package=aspen_halls_mobile", "--features=develop"]
 [tasks.copy-assets]
 workspace = false
 script_runner = "@shell"
-script.pre = "rm -rf crates/desktop/assets && cp -r assets crates/desktop/assets && rm -rf crates/wasm/assets && cp -r assets crates/wasm/assets && rm -rf crates/mobile/assets && cp -r assets crates/mobile/assets"
+script.main = "echo 'refreshing desktop assets' && rm -rf crates/desktop/assets && cp -r assets crates/desktop/assets"
+script.pre = "echo 'refreshing wasm assets' && rm -rf crates/wasm/assets && cp -r assets crates/wasm/assets"
+script.post = "echo 'refreshing mobile assets' && rm -rf crates/mobile/assets && cp -r assets crates/mobile/assets"
 
 [tasks.package-release]
 description = "runs package release workflow for each target"

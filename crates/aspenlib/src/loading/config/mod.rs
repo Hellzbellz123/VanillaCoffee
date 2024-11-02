@@ -232,6 +232,9 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
                 cfg_file.log_filter.unwrap_or_default()
             },
             level: bevy::log::Level::TRACE,
+            #[cfg(target_family = "wasm")]
+            custom_layer: None,
+            #[cfg(not(target_family = "wasm"))]
             custom_layer: bevy_console::make_layer,
         },
         AssetPlugin {
