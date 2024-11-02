@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_console::ConsoleCommand;
 
 use crate::{
-    console::{
+    dev_tools::console::{
         commands::{CommandSpawnType, CommandTarget},
         commands::{SpawnActorCommand, TeleportCharacterCommand},
     },

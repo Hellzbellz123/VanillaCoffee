@@ -112,14 +112,6 @@ fn handle_animation_changes(
     mut animateable: Query<(&mut Animation, &Handle<Aseprite>)>,
     aseprites: Res<Assets<Aseprite>>,
 ) {
-    for (mut animator, _) in &mut animateable {
-        if animator.tag.is_some() {
-            continue;
-        } else {
-            animator.tag = Some("idle".to_string());
-        }
-    }
-
     for event in change_events.read() {
         let Ok((mut animator, aseprite_handle)) = animateable.get_mut(event.actor) else {
             return;
@@ -143,21 +135,24 @@ fn handle_animation_changes(
             animator.tag = None;
             animator.repeat = AnimationRepeat::Count(1);
             animator.playing = true;
-            event
-                .anim_handle
-                .iter()
-                .enumerate()
-                .for_each(|(_idx, tag)| {
-                    animator.queue.push_back((
-                        (*tag).to_string(),
-                        if _idx == event.anim_handle.len() - 1 {
-                            AnimationRepeat::Loop
-                        } else {
-                            AnimationRepeat::Count(0)
-                        },
-                    ));
-                });
+            event.anim_handle.iter().enumerate().for_each(|(idx, tag)| {
+                animator.queue.push_back((
+                    (*tag).to_string(),
+                    if idx == event.anim_handle.len() - 1 {
+                        AnimationRepeat::Loop
+                    } else {
+                        AnimationRepeat::Count(0)
+                    },
+                ));
+            });
         }
+    }
+
+    for (mut animator, _) in &mut animateable {
+        if animator.tag.is_some() {
+            continue;
+        }
+        animator.tag = Some("idle".to_string());
     }
 }
 

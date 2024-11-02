@@ -152,13 +152,13 @@ fn spawn_pause_menu(
                             spawn_button(
                                 buttons,
                                 assets.font_regular.clone(),
-                                "Quit To Main Menu",
+                                "Main Menu",
                                 BackToMainMenuTag,
                             );
                             spawn_button(
                                 buttons,
                                 assets.font_regular.clone(),
-                                "Quit To Desktop",
+                                "Quit Game",
                                 ExitGameTag,
                             );
                         });
@@ -182,10 +182,11 @@ fn continue_button_interaction(
 fn abandon_button_interaction(
     mut cmds: Commands,
     mut time: ResMut<Time<Virtual>>,
-    // mut player_q: Query<&mut Transform, (With<RegistryIdentifier>, With<PlayerSelectedHero>)>,
-    // mut pause_menu_query: Query<&mut Style, (With<Node>, With<PauseMenuTag>)>,
     mut next_state: ResMut<NextState<GameStage>>,
+    maps: Res<AspenLevelsetHandles>,
     level_q: Query<Entity, With<Dungeon>>,
+    hideout_q: Query<Entity, With<HideoutTag>>,
+    interaction_query: Query<&Interaction, (Changed<Interaction>, With<AbandonDungeonTag>)>,
     actor_q: Query<
         Entity,
         (
@@ -194,9 +195,6 @@ fn abandon_button_interaction(
             Without<Parent>,
         ),
     >,
-    interaction_query: Query<&Interaction, (Changed<Interaction>, With<AbandonDungeonTag>)>,
-    hideout_q: Query<Entity, With<HideoutTag>>,
-    maps: Res<AspenLevelsetHandles>,
 ) {
     for interaction in &interaction_query {
         if matches!(interaction, Interaction::Pressed) {

@@ -83,7 +83,10 @@ impl Plugin for AudioPlugin {
     }
 }
 
+// TODO: yeet these
+/// gunshot sound tag
 pub const S_GUNSHOT: &str = "Gunshot";
+/// footstep sound handle
 pub const S_FOOTSTEP: &str = "Footstep";
 
 /// map of sound assets too "soundactionid"
@@ -150,6 +153,7 @@ fn play_background_audio(
     audio.play(audio_assets.game_soundtrack.clone()).looped();
 }
 
+/// adds spatial audio listener too player controlled character
 fn update_audio_listener(
     mut cmds: Commands,
     player_hero: Query<Entity, With<PlayerSelectedHero>>,
@@ -172,7 +176,7 @@ fn update_audio_listener(
     }
 }
 
-/// applies sound data mapps and a spacial emitter for actors that dont already have emitters
+/// applies sound data maps and a spacial emitter for actors that dont already have emitters
 fn prepare_actor_spatial_sound(
     audio: Res<AspenAudioHandles>,
     mut cmds: Commands,
@@ -219,13 +223,12 @@ fn prepare_actor_spatial_sound(
     }
 }
 
-// TODO: make generic across actors and use spatial sound emitters on entitys
-/// play walking sound
+// TODO: make this use actor velocity and gait too calculate footsteps
+/// play footstep sound sound for actor
 fn actor_footstep_sounds(
     game_sound: Res<AudioChannel<GameSoundChannel>>,
     mut actor_query: Query<(
         &AnimationState,
-        // &Handle<Spritesheet>,
         &CharacterMoveState,
         &ActorSoundMap,
         &mut AudioEmitter,
@@ -238,10 +241,10 @@ fn actor_footstep_sounds(
         return;
     };
 
-    for (animator_state, move_state, sound_map, mut spatial_emmiter, _velocity, transform) in
+    for (animator_state, move_state, sound_map, mut spatial_emmiter, velocity, transform) in
         &mut actor_query
     {
-        if _velocity.angvel == 0.0 && _velocity.linvel == Vec2::ZERO
+        if velocity.angvel == 0.0 && velocity.linvel == Vec2::ZERO
             || move_state.move_status.0 == CurrentMovement::None
             || listener.translation().distance(transform.translation()) > 250.0
         {

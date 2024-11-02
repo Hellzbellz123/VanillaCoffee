@@ -1,13 +1,11 @@
+use bevy::log::warn;
 use std::{
-    error::Error,
     fs, io,
     path::{Path, PathBuf},
 };
 
-use bevy::log::warn;
-
 /// prints current working directory too console
-pub fn debug_directory() {
+pub fn dump_launch_directory() {
     let dir = match std::env::current_dir() {
         Ok(path) => path,
         Err(e) => {
@@ -17,40 +15,9 @@ pub fn debug_directory() {
     };
 
     warn!("Current Working Director is: {dir:?}");
-    match run(true, true, 2, &dir) {
+    match visit_dirs(&dir, 0, 2, "", true, true) {
         Ok(()) => {}
         Err(e) => warn!("{}", e),
-    }
-}
-
-/// Term Colors that can be used in output
-pub enum ANSIColor {
-    /// is executable
-    Yellow,
-    /// is absolute
-    Red,
-    /// resets terminal color
-    Reset,
-    /// is directory
-    Blue,
-    /// is symlink
-    White,
-    /// everything else
-    Cyan,
-}
-
-impl ANSIColor {
-    /// converts `ANSIColor` enum too string
-    #[must_use]
-    pub const fn as_string(&self) -> &str {
-        match &self {
-            Self::Red => "\u{001B}[0;31m",
-            Self::Yellow => "\u{001B}[0;33m",
-            Self::Blue => "\u{001B}[0;34m",
-            Self::Cyan => "\u{001B}[0;36m",
-            Self::White => "\u{001B}[0;37m",
-            Self::Reset => "\u{001B}[0;0m",
-        }
     }
 }
 
@@ -151,19 +118,35 @@ fn color_output(colorize: bool, path: &Path) -> std::string::String {
     }
 }
 
-/// Walks through given file tree and outputs all entries in the tree
-///
-/// # Parameters
-/// - `show_all`: If set to true, show all entries in the tree
-/// - `colorize`: output terminal escape codes for color
-/// - `level`: ...
-/// - `dir`: root of directory tree
-/// # Errors
-/// Will return `Error` if `path` does not exist or the user does not have
-/// permission to read it, may also error if theres no where too output
-pub fn run(show_all: bool, colorize: bool, level: usize, dir: &Path) -> Result<(), Box<dyn Error>> {
-    visit_dirs(dir, 0, level, "", colorize, show_all)?;
-    Ok(())
+/// Term Colors that can be used in output
+pub enum ANSIColor {
+    /// is executable
+    Yellow,
+    /// is absolute
+    Red,
+    /// resets terminal color
+    Reset,
+    /// is directory
+    Blue,
+    /// is symlink
+    White,
+    /// everything else
+    Cyan,
+}
+
+impl ANSIColor {
+    /// converts `ANSIColor` enum too string
+    #[must_use]
+    pub const fn as_string(&self) -> &str {
+        match &self {
+            Self::Red => "\u{001B}[0;31m",
+            Self::Yellow => "\u{001B}[0;33m",
+            Self::Blue => "\u{001B}[0;34m",
+            Self::Cyan => "\u{001B}[0;36m",
+            Self::White => "\u{001B}[0;37m",
+            Self::Reset => "\u{001B}[0;0m",
+        }
+    }
 }
 
 /// Returns `true` if there is a file at the given path and it is

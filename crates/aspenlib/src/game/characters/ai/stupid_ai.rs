@@ -131,12 +131,6 @@ fn stupid_ai_aggro_manager(
             Some((entity, _distance)) => entity == player_collider_ent,
         };
 
-        if ray.is_some() {
-            let (ent, _distance) = ray.unwrap();
-            let name = names.get(ent).unwrap_or(&Name::new("NONAME")).clone();
-            trace!("name of ent ray is hitting: {}", name);
-        }
-
         if can_reach_target {
             if target_in_chase_range {
                 trace!("target in chase range");

@@ -1100,7 +1100,7 @@
 				{ "__identifier": "IdentLevel", "__type": "LocalEnum.IdentLevel", "__value": "Level1", "__tile": null, "defUid": 50, "realEditorValues": [null] }
 			],
 			"layerInstances": null,
-			"__neighbours": [ { "levelIid": "c24a48e0-8990-11ee-94a7-3d3f425ee144", "dir": "n" }, { "levelIid": "546df553-c640-11ed-8990-3f25e5085b95", "dir": "s" }, { "levelIid": "49d60130-8990-11ee-a13c-7d4ae0661be6", "dir": "s" }, { "levelIid": "d513f760-8990-11ee-94a7-dbb291629cb2", "dir": "e" } ]
+			"__neighbours": [ { "levelIid": "c24a48e0-8990-11ee-94a7-3d3f425ee144", "dir": "n" }, { "levelIid": "546df553-c640-11ed-8990-3f25e5085b95", "dir": "s" }, { "levelIid": "49d60130-8990-11ee-a13c-7d4ae0661be6", "dir": "s" } ]
 		},
 		{
 			"identifier": "RewardTest",
@@ -1166,7 +1166,6 @@
 			"__neighbours": [
 				{ "levelIid": "ab01cb70-c640-11ed-8990-97df4ce06d05", "dir": "n" },
 				{ "levelIid": "49d60130-8990-11ee-a13c-7d4ae0661be6", "dir": "w" },
-				{ "levelIid": "d513f760-8990-11ee-94a7-dbb291629cb2", "dir": "n" },
 				{ "levelIid": "07c8c8a0-8990-11ee-a13c-658f4c52f50f", "dir": "e" },
 				{ "levelIid": "c24d3c10-c640-11ed-8990-6d252beb4b76", "dir": "s" },
 				{ "levelIid": "5b782c80-c640-11ed-8990-fd73507372fd", "dir": "s" }
@@ -1206,8 +1205,8 @@
 			"identifier": "HagsDen",
 			"iid": "d513f760-8990-11ee-94a7-dbb291629cb2",
 			"uid": 47,
-			"worldX": 768,
-			"worldY": -992,
+			"worldX": 3552,
+			"worldY": -1536,
 			"worldDepth": 0,
 			"pxWid": 704,
 			"pxHei": 704,
@@ -1233,7 +1232,7 @@
 				{ "__identifier": "IdentLevel", "__type": "LocalEnum.IdentLevel", "__value": "Level1", "__tile": null, "defUid": 50, "realEditorValues": [null] }
 			],
 			"layerInstances": null,
-			"__neighbours": [ { "levelIid": "ab01cb70-c640-11ed-8990-97df4ce06d05", "dir": "w" }, { "levelIid": "546df553-c640-11ed-8990-3f25e5085b95", "dir": "s" }, { "levelIid": "07c8c8a0-8990-11ee-a13c-658f4c52f50f", "dir": "s" } ]
+			"__neighbours": [{ "levelIid": "467e84f0-fec0-11ee-864c-75fa94197935", "dir": "w" }]
 		},
 		{
 			"identifier": "TinyEyeBall",
@@ -1293,7 +1292,7 @@
 				{ "__identifier": "IdentLevel", "__type": "LocalEnum.IdentLevel", "__value": "Level1", "__tile": null, "defUid": 50, "realEditorValues": [] }
 			],
 			"layerInstances": null,
-			"__neighbours": [ { "levelIid": "546df553-c640-11ed-8990-3f25e5085b95", "dir": "w" }, { "levelIid": "d513f760-8990-11ee-94a7-dbb291629cb2", "dir": "n" }, { "levelIid": "6b44d230-c640-11ed-8990-01a5cc32fb81", "dir": "e" }, { "levelIid": "5b782c80-c640-11ed-8990-fd73507372fd", "dir": "s" } ]
+			"__neighbours": [ { "levelIid": "546df553-c640-11ed-8990-3f25e5085b95", "dir": "w" }, { "levelIid": "6b44d230-c640-11ed-8990-01a5cc32fb81", "dir": "e" }, { "levelIid": "5b782c80-c640-11ed-8990-fd73507372fd", "dir": "s" } ]
 		},
 		{
 			"identifier": "SailrmenSea_Men",
@@ -1703,11 +1702,11 @@
 			"__neighbours": [ { "levelIid": "7ab56830-8990-11ee-a550-1380b8d0b8e4", "dir": "s" }, { "levelIid": "dd78f4e0-8990-11ee-a550-8328dbe0c3aa", "dir": "s" }, { "levelIid": "1f824060-8990-11ee-a550-159737c4cb9e", "dir": "e" } ]
 		},
 		{
-			"identifier": "MinibossRoom",
+			"identifier": "HagsWarRoom",
 			"iid": "467e84f0-fec0-11ee-864c-75fa94197935",
 			"uid": 98,
-			"worldX": 1696,
-			"worldY": -1568,
+			"worldX": 2848,
+			"worldY": -1536,
 			"worldDepth": 0,
 			"pxWid": 704,
 			"pxHei": 704,
@@ -1720,7 +1719,7 @@
 			"bgPivotY": 0.5,
 			"__smartColor": "#ADADB5",
 			"__bgPos": null,
-			"externalRelPath": "aspenhallsLevelSet/MinibossRoom.ldtkl",
+			"externalRelPath": "aspenhallsLevelSet/HagsWarRoom.ldtkl",
 			"fieldInstances": [
 				{ "__identifier": "IdentSize", "__type": "LocalEnum.IdentSize", "__value": "Special", "__tile": null, "defUid": 44, "realEditorValues": [{
 					"id": "V_String",
@@ -1733,7 +1732,7 @@
 				{ "__identifier": "IdentLevel", "__type": "LocalEnum.IdentLevel", "__value": "Level1", "__tile": null, "defUid": 50, "realEditorValues": [] }
 			],
 			"layerInstances": null,
-			"__neighbours": []
+			"__neighbours": [{ "levelIid": "d513f760-8990-11ee-94a7-dbb291629cb2", "dir": "e" }]
 		}
 	],
 	"worlds": [],

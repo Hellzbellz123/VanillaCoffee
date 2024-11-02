@@ -44,12 +44,12 @@ pub enum GameProgress {
 /// each dungeon run has 4 stages that get progressivly larger/harder
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 pub enum DungeonFloor {
-    /// easiest level, start here
+    /// first floor of dungeon, easiest enemys, start here
     #[default]
     One,
     /// slighlty deeper, bit larger, more creeps
     Two,
-    ///
+    /// has more enemys/minibosses
     Three,
     /// final level of the dungeon
     Four,
@@ -99,11 +99,11 @@ fn time_to_live(
     }
 }
 
+/// adds colliders too entitys that should have colliders using the aabb pf the entity
 fn add_aabb_based_colliders(
     mut cmds: Commands,
-    needscollider_q: Query<(Entity, &Parent), (Without<Collider>, With<NeedsCollider>)>,
     aabbs_q: Query<&Aabb>,
-    // names_q: Query<&Name>,
+    needscollider_q: Query<(Entity, &Parent), (Without<Collider>, With<NeedsCollider>)>,
 ) {
     for (needs_collider, parent) in &needscollider_q {
         let Ok(aabb) = aabbs_q.get(parent.get()) else {

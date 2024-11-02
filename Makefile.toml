@@ -54,7 +54,7 @@ cwd = "crates/wasm/"
 workspace = false
 description = ""
 command = "trunk"
-args = ["serve", "--open", "--no-default-features", "--features", "develop"]
+args = ["serve", "--open", "--features", "develop"]
 
 [tasks.run-mobile]
 dependencies = ["copy-assets"]

@@ -7,14 +7,12 @@ A Dungeon Crawler in the vibes of 'Into The Gungeon' or 'Soul-knight'
 
 /// general component store
 mod bundles;
-/// things related too `command_console`
-mod console;
 /// general consts file, if it gets used more than
 /// twice it should be here
 mod consts;
 
 /// Debug and Development related functions
-mod debug;
+mod dev_tools;
 /// actual game plugin, ui and all "game" functionality
 mod game;
 /// Holds all Asset Collections and handles loading them
@@ -61,15 +59,16 @@ pub enum GameStage {
 
 /// run condition that checks if controllable player should exist
 pub fn playing_game() -> impl FnMut(Option<Res<State<GameStage>>>) -> bool + Clone {
-    move |current_state: Option<Res<State<GameStage>>>| match current_state {
-        Some(current_state) => *current_state == GameStage::PlayingGame,
-        None => false,
+    move |current_state: Option<Res<State<GameStage>>>| {
+        current_state.map_or(false, |current_state| {
+            *current_state == GameStage::PlayingGame
+        })
     }
 }
 
 // TODO:
 // NOTE FIRST PART DONE
-//Convert items and weapon definitions too ron assets in packs/$PACK/definitions and gamedata/custom (for custom user content) from the game folder.
+// Convert items and weapon definitions too ron assets in packs/$PACK/definitions and gamedata/custom (for custom user content) from the game folder.
 // add a system that takes these definitions and then adds them too the game, items that should ONLY be spawned OR placed in game
 // world WILL NOT have a [LOOT] component/tag listed in the definitions, Items that should be obtainable in a play through should
 // have the [Loot] component/tag and should be added too a "leveled list" (skyrim) like system
@@ -98,13 +97,10 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
     ));
 
     vanillacoffee.add_plugins((
+        dev_tools::AspenDevToolsPlugin,
         loading::AppLoadingPlugin,
-        console::QuakeConPlugin,
         game::AspenHallsPlugin,
     ));
-
-    #[cfg(feature = "develop")]
-    vanillacoffee.add_plugins(debug::debug_plugin::DebugPlugin);
 
     vanillacoffee.add_systems(
         Update,
@@ -118,11 +114,14 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
     vanillacoffee
 }
 
+/// set rapiers default gravity too 0.0
 fn fix_rapier_gravity(mut rapier_ctx: Query<(&RapierContext, &mut RapierConfiguration)>) {
     let (_rapier_ctx, mut rapier_cfg) = rapier_ctx.single_mut();
     rapier_cfg.gravity = Vec2::ZERO;
 }
 
+// TODO: track pack loading and only continue when base game packs are initialized
+/// start app when all resources have finished loading
 fn start_app_functionality(mut cmds: Commands) {
     cmds.insert_resource(NextState::Pending(AppStage::Running));
 }

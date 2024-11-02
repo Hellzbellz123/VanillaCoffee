@@ -165,8 +165,8 @@ pub struct RoomPreset {
     pub room_asset_id: LevelIid,
     /// name of the room
     pub name: String,
-    /// - Rect.max is position + size
     /// size of room
+    /// Rect.max is position + size
     pub size: IVec2,
     /// exit offsets for current room
     pub exits: Vec<IVec2>,

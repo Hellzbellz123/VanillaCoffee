@@ -7,7 +7,7 @@ repository = "https://github.com/Hellzbellz123/VanillaCoffee/"
 homepage = "https://hellzbellz123.github.io/AspenHalls/"
 license-file = "LICENSE"
 readme = "README.md"
-version = "0.0.1"
+version = "0.0.5"
 edition = "2021"
 keywords = ["videogame", "game", "lib"]
 categories = ["games"]
@@ -18,9 +18,9 @@ missing-docs = { level = "deny" }
 [lints.clippy]
 ### warned lints ###
 too-many-lines = "warn"
-missing_errors_doc = "warn"
-missing_panics_doc = "warn"
-missing_safety_doc = "warn"
+missing_errors_doc = "deny"
+missing_panics_doc = "deny"
+missing_safety_doc = "deny"
 
 ### denied lints ###
 missing_docs_in_private_items = { level = "deny" }
@@ -50,10 +50,10 @@ develop = [
   # "bevy/glam_assert"
 ]
 dynamic = ["bevy/dynamic_linking"]
-trace = ["bevy/trace_tracy"] #, "bevy_mod_logfu/trace_tracy_memory"]
+trace = ["bevy/trace_tracy"]
 
 [target.'cfg(windows)'.dependencies]
-winapi = "*"
+winapi = "0.3"
 
 [dependencies]
 pretty-type-name = "1.0.1"

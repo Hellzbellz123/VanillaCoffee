@@ -164,10 +164,10 @@ pub enum ItemAssetType {
     Food {},
 }
 
-/// creates new weapon definition folder
+/// creates new weap definition folder
 #[allow(unused)]
 pub fn write_weapon_def(def: Option<ItemDefinition>) {
-    let def = def.unwrap_or(ItemDefinition {
+    let def = def.unwrap_or_else(|| ItemDefinition {
         item_type: ItemAssetType::Weapon {
             damage: AttackDamage(Damage {
                 physical: PhysicalDamage(30.0),
@@ -200,7 +200,7 @@ pub fn write_weapon_def(def: Option<ItemDefinition>) {
 /// creates new character definition folder
 #[allow(unused)]
 pub fn write_character_def(def: Option<CharacterDefinition>) {
-    let def = def.unwrap_or(CharacterDefinition {
+    let def = def.unwrap_or_else(|| CharacterDefinition {
         character_type: CharacterAssetType::Creep { ai: AiType::Stupid },
         actor: ActorData {
             name: "ExampleNpc".to_owned(),

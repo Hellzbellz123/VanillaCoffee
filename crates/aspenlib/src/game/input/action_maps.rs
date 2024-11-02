@@ -18,6 +18,7 @@ pub fn build_kbm_map(input_map: &mut InputMap<Gameplay>) {
         (Gameplay::Pause, KeyCode::Escape),
         (Gameplay::DebugF1, KeyCode::F1),
         (Gameplay::DebugF2, KeyCode::F2),
+        (Gameplay::DebugF3, KeyCode::F3),
         (Gameplay::Melee, KeyCode::KeyF),
         (Gameplay::Heal, KeyCode::KeyC),
     ]);
@@ -91,12 +92,14 @@ pub enum Gameplay {
     ZoomAdd,
     /// Esc for keyboard
     Pause,
-    /// spawn skeleton near player
-    DebugF1,
-    /// regenerate dungeon
-    DebugF2,
     /// F for keyboard
     Melee,
     /// Q for keyboard
     Heal,
+    /// spawn skeleton near player
+    DebugF1,
+    /// regenerate dungeon
+    DebugF2,
+    /// toggle dev tools control
+    DebugF3,
 }

@@ -9,7 +9,9 @@ impl Plugin for BossPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<EventSpawnBoss>().add_systems(
             Update,
-            utils::spawn_boss.run_if(on_event::<EventSpawnBoss>()),
+            utils::spawn_boss
+                .after(TransformSystem::TransformPropagate)
+                .run_if(on_event::<EventSpawnBoss>()),
         );
     }
 }

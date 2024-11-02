@@ -424,11 +424,7 @@ fn spawn_controlsbutton<S: Component>(
 ) {
     let debug_name = name.trim().to_string();
 
-    let image = if let Some(image) = image {
-        UiImage::new(image)
-    } else {
-        UiImage::default()
-    };
+    let image = image.map_or_else(UiImage::default, UiImage::new);
 
     touch_controls_builder
         .spawn((

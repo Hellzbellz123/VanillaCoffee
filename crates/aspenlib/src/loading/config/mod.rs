@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use bevy::{
     asset::AssetMetaCheck,
     log::LogPlugin,
@@ -6,18 +8,14 @@ use bevy::{
 };
 use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_framepace::{FramepaceSettings, Limiter};
+use bevy_inspector_egui::prelude::*;
 use bevy_kira_audio::{AudioChannel, AudioControl};
-
-use serde::{Deserialize, Serialize};
 
 use crate::{
     game::audio::{AmbienceSoundChannel, GameSoundChannel, MusicSoundChannel},
     loading::splashscreen::MainCamera,
     AppStage, GameStage,
 };
-
-#[cfg(feature = "develop")]
-use bevy_inspector_egui::prelude::*;
 
 /// functions too create default file and save file
 pub mod save_load;
@@ -102,22 +100,15 @@ pub enum GameDifficulty {
 
 /// Settings like zoom and difficulty
 /// maybe controls
-#[derive(Reflect, Resource, Serialize, Deserialize, Copy, Clone, Debug)]
-#[reflect(Resource)]
-#[cfg_attr(
-    feature = "develop",
-    derive(InspectorOptions),
-    reflect(InspectorOptions)
-)]
+#[derive(Reflect, Resource, Serialize, Deserialize, Copy, Clone, Debug, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
 pub struct GeneralSettings {
     /// spawns touch gamepad ui for devices with touch screens
     pub enable_touch_controls: bool,
+    /// enable debug/development tools and utils
+    pub enable_debug: bool,
     /// camera zoom
-    #[cfg(feature = "develop")]
     #[inspector(min = 0.0, max = 150.0)]
-    pub camera_zoom: f32,
-    /// camera zoom
-    #[cfg(not(feature = "develop"))]
     pub camera_zoom: f32,
     /// game difficulty,
     /// value ranging from 1-4, 1 being easiest, 4 being hardest
@@ -125,44 +116,25 @@ pub struct GeneralSettings {
 }
 
 /// modify to change sound volume settings
-#[derive(Reflect, Debug, Serialize, Deserialize, Resource, Copy, Clone, Component)]
-#[reflect(Resource)]
-#[cfg_attr(
-    feature = "develop",
-    derive(InspectorOptions),
-    reflect(InspectorOptions)
+#[derive(
+    Reflect, Debug, Serialize, Deserialize, Resource, Copy, Clone, Component, InspectorOptions,
 )]
+#[reflect(Resource, InspectorOptions)]
 pub struct SoundSettings {
     /// Total sound scale for game
-    #[cfg(feature = "develop")]
     #[inspector(min = 0.0, max = 1.0)]
-    pub master_volume: f64,
-    /// Total sound scale for game
-    #[cfg(not(feature = "develop"))]
     pub master_volume: f64,
 
     /// Sound effects from environment
-    #[cfg(feature = "develop")]
     #[inspector(min = 0.0, max = 1.0)]
-    pub ambience_volume: f64,
-    /// Sound effects from environment
-    #[cfg(not(feature = "develop"))]
     pub ambience_volume: f64,
 
     /// Game soundtrack volume
-    #[cfg(feature = "develop")]
     #[inspector(min = 0.0, max = 1.0)]
-    pub music_volume: f64,
-    /// Game soundtrack volume
-    #[cfg(not(feature = "develop"))]
     pub music_volume: f64,
 
     /// Important sounds from game
-    #[cfg(feature = "develop")]
     #[inspector(min = 0.0, max = 1.0)]
-    pub sound_volume: f64,
-    /// Important sounds from game
-    #[cfg(not(feature = "develop"))]
     pub sound_volume: f64,
 }
 
@@ -211,8 +183,9 @@ impl Default for DifficultyScales {
 impl Default for GeneralSettings {
     fn default() -> Self {
         Self {
-            camera_zoom: 3.5,
+            camera_zoom: 5.5,
             game_difficulty: GameDifficulty::Custom(DifficultyScales::default()),
+            enable_debug: cfg!(feature = "develop"),
             enable_touch_controls: cfg!(target_os = "android") | cfg!(target_os = "ios"),
         }
     }
@@ -289,9 +262,8 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
                     resolution: WindowResolution::new(
                         cfg_file.window_settings.resolution.x,
                         cfg_file.window_settings.resolution.y,
-                    ).with_scale_factor_override(
-                        cfg_file.window_settings.window_scale as f32,
-                    ),
+                    )
+                    .with_scale_factor_override(cfg_file.window_settings.window_scale as f32),
                     mode: {
                         if cfg_file.window_settings.full_screen {
                             // if full screen is true, use borderless full screen

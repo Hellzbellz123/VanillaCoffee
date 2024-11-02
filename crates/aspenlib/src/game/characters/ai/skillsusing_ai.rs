@@ -290,7 +290,7 @@ pub fn shootpatternspawner_system(
                     let degrees_per_bullet = (arc / amount) as f32;
 
                     // if allowed_rotation_degrees > 360.0 then rotation the spawners forward should not go outside allowed_rotation_degrees / 2.0
-                    let _allowed_rotation_degrees = arc as f32;
+                    // let allowed_rotation_degrees = arc as f32;
                     let degrees_per_wave = (rotation_per_wave * pattern_spawner.runs - 1) as f32;
                     bullet_spawn.rotate_local_z(degrees_per_wave.to_radians());
 

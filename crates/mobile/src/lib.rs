@@ -31,6 +31,11 @@ fn main() {
             sound_volume: 0.5,
         },
         general_settings: GeneralSettings {
+            enable_debug: if cfg!(feature = "develop") {
+                true
+            } else {
+                false
+            },
             enable_touch_controls: true,
             camera_zoom: 5.5,
             game_difficulty: GameDifficulty::Medium,

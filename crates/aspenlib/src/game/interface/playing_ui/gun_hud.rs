@@ -193,7 +193,7 @@ pub fn gunhud_visibility_system(
         .values()
         .all(std::option::Option::is_none);
 
-    if all_slots_empty || player_slots.drawn_slot.is_none() && !all_slots_empty {
+    if all_slots_empty || player_slots.drawn_slot.is_none() {
         gunhud_style.display = Display::None;
     } else {
         gunhud_style.display = Display::Flex;

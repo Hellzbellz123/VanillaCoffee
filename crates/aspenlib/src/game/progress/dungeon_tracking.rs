@@ -42,13 +42,13 @@ pub fn update_player_current_room(
 /// updates boss state based on boss ai status
 pub fn update_boss_state(
     mut progress_manager: Query<&mut ProgressManager>,
+    mut regen_event: EventWriter<RegenerateDungeonEvent>,
     actor_query: Query<(Entity, &Transform, &CharacterType), Without<PlayerSelectedHero>>,
+    children: Query<&Children>,
     has_thinkers: Query<&HasThinker>,
+    generator_state: Res<State<GeneratorState>>,
     chase_scorers: Query<&Score, With<ChaseScorer>>,
     attack_scorers: Query<&Score, With<AttackScorer>>,
-    children: Query<&Children>,
-    generator_state: Res<State<GeneratorState>>,
-    mut regen_event: EventWriter<RegenerateDungeonEvent>,
 ) {
     let Ok(mut progress_manager) = progress_manager.get_single_mut() else {
         warn!("could not get progress manager");

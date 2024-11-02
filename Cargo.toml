@@ -49,7 +49,8 @@ incremental = true
 lto = "off"
 
 [profile.release]
-debug = true
+strip = true
+debug = false
 codegen-units = 1
 opt-level = 'z'
 lto = "fat"

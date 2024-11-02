@@ -26,12 +26,11 @@ fn view() -> Html {
 
 fn main() {
     #[cfg(feature = "develop")]
-    wasm_logger::init(
-        wasm_logger::Config::new(Level::Info), // .module_prefix(module_prefix), // .module_prefix("wasm_kill_errors")
-                                               // .module_prefix("game"),
-    );
+    wasm_logger::init(wasm_logger::Config::new(Level::Info).module_prefix("aspenlib"));
+
     // Mount the DOM
     yew::Renderer::<Root>::new().render();
+
     // Start the Bevy App
     info!("Starting launcher: WASM");
     let cfg_file = ConfigFile {
@@ -52,11 +51,13 @@ fn main() {
             sound_volume: 1.0,
         },
         general_settings: GeneralSettings {
+            enable_debug: cfg!(feature = "develop"),
             enable_touch_controls: false,
             camera_zoom: 3.5,
             game_difficulty: GameDifficulty::Easy,
         },
         render_settings: RenderSettings { msaa: false },
     };
+
     aspenlib::start_app(cfg_file).run();
 }

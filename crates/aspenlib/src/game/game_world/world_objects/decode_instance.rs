@@ -83,7 +83,7 @@ pub fn character_spawner_from_instance(entity_instance: &EntityInstance) -> Char
     CharacterSpawner {
         //TODO: WAVE entity references
         waves: spawn_wave_refs,
-        spawn_radius: entity_instance.width as f32,
+        spawn_radius: (entity_instance.width / 2) as f32,
         max_spawned: got_max_ents,
         spawned_characters: Vec::new(),
         random_wave: should_spawn_infinite,

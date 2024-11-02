@@ -105,8 +105,8 @@ fn create_playable_heroes(
 
     for event in level_spawn_events.read() {
         let existing_hero = already_spawned_hero.get_single_mut();
-        if let LevelEvent::Transformed(_iid) = event {
-            if _iid != &level {
+        if let LevelEvent::Transformed(iid) = event {
+            if iid != &level {
                 continue;
             }
             let hero_spots: Vec<&GlobalTransform> = hero_spots.iter().collect();

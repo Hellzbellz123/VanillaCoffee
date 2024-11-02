@@ -8,11 +8,11 @@
 		"appVersion": "1.5.3",
 		"url": "https://ldtk.io"
 	},
-	"identifier": "MinibossRoom",
+	"identifier": "HagsWarRoom",
 	"iid": "467e84f0-fec0-11ee-864c-75fa94197935",
 	"uid": 98,
-	"worldX": 1696,
-	"worldY": -1568,
+	"worldX": 2848,
+	"worldY": -1536,
 	"worldDepth": 0,
 	"pxWid": 704,
 	"pxHei": 704,
@@ -80,8 +80,8 @@
 						{ "__identifier": "MaxEnemies", "__type": "Int", "__value": null, "__tile": null, "defUid": 95, "realEditorValues": [] },
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
-					"__worldX": 2064,
-					"__worldY": -1232
+					"__worldX": 3216,
+					"__worldY": -1200
 				}
 			]
 		},
@@ -553,5 +553,5 @@
 			"entityInstances": []
 		}
 	],
-	"__neighbours": []
+	"__neighbours": [{ "levelIid": "d513f760-8990-11ee-94a7-dbb291629cb2", "dir": "e" }]
 }

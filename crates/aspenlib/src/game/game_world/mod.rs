@@ -185,11 +185,14 @@ pub struct GridContainerTag;
 fn handle_teleport_events(
     mut regen_event: EventWriter<RegenerateDungeonEvent>,
     mut tp_events: EventReader<ActorTeleportEvent>,
-    mut characters: Query<(&mut Transform, &mut CharacterMoveState), (With<CharacterType>, Without<PlayerStartLocation>)>,
+    mut characters: Query<
+        (&mut Transform, &mut CharacterMoveState),
+        (With<CharacterType>, Without<PlayerStartLocation>),
+    >,
     start_locations: Query<&GlobalTransform, With<PlayerStartLocation>>,
     global_transforms: Query<&GlobalTransform>,
-    parents: Query<&Parent>,
     children: Query<&Children>,
+    parents: Query<&Parent>,
     iids: Query<&EntityIid>,
 ) {
     for event in tp_events.read() {
@@ -249,7 +252,6 @@ fn handle_teleport_events(
             }
             // expand this for better type checking
             TpTriggerEffect::Event(event) => {
-                
                 match event.as_str() {
                     "StartDungeonGen" => {
                         // TODO: reset dungeon before changing state.
@@ -261,17 +263,19 @@ fn handle_teleport_events(
                     "TeleportStartLocation" => {
                         move_state.teleport_status = TeleportStatus::None;
                         if let Ok(loc) = start_locations.get_single() {
-                            target_transform.translation = loc.translation().truncate().extend(ACTOR_Z_INDEX)
+                            target_transform.translation =
+                                loc.translation().truncate().extend(ACTOR_Z_INDEX);
+                        } else if start_locations.is_empty() {
+                            warn!("no start locations for this tp command");
+                            return;
                         } else {
-                            if start_locations.is_empty() {
-                                warn!("no start locations for this tp command");
-                                return;
-                            } else {
-                                let pos = start_locations.iter().fold(Vec3::default(), |a,b| {a + b.translation()});
-                                target_transform.translation = pos / start_locations.iter().len() as f32
-                            }
+                            let pos = start_locations
+                                .iter()
+                                .fold(Vec3::default(), |a, b| a + b.translation());
+                            target_transform.translation =
+                                pos / start_locations.iter().len() as f32;
                         }
-                    },
+                    }
                     event => {
                         warn!("unhandled Teleport Event Action: {}", event);
                     }

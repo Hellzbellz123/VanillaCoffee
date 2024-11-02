@@ -82,22 +82,33 @@ pub struct ProjectileBundle {
 /// The `AspenRenderBundle` holds all components needed to render Aseprite files as Actors.
 #[derive(Bundle, Default, Clone)]
 pub struct Aspen2dRenderBundle {
+    /// asperite asset for this sprite
     pub handle: Handle<Aseprite>,
+    /// animation controller
     pub animation: Animation,
+    /// animation play information
     pub animation_state: AnimationState,
+    /// marks not yet loaded sprite entity
     pub not_loaded: NotLoaded,
+    /// texture atlas for final sprite image
     pub atlas: TextureAtlas,
+    /// sprite configuration
     pub sprite: Sprite,
 }
 
+// TODO: upstream reflect/debug fixes and remove this manual impl
 impl std::fmt::Debug for Aspen2dRenderBundle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Aspen2dRenderBundle")
-            .field("file handle", &self.handle)
-            .finish()
+            .field("sprite asset", &self.handle)
+            .field("animation name", &self.animation.tag)
+            .field("sprite cfg", &self.sprite)
+            .finish_non_exhaustive()
     }
 }
 
+/// tags this entity for collider creation
+/// requires that entities have an Aabb for proper collider size
 #[derive(Debug, Clone, Component)]
 pub struct NeedsCollider;
 

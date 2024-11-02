@@ -87,7 +87,6 @@ fn update_cursor_position_resource(
     camera_query: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     input: Res<ActionState<action_maps::Gameplay>>,
     mut cursor_position: ResMut<AspenCursorPosition>,
-    // mut last_position: Local<AspenCursorPosition>,
 ) {
     let Ok(window) = window_query.get_single() else {
         return;
@@ -96,16 +95,16 @@ fn update_cursor_position_resource(
     let window_half_size = Vec2::new(window.width(), window.height()) / 2.0;
     let joy_axis = input.clamped_axis_pair(&action_maps::Gameplay::Look);
 
-    let cursor_screen_pos: Vec2 = if joy_axis != Vec2::ZERO {
-        Vec2::new(
-            joy_axis.x.mul_add(window_half_size.x, window_half_size.x),
-            (-joy_axis.y).mul_add(window_half_size.y, window_half_size.y),
-        )
-    } else {
+    let cursor_screen_pos: Vec2 = if joy_axis == Vec2::ZERO {
         window_query
             .single()
             .cursor_position()
             .unwrap_or(window_half_size)
+    } else {
+        Vec2::new(
+            joy_axis.x.mul_add(window_half_size.x, window_half_size.x),
+            (-joy_axis.y).mul_add(window_half_size.y, window_half_size.y),
+        )
     };
 
     let Ok((camera, camera_pos)) = camera_query.get_single() else {
@@ -114,9 +113,11 @@ fn update_cursor_position_resource(
     let cursor_world_pos = camera
         .viewport_to_world_2d(camera_pos, cursor_screen_pos)
         .unwrap_or(Vec2::ZERO);
+
     let new_cursor_position = AspenCursorPosition {
         world: cursor_world_pos,
         screen: cursor_screen_pos,
     };
+
     *cursor_position = new_cursor_position;
 }

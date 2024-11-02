@@ -15,6 +15,7 @@ use std::path::Path;
 pub const APP_SETTINGS_PATH: &str = "./config.toml";
 
 fn main() {
+    info!("Starting launcher: Native");
     // check AppDir for config file, if no cfg, first run, guess settings based on hardware
     // otherwise load app settings from config file
     human_panic::setup_panic!(
@@ -24,8 +25,8 @@ fn main() {
             .support("- Open a support request on github")
     );
 
-    info!("Starting launcher: Native");
     let cfg_file: ConfigFile = load_settings();
+
     aspenlib::start_app(cfg_file).run();
 }
 
@@ -87,6 +88,7 @@ pub fn load_settings() -> ConfigFile {
                 },
 
                 general_settings: GeneralSettings {
+                    enable_debug: cfg.general_settings.enable_debug,
                     enable_touch_controls: cfg.general_settings.enable_touch_controls,
                     camera_zoom: cfg.general_settings.camera_zoom,
                     game_difficulty: cfg.general_settings.game_difficulty,

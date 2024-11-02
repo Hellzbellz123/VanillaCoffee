@@ -9,7 +9,9 @@ impl Plugin for CreepPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<EventSpawnCreep>().add_systems(
             Update,
-            utils::spawn_creep.run_if(on_event::<EventSpawnCreep>()),
+            utils::spawn_creep
+                .after(TransformSystem::TransformPropagate)
+                .run_if(on_event::<EventSpawnCreep>()),
         );
     }
 }
