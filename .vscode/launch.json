@@ -6,36 +6,27 @@
   "configurations": [
     {
       "type": "lldb",
-      "request": "launch",
-      "name": "Debug executable 'vanillacoffee'",
-      "cargo": {
-        "args": ["build", "--bin=vanillacoffee", "--package=vanillacoffee"],
-        "filter": {
-          "name": "vanillacoffee",
-          "kind": "bin"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}"
+      "request": "attach",
+      "name": "Attach",
+      "program": "${workspaceFolder}/target/debug/aspen_halls_desktop"
     },
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug linux executable 'vanillacoffee'",
+      "name": "Build and Debug 'Aspen Halls Native'",
       "cargo": {
         "args": [
           "build",
-          "--target=x86_64-unknown-linux-gnu",
-          "--bin=vanillacoffee",
-          "--package=vanillacoffee"
+          "--bin=aspen_halls_desktop",
+          "--package=aspen_halls_desktop"
         ],
         "filter": {
-          "name": "vanillacoffee",
+          "name": "aspen_halls_desktop",
           "kind": "bin"
         }
       },
       "args": [],
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}/crates/desktop"
     }
   ]
 }

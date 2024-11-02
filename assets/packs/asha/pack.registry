@@ -1,0 +1,70 @@
+({
+    // Sound assets go here
+    "ost": File(
+        path: "packs/asha/audio/ost/expansion.ogg",
+    ),
+    "gunshot_quiet": File (
+        path: "packs/asha/audio/pistol_shot_silenced.ogg",
+    ),
+    "footstep_light": File (
+        path: "packs/asha/audio/footstep_quiet.ogg",
+    ),
+    "footsteps": Files (
+        paths: [
+            "packs/asha/audio/footsteps/footstep-1.ogg",
+            "packs/asha/audio/footsteps/footstep-2.ogg",
+            "packs/asha/audio/footsteps/footstep-3.ogg",
+            "packs/asha/audio/footsteps/footstep-4.ogg",
+            "packs/asha/audio/footsteps/footstep-5.ogg",
+            "packs/asha/audio/footsteps/footstep-6.ogg",
+            "packs/asha/audio/footsteps/footstep-7.ogg",
+        ],
+    ),
+
+    // icon handles
+    "bevy_icon": File (
+        path: "packs/asha/textures/icons/bevy.png",
+    ),
+
+    // map asset handles
+    "default_levels": File (
+        path: "packs/asha/levels/aspenhallsLevelSet.ldtk",
+    ),
+
+    // single tile texture handles
+    "debug": File (
+        path: "packs/asha/textures/tiles/debug.png",
+    ),
+    "grass": File (
+        path: "packs/asha/textures/tiles/grass.png",
+    ),
+    "dirt": File (
+        path: "packs/asha/textures/tiles/dirt.png",
+    ),
+    "grass_dirt_top": File (
+        path: "packs/asha/textures/tiles/grassdirt_top.png",
+    ),
+
+    // TODO: explicit listing of asset def files is a workaround
+    // for bevy not supporting folders in wasm/mobile
+    // fix this when upstream fixes it
+    // hero/creep/boss/etc definitions
+    "character_definitions": Files (
+        paths: [
+            "packs/asha/characters/hRexxen/rexxen.character.toml",
+            "packs/asha/characters/hBennen/bennen.character.toml",
+            "packs/asha/characters/bOldHag/oldhag.character.toml",
+            "packs/asha/characters/cSkeleton/skeleton.character.toml",
+            "packs/asha/characters/cSlime/slime.character.toml",
+            ],
+    ),
+
+    // weapons/armor/trinkets/etc definitions
+    "item_definitions": Files (
+        paths: [
+            "packs/asha/items/wSmallPistol/smallpistol.weapon.toml",
+            "packs/asha/items/wAutoPistol/autopistol.weapon.toml",
+            "packs/asha/items/wSmallSmg/smallsmg.weapon.toml",
+            ],
+    ),
+})

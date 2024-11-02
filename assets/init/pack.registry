@@ -1,0 +1,71 @@
+// this pack holds important data needed for binary too run.
+// it MUST be defined before startup, but can be modified without error
+({
+    // mainly app icon, but used in other places too
+    "favicon": File (
+        path: "init/favicon.png",
+    ),
+    "splash_img": File (
+        path: "init/splash.png",
+    ),
+    "cursor_sheet" : File (
+        path: "init/default_cursor.png",
+    ),
+    "cursor_layout" : TextureAtlasLayout (
+        tile_size_x: 128,
+        tile_size_y: 128,
+        columns: 3,
+        rows: 1,
+    ),
+    "title_font": File (
+        path: "init/fonts/FantasqueSans-MonoNF.ttf",
+    ),
+    "main_font": File (
+        path: "init/fonts/Lato-Regular.ttf",
+    ),
+    "bold_font": File (
+        path: "init/fonts/FiraSans-Bold.ttf",
+    ),
+    "move_knob": File (
+        path: "init/textures_touch/move_knob.png",
+    ),
+    "look_knob": File (
+        path: "init/textures_touch/look_knob.png",
+    ),
+    "move_outline": File (
+        path: "init/textures_touch/move_outline.png",
+    ),
+    "look_outline": File (
+        path: "init/textures_touch/look_outline.png",
+    ),
+    "swap_button": File (
+        path: "init/textures_touch/weapon_switch.png",
+    ),
+    "menu_button": File (
+        path: "init/textures_touch/menu.png",
+    ),
+    "heal_button": File (
+        path: "init/textures_touch/heal.png",
+    ),
+    "zoom_minus_button": File (
+        path: "init/textures_touch/zoom_minus.png",
+    ),
+    "zoom_plus_button": File (
+        path: "init/textures_touch/zoom_plus.png",
+    ),
+    "action_one": File (
+        path: "init/textures_touch/action1.png",
+    ),
+    "action_two": File (
+        path: "init/textures_touch/action2.png",
+    ),
+    "action_three": File (
+        path: "init/textures_touch/action3.png",
+    ),
+    "action_four": File (
+        path: "init/textures_touch/action4.png",
+    ),
+    "action_five": File (
+        path: "init/textures_touch/action5.png",
+    ),
+})

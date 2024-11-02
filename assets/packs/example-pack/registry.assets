@@ -1,0 +1,19 @@
+({
+    "main_font": File (
+        path: "interface/fonts/FiraSans-Bold.ttf",
+    ),
+    "small_pistol": TextureAtlas (
+        path: "gamedata/textures/actors/weapons/smallpistol.png",
+        tile_size_x: 18.,
+        tile_size_y: 36.,
+        columns: 1,
+        rows: 1,
+    ),
+    // Sound assets go here
+    "ost": File(
+        path: "gamedata/audio/ost/expansion.ogg",
+    ),
+    "footsteps": Folder (
+        path: "gamedata/audio/footstep",
+    ),
+})

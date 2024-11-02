@@ -1,0 +1,12 @@
+# Learn more: https://trunkrs.dev/configuration/#trunk-toml
+[build]
+target = "index.html"
+# dist = "../../package/website"
+
+[watch]
+watch = [
+  "../aspenlib/src", # Game source
+  "src",             # WASM launcher source
+  "index.html",
+  "main.scss",
+]

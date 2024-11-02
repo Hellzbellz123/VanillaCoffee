@@ -1,0 +1,137 @@
+[package]
+name = "aspenlib"
+description = "Aspen Halls: in progress"
+authors = ["Hellzbellz123 (Taylor Smith)"]
+documentation = "https://github.com/Hellzbellz123/AspenHalls/blob/main/README.md"
+repository = "https://github.com/Hellzbellz123/VanillaCoffee/"
+homepage = "https://hellzbellz123.github.io/AspenHalls/"
+license-file = "LICENSE"
+readme = "README.md"
+version = "0.0.5"
+edition = "2021"
+keywords = ["videogame", "game", "lib"]
+categories = ["games"]
+
+[lints.rust]
+missing-docs = { level = "deny" }
+
+[lints.clippy]
+### warned lints ###
+too-many-lines = "warn"
+missing_errors_doc = "deny"
+missing_panics_doc = "deny"
+missing_safety_doc = "deny"
+
+### denied lints ###
+missing_docs_in_private_items = { level = "deny" }
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "deny", priority = -1 }
+complexity = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+style = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+cargo = { level = "deny", priority = -1 }
+
+### allowed lints from clippy pedantic ###
+multiple-crate-versions = { level = "allow" }
+needless_pass_by_value = { level = "allow" }
+module_name_repetitions = { level = "allow" }
+wildcard_imports = { level = "allow" }
+cast_possible_truncation = { level = "allow" }
+cast_precision_loss = { level = "allow" }
+cast-sign-loss = { level = "allow" }
+cast_possible_wrap = { level = "allow" }
+
+
+[features]
+develop = [
+  # "bevy/file_watcher",
+  # "bevy/glam_assert"
+]
+dynamic = ["bevy/dynamic_linking"]
+trace = ["bevy/trace_tracy"]
+
+[target.'cfg(windows)'.dependencies]
+winapi = "0.3"
+
+[dependencies]
+pretty-type-name = "1.0.1"
+petgraph = "0.6.5"
+rand = { version = "0.8" }
+log = "0.4.20"
+clap = { version = "4.2" }
+serde = { version = "1.0" }
+toml = { version = "0.8" }
+ron = { version = "0.8" }
+winit = { version = "0.30" }
+image = { version = "0.25", default_features = false, features = ["png"] }
+bevy = { path = "../../deps/bevy", default-features = false, features = [
+  "bevy_pbr",   # bevy_pbr / bevy_asset / bevy_render / bevy_core_pipeline
+  "bevy_ui",    # bevy_ui / bevy_text / bevy_sprite / bevy_core_pipeline
+  "bevy_winit", # Support for creating windows
+  "x11",        # Support xOrg Windows
+  # "wayland",          # Support Wayland windows
+  "png",              # png is my preffered image format
+  "serialize",        # Support for `serde` Serialize/Deserialize
+  "tonemapping_luts", # extra tonemapping utils requires ktx2 & zstd
+  "ktx2",             # gpu friendly texture format
+  "zstd",             # zstd is for ktx2 compression
+  # "bevy_gilrs",             # Gamepad input support
+  # "subpixel_glyph_atlas",   # Subpixel antialiasing for text/fonts
+  # "bevy_gizmos",            # bevy gizmos for linedrawing, not used yet? impl debug systems with this tool
+] }
+
+# Bevy Dependencies are located in deps folder
+# seldom_map_nav = { path = "../../deps/seldom_map_nav", features = ["bevy"] }
+big-brain = { path = "../../deps/big_brain" }
+# bevy_asepritesheet = { path = "../../deps/bevy_asepritesheet" }
+bevy_aseprite_ultra = { path = "../../deps/bevy_aseprite_ultra" }
+bevy_console = { path = "../../deps/bevy_console" }
+bevy_framepace = { path = "../../deps/bevy_framepace" }
+bevy_touch_stick = { path = "../../deps/bevy_touch_stick" }
+bevy_prototype_lyon = { path = "../../deps/bevy_prototype_lyon" }
+bevy_rapier2d = { path = "../../deps/bevy_rapier/bevy_rapier2d" }
+bevy-inspector-egui = { path = "../../deps/bevy_inspector_egui/crates/bevy-inspector-egui", default-features = false, features = [
+  "bevy_render",
+] }
+bevy_egui = { path = "../../deps/bevy_egui", default-features = false, features = [
+  "default_fonts",
+  "serde",
+] }
+leafwing-input-manager = { path = "../../deps/leafwing_input_manager", features = [
+  "default",
+  "timing",
+] }
+bevy_common_assets = { path = "../../deps/bevy_common_assets", features = [
+  "ron",
+  "toml",
+] }
+bevy_ecs_ldtk = { path = "../../deps/bevy_ecs_ldtk", features = [
+  "atlas",
+  "external_levels",
+] }
+bevy_ecs_tilemap = { path = "../../deps/bevy_ecs_tilemap", features = [
+  "render",
+] }
+bevy_asset_loader = { path = "../../deps/bevy_asset_loader/bevy_asset_loader", features = [
+  "2d",
+  "standard_dynamic_assets",
+] }
+bevy_kira_audio = { path = "../../deps/bevy_kira_audio", default-features = false, features = [
+  "ogg",
+] }
+bevy_mod_debugdump = { path = "../../deps/bevy_mod_debugdump", features = [
+  "render_graph",
+] }
+# bevy-debug-text-overlay = { path = "../../deps/bevy_debug_text_overlay", default-features = false, features = [
+#   "debug",
+# ] }
+bevy_mod_picking = { path = "../../deps/bevy_mod_picking/", default-features = false, features = [
+  "backend_raycast",
+  "backend_sprite",
+  "debug",
+  "selection",
+  "highlight",
+] }
+tracing-subscriber = "0.3.18"
