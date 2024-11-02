@@ -154,7 +154,7 @@ fn spawn_start_menu(
                             spawn_button(
                                 buttons,
                                 assets.font_regular.clone(),
-                                "Exit Game",
+                                "Quit Game",
                                 ExitGameTag,
                             );
                         });

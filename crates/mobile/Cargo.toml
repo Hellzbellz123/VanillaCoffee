@@ -34,7 +34,7 @@ oboe = { version = "0.6.1", features = ["shared-stdcxx"] }
 
 # android manifest definition in toml
 [package.metadata.android]
-runtime_libs = "../../target/debug/apk/lib"
+runtime_libs = "../../target/release/apk/lib"
 package = "com.hellzbellz123.aspen_halls"
 build_targets = ["aarch64-linux-android"]
 resources = "../../assets-build/android"
