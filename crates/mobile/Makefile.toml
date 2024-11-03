@@ -21,8 +21,6 @@ condition.env_set = ["BUNDLETOOL_PATH", "ANDROID_NDK_ROOT", "JAVA_HOME"]
 script_runner = "@shell"
 script.pre = "cargo ndk -t arm64-v8a -o android-project/app/src/main/jniLibs build --release"
 script.main = "gradle -p android-project assembleRelease"
-script.post = "cp ./android-project/app/build/outputs/apk/release/app-release.apk ../../package"
-
 
 [tasks.clean-old-artifacts]
 private = true

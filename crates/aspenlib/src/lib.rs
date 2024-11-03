@@ -92,7 +92,6 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
         bevy_mod_picking::DefaultPickingPlugins,
         bevy_ecs_ldtk::LdtkPlugin,
         bevy_framepace::FramepacePlugin,
-        bevy_prototype_lyon::prelude::ShapePlugin,
         bevy_rapier2d::plugin::RapierPhysicsPlugin::<SameUserDataFilter>::pixels_per_meter(32.0),
     ));
 

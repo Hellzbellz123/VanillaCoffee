@@ -22,18 +22,12 @@
 [submodule "deps/bevy_mod_debugdump"]
 	path = deps/bevy_mod_debugdump
 	url = https://github.com/jakobhellermann/bevy_mod_debugdump.git
-[submodule "deps/bevy_prototype_lyon"]
-	path = deps/bevy_prototype_lyon
-	url = https://github.com/Nilirad/bevy_prototype_lyon.git
 [submodule "deps/bevy_rapier"]
 	path = deps/bevy_rapier
 	url = https://github.com/dimforge/bevy_rapier.git
 [submodule "deps/bevy_console"]
 	path = deps/bevy_console
 	url = https://github.com/RichoDemus/bevy-console.git
-[submodule "deps/bevy_debug_text_overlay"]
-	path = deps/bevy_debug_text_overlay
-	url = https://github.com/nicopap/bevy-debug-text-overlay.git
 [submodule "deps/bevy_inspector_egui"]
 	path = deps/bevy_inspector_egui
 	url = https://github.com/jakobhellermann/bevy-inspector-egui.git
@@ -46,18 +40,12 @@
 [submodule "deps/leafwing_input_manager"]
 	path = deps/leafwing_input_manager
 	url = https://github.com/Leafwing-Studios/leafwing-input-manager
-[submodule "deps/seldom_map_nav"]
-	path = deps/seldom_map_nav
-	url = https://github.com/Seldom-SE/seldom_map_nav.git
 [submodule "deps/bevy_eventlistener"]
 	path = deps/bevy_eventlistener
 	url = https://github.com/aevyrie/bevy_eventlistener.git
 [submodule "deps/bevy_mod_picking"]
 	path = deps/bevy_mod_picking
 	url = https://github.com/aevyrie/bevy_mod_picking.git
-[submodule "deps/iyes_progress"]
-	path = deps/iyes_progress
-	url = https://github.com/IyesGames/iyes_progress.git
 [submodule "deps/bevy_touch_stick"]
 	path = deps/bevy_touch_stick
 	url = https://github.com/johanhelsing/bevy_touch_stick.git

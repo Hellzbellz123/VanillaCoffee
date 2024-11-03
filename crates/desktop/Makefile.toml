@@ -58,5 +58,6 @@ script.main = "cp -r ../../assets ../../package/desktop/assets && cp config.toml
 [tasks.zip-artifacts]
 private = true
 script_runner = "@shell"
-script.pre = "echo 'moving too package directory and zipping artifacts'"
-script.main = "cd ../../package/desktop && zip -ur ../aspenhalls_desktop.zip *"
+script.pre = "echo 'moving too package directory and zipping artifacts' && cd ../../package/desktop"
+script.main = "zip -ur ../aspenhalls_x64_linux.zip assets aspen_halls_desktop config.toml"
+script.post = "zip -ur ../aspenhalls_x64_windows.zip assets aspen_halls_desktop.exe config.toml"

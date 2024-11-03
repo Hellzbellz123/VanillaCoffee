@@ -54,7 +54,7 @@ impl Default for ConfigFile {
 }
 
 /// make sure tables are AFTER single fields
-#[derive(Reflect, Resource, Serialize, Deserialize, Copy, Clone, Debug)]
+#[derive(Reflect, Resource, Serialize, Deserialize, Copy, Clone, Debug, InspectorOptions)]
 #[reflect(Resource)]
 pub struct WindowSettings {
     /// disable software cursor systems
@@ -62,12 +62,14 @@ pub struct WindowSettings {
     /// enable `v_sync` if true
     pub v_sync: bool,
     /// framerate
-    pub frame_rate_target: f64,
+    pub frame_rate_target: Option<f32>,
     /// full screen yes/no
     pub full_screen: bool,
     /// window scale factor, only set upon start
+    #[inspector(min = 0.2, max = 100.0)]
     pub window_scale: f64,
     /// game ui scale
+    #[inspector(min = 0.2, max = 100.0)]
     pub ui_scale: f64,
     /// display resolution
     pub resolution: Vec2,
@@ -201,7 +203,7 @@ impl Default for WindowSettings {
         Self {
             software_cursor_enabled: true,
             v_sync: true,
-            frame_rate_target: 60.0,
+            frame_rate_target: None,
             full_screen: false,
             resolution: Vec2 {
                 x: 1200.0,
@@ -353,11 +355,12 @@ fn apply_window_settings(
 
     *ui_scale = UiScale(window_settings.ui_scale as f32);
 
-    // let w_window = winit.get_window(w_ent).unwrap();
-
-    let requested_limiter = Limiter::from_framerate(window_settings.frame_rate_target);
-    if frame_limiter_cfg.limiter != requested_limiter {
-        frame_limiter_cfg.limiter = requested_limiter;
+    if let Some(requested_fps_target) = window_settings.frame_rate_target {
+        let requested_fps_target = requested_fps_target.clamp(16.0, 999.0);
+        let requested_limiter = Limiter::from_framerate(requested_fps_target as f64);
+        if frame_limiter_cfg.limiter != requested_limiter {
+            frame_limiter_cfg.limiter = requested_limiter;
+        }
     }
 
     if window_settings.full_screen && b_window.mode != WindowMode::BorderlessFullscreen {

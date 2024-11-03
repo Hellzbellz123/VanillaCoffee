@@ -88,7 +88,7 @@ pub fn load_settings() -> ConfigFile {
                 },
 
                 general_settings: GeneralSettings {
-                    enable_debug: cfg.general_settings.enable_debug,
+                    enable_debug: if cfg!(feature = "develop") {true} else {cfg.general_settings.enable_debug},
                     enable_touch_controls: cfg.general_settings.enable_touch_controls,
                     camera_zoom: cfg.general_settings.camera_zoom,
                     game_difficulty: cfg.general_settings.game_difficulty,

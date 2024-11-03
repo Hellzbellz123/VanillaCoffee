@@ -55,7 +55,14 @@ trace = ["bevy/trace_tracy"]
 [target.'cfg(windows)'.dependencies]
 winapi = "0.3"
 
+[target.'cfg(not(feature = "develop"))'.dependencies]
+bevy_mod_debugdump = { path = "../../deps/bevy_mod_debugdump", features = [
+  "render_graph",
+] }
+
+
 [dependencies]
+tracing-subscriber = "0.3.18"
 pretty-type-name = "1.0.1"
 petgraph = "0.6.5"
 rand = { version = "0.8" }
@@ -71,7 +78,7 @@ bevy = { path = "../../deps/bevy", default-features = false, features = [
   "bevy_ui",    # bevy_ui / bevy_text / bevy_sprite / bevy_core_pipeline
   "bevy_winit", # Support for creating windows
   "x11",        # Support xOrg Windows
-  # "wayland",          # Support Wayland windows
+  "wayland",          # Support Wayland windows
   "png",              # png is my preffered image format
   "serialize",        # Support for `serde` Serialize/Deserialize
   "tonemapping_luts", # extra tonemapping utils requires ktx2 & zstd
@@ -83,14 +90,11 @@ bevy = { path = "../../deps/bevy", default-features = false, features = [
 ] }
 
 # Bevy Dependencies are located in deps folder
-# seldom_map_nav = { path = "../../deps/seldom_map_nav", features = ["bevy"] }
 big-brain = { path = "../../deps/big_brain" }
-# bevy_asepritesheet = { path = "../../deps/bevy_asepritesheet" }
 bevy_aseprite_ultra = { path = "../../deps/bevy_aseprite_ultra" }
 bevy_console = { path = "../../deps/bevy_console" }
 bevy_framepace = { path = "../../deps/bevy_framepace" }
 bevy_touch_stick = { path = "../../deps/bevy_touch_stick" }
-bevy_prototype_lyon = { path = "../../deps/bevy_prototype_lyon" }
 bevy_rapier2d = { path = "../../deps/bevy_rapier/bevy_rapier2d" }
 bevy-inspector-egui = { path = "../../deps/bevy_inspector_egui/crates/bevy-inspector-egui", default-features = false, features = [
   "bevy_render",
@@ -121,12 +125,6 @@ bevy_asset_loader = { path = "../../deps/bevy_asset_loader/bevy_asset_loader", f
 bevy_kira_audio = { path = "../../deps/bevy_kira_audio", default-features = false, features = [
   "ogg",
 ] }
-bevy_mod_debugdump = { path = "../../deps/bevy_mod_debugdump", features = [
-  "render_graph",
-] }
-# bevy-debug-text-overlay = { path = "../../deps/bevy_debug_text_overlay", default-features = false, features = [
-#   "debug",
-# ] }
 bevy_mod_picking = { path = "../../deps/bevy_mod_picking/", default-features = false, features = [
   "backend_raycast",
   "backend_sprite",
@@ -134,4 +132,3 @@ bevy_mod_picking = { path = "../../deps/bevy_mod_picking/", default-features = f
   "selection",
   "highlight",
 ] }
-tracing-subscriber = "0.3.18"
