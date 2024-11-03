@@ -1,7 +1,10 @@
+crates/mobile/android-project/local.properties
+crates/mobile/android-project/app/build/
+crates/mobile/android-project/.gradle
+crates/mobile/android-project/app/src/main/jniLibs
 .vscode/ra-cache
 target/
 package/
-
 crates/aspenlib/src/utilities/.unused_utils
 crates/desktop/debug.log
 crates/desktop/config.toml

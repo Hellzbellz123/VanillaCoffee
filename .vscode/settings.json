@@ -152,7 +152,6 @@
   },
   "memory-view.showMemoryPanel": true,
   "rust-analyzer.cargo.features": ["develop", "dynamic"],
-  "rust-analyzer.check.command": "clippy",
   "rust-analyzer.cargo.targetDir": true,
   "rust-analyzer.server.path": "/usr/bin/rust-analyzer",
   "todo-tree.tree.showBadges": true,

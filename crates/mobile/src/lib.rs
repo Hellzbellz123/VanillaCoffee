@@ -8,6 +8,7 @@ use aspenlib::{
 };
 use bevy::{math::Vec2, prelude::bevy_main};
 
+// TODO: switch to android GameActivity when bevy 0.15 releases
 #[bevy_main]
 fn main() {
     let config = ConfigFile {

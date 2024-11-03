@@ -13,8 +13,8 @@ keywords = ["videogame", "game", "application", "bin"]
 categories = ["games"]
 
 [lib]
-name = "game"
-crate-type = ["cdylib"]
+name = "aspen_halls_mobile"
+crate-type = ["staticlib", "cdylib"]
 
 [features]
 develop = ["aspenlib/develop"]
@@ -31,71 +31,3 @@ bevy = { version = "*", features = [
 oboe = { version = "0.6.1", features = ["shared-stdcxx"] }
 # ndk-context = "0.1.1"
 # jni = { version = "0.21.1", features = ["invocation"] }
-
-# android manifest definition in toml
-[package.metadata.android]
-runtime_libs = "../../target/release/apk/lib"
-package = "com.hellzbellz123.aspen_halls"
-build_targets = ["aarch64-linux-android"]
-resources = "../../assets-build/android"
-assets = "../../assets"
-apk_name = "AspenHalls"
-strip = "strip"
-sdk = { target_sdk_version = 34, min_sdk_version = 24 }
-# See https://developer.android.com/guide/topics/manifest/uses-feature-element
-uses_feature = [
-  { name = "android.hardware.vulkan.level", required = true, version = 1 },
-]
-# See https://developer.android.com/guide/topics/manifest/uses-permission-element
-uses_permission = [
-  { name = "android.permission.MODIFY_AUDIO_SETTINGS", max_sdk_version = 21 },
-]
-
-# See https://developer.android.com/guide/topics/manifest/application-element
-[package.metadata.android.application]
-debuggable = true
-theme = "@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen"
-icon = "@mipmap/ic_launcher"
-label = "Aspen Halls"
-# See https://developer.android.com/guide/topics/manifest/application-element#extractNativeLibs
-extract_native_libs = true
-# See https://developer.android.com/guide/topics/manifest/application-element#usesCleartextTraffic
-uses_cleartext_traffic = true
-# See https://developer.android.com/guide/topics/manifest/meta-data-element
-# Note: there can be several .meta_data entries.
-# Note: the `resource` attribute is currently not supported.
-meta_data = [{ name = "android.app.lib_name", value = "game" }]
-
-# See https://developer.android.com/guide/topics/manifest/activity-element
-[package.metadata.android.application.activity]
-# See https://developer.android.com/guide/topics/manifest/activity-element#config
-config_changes = "orientation|keyboardHidden|screenSize"
-# See https://developer.android.com/guide/topics/manifest/activity-element#label
-label = "Aspen Halls"
-# See https://developer.android.com/guide/topics/manifest/activity-element#lmode
-launch_mode = "singleTop"
-# See https://developer.android.com/guide/topics/manifest/activity-element#screen
-orientation = "landscape"
-# See https://developer.android.com/guide/topics/manifest/activity-element#exported
-exported = true
-# See https://developer.android.com/guide/topics/manifest/activity-element#resizeableActivity
-resizeable_activity = true
-# See https://developer.android.com/guide/topics/manifest/activity-element#always
-always_retain_task_state = true
-immersive = true
-
-# Defaults to `$HOME/.android/debug.keystore` for the `dev` profile. Will ONLY
-# generate a new debug.keystore if this file does NOT exist. A keystore is never
-# auto-generated for other profiles.
-#
-# The keystore path can be absolute, or relative to the Cargo.toml file.
-#
-# The environment variables `CARGO_APK_<PROFILE>_KEYSTORE` and
-# `CARGO_APK_<PROFILE>_KEYSTORE_PASSWORD` can be set to a keystore path
-# and keystore password respectively. The profile portion follows the same rules
-# as `<cfg>`, it is the uppercased profile name with `-` replaced with `_`.
-#
-# If present they take precedence over the signing information in the manifest.
-[package.metadata.android.signing.release]
-path = "/home/hellzbellz/.android/debug.keystore"
-keystore_password = "android"
