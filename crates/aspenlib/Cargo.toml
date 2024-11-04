@@ -45,21 +45,12 @@ cast_possible_wrap = { level = "allow" }
 
 
 [features]
-develop = [
-  # "bevy/file_watcher",
-  # "bevy/glam_assert"
-]
+develop = ["dep:bevy_mod_debugdump"]
 dynamic = ["bevy/dynamic_linking"]
 trace = ["bevy/trace_tracy"]
 
 [target.'cfg(windows)'.dependencies]
 winapi = "0.3"
-
-[target.'cfg(not(feature = "develop"))'.dependencies]
-bevy_mod_debugdump = { path = "../../deps/bevy_mod_debugdump", features = [
-  "render_graph",
-] }
-
 
 [dependencies]
 tracing-subscriber = "0.3.18"
@@ -74,10 +65,10 @@ ron = { version = "0.8" }
 winit = { version = "0.30" }
 image = { version = "0.25", default_features = false, features = ["png"] }
 bevy = { path = "../../deps/bevy", default-features = false, features = [
-  "bevy_pbr",   # bevy_pbr / bevy_asset / bevy_render / bevy_core_pipeline
-  "bevy_ui",    # bevy_ui / bevy_text / bevy_sprite / bevy_core_pipeline
-  "bevy_winit", # Support for creating windows
-  "x11",        # Support xOrg Windows
+  "bevy_pbr",         # bevy_pbr / bevy_asset / bevy_render / bevy_core_pipeline
+  "bevy_ui",          # bevy_ui / bevy_text / bevy_sprite / bevy_core_pipeline
+  "bevy_winit",       # Support for creating windows
+  "x11",              # Support xOrg Windows
   "wayland",          # Support Wayland windows
   "png",              # png is my preffered image format
   "serialize",        # Support for `serde` Serialize/Deserialize
@@ -95,7 +86,9 @@ bevy_aseprite_ultra = { path = "../../deps/bevy_aseprite_ultra" }
 bevy_console = { path = "../../deps/bevy_console" }
 bevy_framepace = { path = "../../deps/bevy_framepace" }
 bevy_touch_stick = { path = "../../deps/bevy_touch_stick" }
-bevy_rapier2d = { path = "../../deps/bevy_rapier/bevy_rapier2d" }
+bevy_mod_debugdump = { optional = true, path = "../../deps/bevy_mod_debugdump", features = [
+  "render_graph",
+] }
 bevy-inspector-egui = { path = "../../deps/bevy_inspector_egui/crates/bevy-inspector-egui", default-features = false, features = [
   "bevy_render",
 ] }
