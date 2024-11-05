@@ -66,8 +66,8 @@ bevy_egui = { path = "deps/bevy_egui" }
 bevy_common_assets = { path = "deps/bevy_common_assets" }
 bevy_ecs_ldtk_macros = { path = "deps/bevy_ecs_ldtk/macros" }
 
-# Replace bevy core crates with local copy for ALL crates that use them ###
-bevy = { workspace = true, path = "deps/bevy" }
+# # Replace bevy core crates with local copy for ALL crates that use them ###
+bevy = { path = "deps/bevy" }
 bevy_animation = { path = "deps/bevy/crates/bevy_animation" }
 bevy_a11y = { path = "deps/bevy/crates/bevy_a11y" }
 bevy_app = { path = "deps/bevy/crates/bevy_app" }

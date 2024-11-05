@@ -38,7 +38,7 @@ fn main() {
         window_settings: WindowSettings {
             software_cursor_enabled: true,
             v_sync: true,
-            frame_rate_target: 60.0,
+            frame_rate_target: Some(60.0),
             full_screen: false,
             resolution: Vec2::new(1280.0, 720.0),
             window_scale: 1.0,

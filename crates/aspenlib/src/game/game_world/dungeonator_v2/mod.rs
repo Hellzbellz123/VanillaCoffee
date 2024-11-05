@@ -29,6 +29,10 @@ use crate::{
     register_types,
 };
 
+// TODO: make this an async module? handle competion then change gamestate.
+// currently we do the reverse
+// https://github.com/fortress-build/whirlwind
+
 /// Dungeon Generator components
 pub mod components;
 /// hallway creation system

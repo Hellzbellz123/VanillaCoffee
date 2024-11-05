@@ -16,7 +16,7 @@ fn main() {
         window_settings: WindowSettings {
             software_cursor_enabled: true,
             v_sync: true,
-            frame_rate_target: 120.0,
+            frame_rate_target: Some(120.0),
             full_screen: true,
             resolution: Vec2 {
                 x: 1920.0,
