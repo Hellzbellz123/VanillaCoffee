@@ -1,11 +1,13 @@
+use avian2d::prelude::CollisionStarted;
 use bevy::{
     ecs::{schedule::Condition, system::Res},
     log::{error, info},
     math::Vec2,
     prelude::{
-        in_state, on_event, Assets, Commands, DespawnRecursiveExt, Entity, EventReader,
-        GlobalTransform, IntoSystemConfigs, OnEnter, OrthographicProjection, Parent, Plugin, Query,
-        SpatialBundle, Transform, Update, With, Without,
+        in_state, on_event, warn, Assets, Commands, DespawnRecursiveExt,
+        Entity, EventReader, GlobalTransform, IntoSystemConfigs, OnEnter,
+        OrthographicProjection, Parent, Plugin, Query, SpatialBundle, Transform,
+        Update, With, Without,
     },
 };
 use bevy_ecs_ldtk::{
@@ -16,10 +18,9 @@ use bevy_mod_picking::{
     events::{Down, Pointer},
     prelude::{On, PickableBundle},
 };
-use bevy_rapier2d::prelude::CollisionEvent;
-use log::warn;
 
 use crate::{
+    bundles::Aspen2dPhysicsBundle,
     consts::ACTOR_Z_INDEX,
     game::{
         characters::{
@@ -60,7 +61,7 @@ impl Plugin for HideOutPlugin {
             Update,
             (
                 // TODO: fix scheduling
-                teleporter_collisions.run_if(on_event::<CollisionEvent>()),
+                teleporter_collisions.run_if(on_event::<CollisionStarted>()),
                 create_playable_heroes
                     .run_if(in_state(AppStage::Running).and_then(on_event::<LevelEvent>())),
             ),
@@ -158,6 +159,7 @@ fn populate_hero_spots(
 
             commands.spawn((
                 bundle.clone(),
+                Aspen2dPhysicsBundle::default_character(),
                 PickableBundle::default(),
                 On::<Pointer<Down>>::send_event::<SelectThisHeroForPlayer>(),
                 SpatialBundle::from_transform(Transform::from_translation(

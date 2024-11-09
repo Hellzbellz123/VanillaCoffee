@@ -1,30 +1,21 @@
+use avian2d::prelude::{Collider, CollisionStarted};
 use bevy::prelude::*;
-use bevy_rapier2d::{
-    prelude::{Collider, CollisionEvent},
-    rapier::geometry::CollisionEventFlags,
-};
 
-use crate::{
-    game::{
-        attributes_stats::{DamageQueue, ProjectileStats},
-        components::ActorColliderType,
-    },
-    utilities::collision_to_data,
+use crate::game::{
+    attributes_stats::{DamageQueue, ProjectileStats},
+    components::ActorColliderType,
 };
 
 /// detects projectile hits, adds damage too hit actors
 pub fn projectile_hits(
     mut cmds: Commands,
-    mut collision_events: EventReader<CollisionEvent>,
+    mut collision_events: EventReader<CollisionStarted>,
     mut damage_queue_query: Query<&mut DamageQueue>,
     actor_colliders: Query<(Entity, &Parent, &ActorColliderType), With<Collider>>,
     projectiles: Query<&ProjectileStats>,
 ) {
     for event in collision_events.read() {
-        let (a_id, b_id, flags, is_start_event) = collision_to_data(event);
-        if !is_start_event || flags.contains(CollisionEventFlags::SENSOR) {
-            continue;
-        }
+        let CollisionStarted(a_id, b_id) = *event;
 
         let Some((Ok(stats), projectile)) = ({
             let mut projectile_colliders = actor_colliders

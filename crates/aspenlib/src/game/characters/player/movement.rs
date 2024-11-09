@@ -1,6 +1,6 @@
 use bevy::prelude::{Query, With, *};
 
-use bevy_rapier2d::prelude::Velocity;
+use avian2d::prelude::LinearVelocity;
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
@@ -21,7 +21,7 @@ pub fn update_player_velocity(
     actions: Res<ActionState<action_maps::Gameplay>>,
     // TODO: use global settings resource
     mut player_query: Query<
-        (&mut Velocity, &CharacterMoveState, &CharacterStats),
+        (&mut LinearVelocity, &CharacterMoveState, &CharacterStats),
         With<PlayerSelectedHero>,
     >,
 ) {
@@ -43,7 +43,7 @@ pub fn update_player_velocity(
         player_stats.attrs().base_speed * WALK_MODIFIER
     };
 
-    let new_velocity = Velocity::linear(delta.xy() * speed);
+    let new_velocity = LinearVelocity(delta.xy() * speed);
 
     *velocity = new_velocity;
 }
@@ -54,7 +54,7 @@ pub fn camera_movement_system(
     time: Res<Time>,
     mut main_camera_query: Query<(&mut Transform, &MainCamera)>,
     player_move_query: Query<
-        (&Transform, &Velocity),
+        (&Transform, &LinearVelocity),
         (With<PlayerSelectedHero>, Without<MainCamera>),
     >,
 ) {
@@ -72,20 +72,20 @@ pub fn camera_movement_system(
     let camera_transform = camera_trans.translation.truncate();
 
     let scaled_player_velocity = Vec2 {
-        x: player_velocity.linvel.x * camera_data.movement_scales.x,
-        y: player_velocity.linvel.y * camera_data.movement_scales.y,
+        x: player_velocity.x * camera_data.movement_scales.x,
+        y: player_velocity.y * camera_data.movement_scales.y,
     };
 
     let camera_target = player_transform.translation.truncate()
         + (scaled_player_velocity * camera_data.look_ahead_factor);
 
     // Calculate the movement speed based on time.delta()
-    let movement_speed: f32 =
-        if player_velocity.linvel.abs().length() > camera_data.lerp_change_magnitude {
-            camera_data.recenter_speed * time.delta_seconds()
-        } else {
-            camera_data.player_still_recenter_speed
-        };
+    let movement_speed: f32 = if player_velocity.abs().length() > camera_data.lerp_change_magnitude
+    {
+        camera_data.recenter_speed * time.delta_seconds()
+    } else {
+        camera_data.player_still_recenter_speed
+    };
 
     if camera_transform.is_finite() {
         let distance = camera_transform.distance(player_transform.translation.truncate());

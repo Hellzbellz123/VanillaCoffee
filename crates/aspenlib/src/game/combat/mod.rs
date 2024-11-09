@@ -1,8 +1,4 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
-use bevy_rapier2d::{
-    geometry::SolverFlags,
-    pipeline::{BevyPhysicsHooks, PairFilterContextView},
-};
 
 use crate::{
     game::{
@@ -85,19 +81,14 @@ fn handle_death_system(
     mut game_info: ResMut<CurrentRunInformation>,
     mut cmds: Commands,
     mut damaged_query: Query<
-        (
-            Entity,
-            &mut CharacterStats,
-            &mut Transform,
-            Option<&PlayerSelectedHero>,
-        ),
+        (Entity, &mut CharacterStats, Option<&PlayerSelectedHero>),
         Changed<CharacterStats>,
     >,
     dungeon_state: Res<State<GeneratorState>>,
     mut regen_event: EventWriter<RegenerateDungeonEvent>,
     mut tp_event: EventWriter<ActorTeleportEvent>,
 ) {
-    for (ent, mut stats, _transform, player_control) in &mut damaged_query {
+    for (ent, mut stats, player_control) in &mut damaged_query {
         if stats.get_current_health() <= 0.0 {
             // should probably despawn player and rebuild.
             // or auto use postion and if dead restart
@@ -183,17 +174,18 @@ pub struct SameUserDataFilter<'w, 's> {
     tags: Query<'w, 's, &'static EntityCreator>,
 }
 
-impl BevyPhysicsHooks for SameUserDataFilter<'_, '_> {
-    fn filter_contact_pair(&self, context: PairFilterContextView) -> Option<SolverFlags> {
-        if let Some(a_filter) = self.tags.get(context.collider1()).ok()
-            && let Some(b_filter) = self.tags.get(context.collider2()).ok()
-            && a_filter.0 == b_filter.0
-        {
-            // this bullet was requested by opposite entitity
-            // dont 'hit' it.
-            return None;
-        }
+// TODO: make this work for avian
+// impl BevyPhysicsHooks for SameUserDataFilter<'_, '_> {
+//     fn filter_contact_pair(&self, context: PairFilterContextView) -> Option<SolverFlags> {
+//         if let Some(a_filter) = self.tags.get(context.collider1()).ok()
+//             && let Some(b_filter) = self.tags.get(context.collider2()).ok()
+//             && a_filter.0 == b_filter.0
+//         {
+//             // this bullet was requested by opposite entitity
+//             // dont 'hit' it.
+//             return None;
+//         }
 
-        Some(SolverFlags::COMPUTE_IMPULSES)
-    }
-}
+//         Some(SolverFlags::COMPUTE_IMPULSES)
+//     }
+// }

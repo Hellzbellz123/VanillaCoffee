@@ -1,13 +1,9 @@
+use avian2d::prelude::{Collider, CollisionEnded, CollisionStarted, Sensor};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{
     prelude::{LevelSet, SpawnExclusions},
     IntGridRendering, LdtkSettings, LdtkWorldBundle, LevelBackground, LevelSelection,
     LevelSpawnBehavior, SetClearColor,
-};
-use bevy_rapier2d::{
-    geometry::Collider,
-    prelude::{CollisionEvent, Sensor},
-    rapier::geometry::CollisionEventFlags,
 };
 
 use crate::{
@@ -17,7 +13,6 @@ use crate::{
         game_world::components::{ActorTeleportEvent, Teleporter},
     },
     loading::assets::AspenLevelsetHandles,
-    utilities::collision_to_data,
 };
 
 /// tag for map entity
@@ -76,17 +71,18 @@ pub fn spawn_hideout(mut commands: Commands, maps: Res<AspenLevelsetHandles>) {
 
 /// system too check for actors on teleport pad
 pub fn teleporter_collisions(
-    mut collision_events: EventReader<CollisionEvent>,
+    mut collision_start_events: EventReader<CollisionStarted>,
+    collision_end_events: EventReader<CollisionEnded>,
     mut teleport_events: EventWriter<ActorTeleportEvent>,
     mut characters: Query<(&mut CharacterMoveState, &CharacterType)>,
     actor_colliders: Query<(Entity, &Parent, &ActorColliderType), With<Collider>>,
     teleporter: Query<(Entity, &Teleporter), With<Sensor>>,
 ) {
-    for event in &mut collision_events.read() {
-        let (collider_a, collider_b, flags, is_start_event) = collision_to_data(event);
-        if !flags.contains(CollisionEventFlags::SENSOR) {
-            continue;
-        }
+    // NOTE: we are explicitly using returns instead of continue in an effort too prevent
+    // multiple teleport events from triggering for the same entity at once
+    // there is also a rudimentary teleport statemachine held on the `CharacterMoveState`
+    for event in &mut collision_start_events.read() {
+        let CollisionStarted(collider_a, collider_b) = *event;
 
         let Some((teleporter, tp_data)) = teleporter
             .iter()
@@ -108,41 +104,28 @@ pub fn teleporter_collisions(
         else {
             return;
         };
+
         let Ok((mut character_movestate, character_type)) = characters.get_mut(character) else {
             return;
         };
 
         info!("got teleporter collision");
-        if !is_start_event {
-            match character_movestate.teleport_status {
-                TeleportStatus::None => {
-                    warn!("exited teleporter with 'none'");
-                }
-                TeleportStatus::Requested => {
-                    warn!("exited teleporter with 'requested'");
-                }
-                TeleportStatus::Teleporting => {
-                    warn!("exited teleporter with 'teleporting'");
-                    character_movestate.teleport_status = TeleportStatus::Done;
-                }
-                TeleportStatus::Done => {
-                    warn!("exited teleporter with 'done'");
-                    character_movestate.teleport_status = TeleportStatus::None;
-                }
-            }
-        } else if character_movestate.teleport_status == TeleportStatus::None && is_start_event {
+        if character_movestate.teleport_status == TeleportStatus::None {
             if character_type != &CharacterType::Hero {
                 warn!("teleporter should only be triggered by the player");
                 return;
             }
 
+            warn!("requesting teleport");
+            character_movestate.teleport_status = TeleportStatus::Requested;
             teleport_events.send(ActorTeleportEvent {
                 tp_type: tp_data.effect.clone(),
                 target: Some(character),
                 sender: Some(teleporter),
             });
-            character_movestate.teleport_status = TeleportStatus::Requested;
-            warn!("requesting teleport");
+            return;
+        } else if character_movestate.teleport_status == TeleportStatus::Done {
+            character_movestate.teleport_status = TeleportStatus::None;
             return;
         }
     }

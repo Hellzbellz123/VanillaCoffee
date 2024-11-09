@@ -1,9 +1,9 @@
+use avian2d::prelude::Collider;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{
     prelude::{LevelEvent, LevelIid},
     GridCoords,
 };
-use bevy_rapier2d::geometry::Collider;
 use petgraph::{Graph, Undirected};
 
 use crate::game::game_world::{
@@ -47,6 +47,7 @@ pub fn create_tile_graph(
     let mut transformed_count = 0;
     let level_amount = level_query.iter().count();
 
+    // TODO: this is not working correctly.
     for event in spawn_events.read() {
         match event {
             LevelEvent::Transformed(_) => transformed_count += 1,

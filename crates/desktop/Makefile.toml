@@ -11,6 +11,10 @@ dependencies = [
 workspace = false
 run_task = { name = ["package-artifacts"] }
 
+
+# use cargo zigbuild??
+# zig makes it work according too docs
+#TODO: build apple arm/x86 binarys using x86_64-apple-darwin/aarch64-apple-darwin
 [tasks.package-artifacts]
 private = true
 dependencies = ["copy-package-assets", "copy-bin-windows", "copy-bin-linux"]

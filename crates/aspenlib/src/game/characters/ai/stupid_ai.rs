@@ -3,12 +3,11 @@ all credit for this goes to Shane Satterfield @ https://github.com/shanesatterfi
 for being the only real useful example of big-brain as far as im concerned
 */
 
-use bevy::hierarchy::HierarchyQueryExt;
-use bevy::prelude::*;
-use bevy_rapier2d::{
-    math::Rot,
-    prelude::{Collider, QueryFilter, RapierContext, ShapeCastOptions, Velocity},
+use avian2d::prelude::{
+    Collider, LayerMask, LinearVelocity, ShapeHitData, SpatialQuery, SpatialQueryFilter,
 };
+use bevy::prelude::*;
+use bevy::{hierarchy::HierarchyQueryExt, utils::HashSet};
 use big_brain::{
     prelude::{ActionState, Actor, Score},
     thinker::ThinkerBuilder,
@@ -72,7 +71,7 @@ pub struct BasicAiBundle {
 #[allow(clippy::type_complexity)]
 fn stupid_ai_aggro_manager(
     names: Query<&Name>,
-    rapier_context: Query<&RapierContext>,
+    physics_query: SpatialQuery,
     // player
     player_query: Query<(Entity, &Transform), With<PlayerSelectedHero>>,
     // enemies that can aggro
@@ -85,8 +84,6 @@ fn stupid_ai_aggro_manager(
     children: Query<&Children>,
     colliders: Query<&Collider>,
 ) {
-    let rapier_context = rapier_context.single();
-
     let Ok((player, player_transform)) = player_query.get_single() else {
         warn!("no player for stupid-ai-manager too use");
         return;
@@ -106,20 +103,17 @@ fn stupid_ai_aggro_manager(
         let distance_to_target = enemy_pos.distance(player_pos).abs();
         let direction_to_target = Vec2::normalize_or_zero(player_pos - enemy_pos);
 
-        let ray = rapier_context.cast_shape(
+        let ray = physics_query.cast_shape(
+            &Collider::circle(TILE_SIZE),
             enemy_pos,
-            Rot::MIN,
-            direction_to_target,
-            &Collider::ball(TILE_SIZE),
-            ShapeCastOptions {
-                max_time_of_impact: distance_to_target,
-                target_distance: 0.0,
-                stop_at_penetration: true,
-                compute_impact_geometry_on_penetration: false,
+            0.0,
+            Dir2::new_unchecked(direction_to_target),
+            distance_to_target,
+            true,
+            &SpatialQueryFilter {
+                mask: LayerMask::ALL,
+                excluded_entities: HashSet::new(),
             },
-            QueryFilter::new()
-                .exclude_sensors()
-                .exclude_rigid_body(this_actor),
         );
 
         let target_in_shoot_range = distance_to_target <= tiles_to_f32(combat_cfg.shoot_range);
@@ -128,7 +122,7 @@ fn stupid_ai_aggro_manager(
 
         let can_reach_target: bool = match ray {
             None => false,
-            Some((entity, _distance)) => entity == player_collider_ent,
+            Some(ShapeHitData { entity, .. }) => entity == player_collider_ent,
         };
 
         if can_reach_target {
@@ -156,7 +150,7 @@ fn stupid_ai_aggro_manager(
 /// handles enemy's that can chase
 fn chase_action(
     player_query: Query<&Transform, With<PlayerSelectedHero>>,
-    mut enemy_query: Query<(&Transform, &mut Velocity, &AICombatAggroConfig)>,
+    mut enemy_query: Query<(&Transform, &mut LinearVelocity, &AICombatAggroConfig)>,
     mut chasing_enemies: Query<(&Actor, &mut ActionState), With<AIChaseAction>>,
 ) {
     let Ok(player_transform) = player_query.get_single() else {
@@ -195,11 +189,11 @@ fn chase_action(
                     if !actor_in_personal_space {
                         // move towards the player if player is close enough
                         trace!("actor not in shoot range, moving closer");
-                        *velocity = Velocity::linear(direction * 50.);
+                        *velocity = LinearVelocity(direction * 50.);
                     } else if actor_in_personal_space {
                         // move away from player if too close
                         trace!("actor in personal space, moving away");
-                        *velocity = Velocity::linear(-direction * 50.);
+                        *velocity = LinearVelocity(-direction * 50.);
                     }
                 }
                 ActionState::Cancelled => {
@@ -208,7 +202,7 @@ fn chase_action(
                 }
                 ActionState::Failure | ActionState::Success => {
                     trace!("chase finished/failed");
-                    *velocity = Velocity::linear(Vec2::ZERO);
+                    *velocity = LinearVelocity::ZERO;
                 }
             }
         }
@@ -272,12 +266,15 @@ fn attack_action(
 
 /// handles enemy's that are doing the wander action
 fn wander_action(
-    mut enemy_query: Query<(&Transform, &mut Velocity, &mut Sprite, &mut AIWanderConfig)>,
+    rapier_context: SpatialQuery,
+    mut enemy_query: Query<(
+        &Transform,
+        &mut LinearVelocity,
+        &mut Sprite,
+        &mut AIWanderConfig,
+    )>,
     mut thinker_query: Query<(&Actor, &mut ActionState), With<AIWanderAction>>,
-    rapier_context: Query<&RapierContext>,
 ) {
-    let rapier_context = rapier_context.single();
-
     for (Actor(actor), mut state) in &mut thinker_query {
         if let Ok((enemy_transform, mut velocity, _sprite, mut can_meander_tag)) =
             enemy_query.get_mut(*actor)
@@ -318,22 +315,19 @@ fn wander_action(
                     let distance = enemy_pos.distance(target_pos).abs();
 
                     let ray = rapier_context.cast_shape(
+                        &Collider::circle(TILE_SIZE),
                         enemy_pos,
-                        Rot::MIN,
-                        direction,
-                        &Collider::ball(TILE_SIZE),
-                        ShapeCastOptions {
-                            max_time_of_impact: distance * 0.1,
-                            target_distance: 0.0,
-                            stop_at_penetration: true,
-                            compute_impact_geometry_on_penetration: false,
+                        0.0,
+                        Dir2::new_unchecked(direction),
+                        distance,
+                        true,
+                        &SpatialQueryFilter {
+                            mask: LayerMask::ALL,
+                            excluded_entities: HashSet::new(),
                         },
-                        QueryFilter::new()
-                            .exclude_sensors()
-                            .exclude_rigid_body(*actor),
                     );
 
-                    if ray.is_some_and(|f| f.1.time_of_impact <= distance * 0.1) {
+                    if ray.is_some_and(|f| f.time_of_impact <= distance * 0.1) {
                         can_meander_tag.wander_target = None;
                         *state = ActionState::Requested;
                     }
@@ -341,12 +335,12 @@ fn wander_action(
                     if distance <= target_deviation {
                         *state = ActionState::Requested;
                     } else {
-                        *velocity = Velocity::linear(direction * 100.);
+                        *velocity = LinearVelocity(direction * 100.);
                     }
                 }
                 ActionState::Success | ActionState::Failure => {
                     // clear target, set velocity to None  // we actually don't want too succeed at this action because then the ai will just do nothing. if i set it too not be last resort action i bet it would work
-                    *velocity = Velocity::linear(Vec2::ZERO);
+                    *velocity = LinearVelocity::ZERO;
                     can_meander_tag.wander_target = None;
                     *state = ActionState::Requested;
                 }

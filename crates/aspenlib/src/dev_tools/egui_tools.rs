@@ -93,7 +93,6 @@ impl WorldInspectorPlugin {
     pub fn new() -> Self {
         Self::default()
     }
-
     /// Only show the UI of the specified condition is active
     pub fn run_if<M>(mut self, condition: impl Condition<M>) -> Self {
         let condition_system = IntoSystem::into_system(condition);
@@ -141,8 +140,10 @@ pub fn ui_for_world(world: &mut World, ui: &mut egui::Ui) {
         .default_open(true)
         .show(ui, |ui| {
             ui_for_world_entities_filtered::<(
+                With<bevy::prelude::Name>,
                 Without<bevy::prelude::Parent>,
                 Without<big_brain::prelude::ActionState>,
+                Without<bevy::ecs::observer::ObserverState>,
             )>(world, ui, true);
         });
     egui::CollapsingHeader::new("Resources").show(ui, |ui| {

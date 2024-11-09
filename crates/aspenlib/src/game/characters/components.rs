@@ -209,9 +209,9 @@ pub enum TeleportStatus {
     None,
     /// entity has requested a teleport
     Requested,
-    /// entity is in process of teleporting
+    // / entity is in process of teleporting
     Teleporting,
-    /// entity has finished teleporting
+    // / entity has finished teleporting
     Done,
 }
 

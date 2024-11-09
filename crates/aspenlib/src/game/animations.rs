@@ -1,6 +1,6 @@
+use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::{Animation, AnimationRepeat, Aseprite};
-use bevy_rapier2d::prelude::Velocity;
 
 use crate::{
     game::characters::components::{CharacterMoveState, CurrentMovement, MoveDirection},
@@ -54,14 +54,18 @@ impl Plugin for AnimationsPlugin {
 /// updates character animation when move status changes
 fn change_character_animations(
     mut change_events: EventWriter<EventAnimationChange>,
-    mut characters: Query<(Entity, &CharacterMoveState, &Velocity), Changed<CharacterMoveState>>,
+    mut characters: Query<
+        (Entity, &CharacterMoveState, &LinearVelocity),
+        Changed<CharacterMoveState>,
+    >,
     mut sprite_query: Query<&mut Sprite>,
 ) {
     for (character, move_state, velocity) in &mut characters {
         let move_status = &move_state.move_status.0;
 
+        // we are ignoring whats on the character because the diagnal directions are not important here
         // use pi4?
-        let move_direction = vector_to_cardinal_direction(velocity.linvel);
+        let move_direction = vector_to_cardinal_direction(**velocity);
 
         match move_status {
             CurrentMovement::None => {
@@ -121,11 +125,10 @@ fn handle_animation_changes(
         if event.anim_handle.len() == 1
             && let Some(tag) = event.anim_handle.first()
         {
-            let Some(aseprite_file) = aseprites
-                .get(aseprite_handle) else {
-                    warn!("sprite sheet should exist for this actor");
-                    continue;
-                };
+            let Some(aseprite_file) = aseprites.get(aseprite_handle) else {
+                warn!("sprite sheet should exist for this actor");
+                continue;
+            };
 
             if !aseprite_file.tags.contains_key(&(*tag).to_string()) {
                 warn!("animation id does not exist in spritesheet");

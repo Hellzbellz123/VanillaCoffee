@@ -21,8 +21,6 @@ use crate::{
     GameStage, GeneralSettings,
 };
 
-use bevy_rapier2d::prelude::CollisionGroups;
-
 /// player actions
 pub mod actions;
 /// player movement functions
@@ -39,24 +37,23 @@ impl Plugin for PlayerPlugin {
             .add_systems(
                 Update,
                 (
-                    movement::update_player_velocity,
-                    movement::camera_movement_system,
-                    actions::spawn_custom,
-                    actions::player_attack,
-                    actions::equip_closest_weapon,
-                    actions::zoom_control,
-                    actions::change_weapon,
-                    actions::aim_weapon,
-                )
-                    .run_if(playing_game()),
+                    select_wanted_hero.run_if(in_state(GameStage::SelectCharacter)),
+                    (
+                        movement::camera_movement_system,
+                        movement::update_player_velocity,
+                        actions::spawn_custom,
+                        actions::player_attack,
+                        actions::equip_closest_weapon,
+                        actions::zoom_control,
+                        actions::change_weapon,
+                        actions::aim_weapon,
+                    )
+                        .run_if(playing_game()),
+                ),
             )
             .add_systems(
                 OnExit(GameStage::SelectCharacter),
                 build_player_from_selected_hero,
-            )
-            .add_systems(
-                Update,
-                select_wanted_hero.run_if(in_state(GameStage::SelectCharacter)),
             );
     }
 }
@@ -96,9 +93,32 @@ fn select_wanted_hero(
 
         trace!("selecting hero");
         cmds.entity(*hero)
-            .insert(PlayerSelectedHero)
             .remove::<On<Pointer<Down>>>()
-            .remove::<PickableBundle>();
+            .remove::<PickableBundle>()
+            .insert(PlayerSelectedHero)
+            .with_children(|child| {
+                child.spawn((
+                    EntityCreator(*hero),
+                    AspenColliderBundle {
+                        tag: ActorColliderType::Character,
+                        name: Name::new("PlayerCollider"),
+                        transform_bundle: TransformBundle {
+                            local: (Transform {
+                                // transform relative to parent
+                                translation: (Vec3 {
+                                    x: 0.,
+                                    y: 0.,
+                                    z: ACTOR_PHYSICS_Z_INDEX,
+                                }),
+                                ..default()
+                            }),
+                            ..default()
+                        },
+                        collider: NeedsCollider::Aabb,
+                        collision_groups: AspenCollisionLayer::dynamic_actor(),
+                    },
+                ));
+            });
 
         cmds.insert_resource(NextState::Pending(GameStage::PlayingGame));
     }
@@ -149,11 +169,8 @@ pub fn build_player_from_selected_hero(
                         }),
                         ..default()
                     },
-                    collider: NeedsCollider,
-                    collision_groups: CollisionGroups::new(
-                        AspenCollisionLayer::ACTOR,
-                        AspenCollisionLayer::EVERYTHING,
-                    ),
+                    collider: NeedsCollider::Aabb,
+                    collision_groups: AspenCollisionLayer::dynamic_actor(),
                 },
             ));
         });

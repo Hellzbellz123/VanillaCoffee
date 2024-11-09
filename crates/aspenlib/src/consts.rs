@@ -1,4 +1,7 @@
-use bevy_rapier2d::geometry::Group;
+use avian2d::{
+    collision::CollisionLayers,
+    prelude::{LayerMask, PhysicsLayer},
+};
 
 #[allow(
     clippy::needless_bool,
@@ -6,6 +9,8 @@ use bevy_rapier2d::geometry::Group;
 )]
 /// global enemy spawner toggle
 pub const CHARACTER_SPAWNERS_DISABLED: bool = false;
+
+pub const MAX_AUDIO_DISTANCE: f32 = 350.0_f32;
 
 /// width/height of standard tile in gameworld
 pub const TILE_SIZE: f32 = 32.0;
@@ -31,7 +36,6 @@ pub const WALK_MODIFIER: f32 = 1.3;
 /// if running, speed is multiplied by this
 pub const SPRINT_MODIFIER: f32 = 1.7;
 
-#[non_exhaustive]
 /// Collision Groups wrapper
 /// created for easy use
 ///```
@@ -39,19 +43,61 @@ pub const SPRINT_MODIFIER: f32 = 1.7;
 ///     AspenCollisionLayer::PROJECTILE, <--- Select Membership
 ///     AspenCollisionLayer::WORLD | AspenCollisionLayer::ACTOR | AspenCollisionLayer::PROJECTILE  <---- bitwise-or the groups you want this member too collide with
 ///```
-pub struct AspenCollisionLayer;
+#[non_exhaustive]
+#[derive(Debug, PhysicsLayer, Default)]
+pub enum AspenCollisionLayer {
+    #[default]
+    All,
+    DynamicActor,
+    StaticObject,
+    Projectile,
+    Empty,
+}
 
 impl AspenCollisionLayer {
-    /// entities that provide world collision belong to this group
-    pub const WORLD: Group = Group::GROUP_1;
-    /// entities that can move belong too this group
-    pub const ACTOR: Group = Group::GROUP_2;
-    /// entities that are created from weapons belong too this group
-    pub const PROJECTILE: Group = Group::GROUP_3;
-    /// All possible collision groups
-    ///
-    /// use as the membership and bitwise-or what you do NOT want too collide with
-    pub const EVERYTHING: Group = Group::ALL;
+    #[allow(non_snake_case)]
+    /// world object that does not collide with itself
+    pub fn static_object() -> CollisionLayers {
+        CollisionLayers::new(
+            Self::StaticObject,
+            [
+                Self::DynamicActor,
+                Self::Projectile,
+                Self::All,
+            ],
+        )
+    }
+
+    /// default actor that collides with other actors and world objects
+    #[allow(non_snake_case)]
+    pub fn dynamic_actor() -> CollisionLayers {
+        CollisionLayers::new(
+            Self::DynamicActor,
+            [
+                Self::StaticObject,
+                Self::DynamicActor,
+                Self::Projectile,
+                Self::All,
+            ],
+        )
+    }
+
+    /// default actor that collides with other actors and world objects
+    #[allow(non_snake_case)]
+    pub fn projectile_actor() -> CollisionLayers {
+        CollisionLayers::new(
+            Self::Projectile,
+            [
+                Self::StaticObject,
+                Self::DynamicActor,
+                Self::All,
+            ],
+        )
+    }
+
+    pub fn no_collisions() -> CollisionLayers {
+        CollisionLayers::new(Self::Empty, LayerMask::NONE)
+    }
 }
 
 // supported resolutions

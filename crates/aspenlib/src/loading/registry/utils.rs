@@ -7,13 +7,9 @@ use bevy::{
     sprite::Anchor,
 };
 use bevy_aseprite_ultra::prelude::Animation;
-use bevy_rapier2d::{
-    dynamics::{Damping, LockedAxes, RigidBody, Velocity},
-    geometry::{ColliderMassProperties, Friction, Restitution},
-};
 
 use crate::{
-    bundles::{Aspen2dPhysicsBundle, Aspen2dRenderBundle, CharacterBundle, WeaponBundle},
+    bundles::{Aspen2dRenderBundle, CharacterBundle, WeaponBundle},
     game::{
         attributes_stats::{Attributes, CharacterStatBundle, EquipmentStats},
         characters::components::CharacterMoveState,
@@ -46,7 +42,6 @@ pub fn build_character_bundles(
             actor_type: character_def.character_type.as_charactertype(),
             stats: CharacterStatBundle::from_attrs(character_def.actor.stats),
             move_state: CharacterMoveState::DEFAULT,
-            physics: Aspen2dPhysicsBundle::DEFAULT_CHARACTER,
             controller: character_def.character_type.get_ai(),
             render: Aspen2dRenderBundle {
                 handle: aseprite_handle,
@@ -156,15 +151,6 @@ fn form_weapon_bundle(
                 ..default()
             },
             ..default()
-        },
-        physics: Aspen2dPhysicsBundle {
-            rigidbody: RigidBody::default(),
-            velocity: Velocity::default(),
-            friction: Friction::default(),
-            how_bouncy: Restitution::default(),
-            mass_prop: ColliderMassProperties::default(),
-            rotation_locks: LockedAxes::default(),
-            damping_prop: Damping::default(),
         },
     }
 }

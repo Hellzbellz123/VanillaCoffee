@@ -12,7 +12,7 @@
 	"iid": "ab01cb70-c640-11ed-8990-97df4ce06d05",
 	"uid": 13,
 	"worldX": 0,
-	"worldY": -1056,
+	"worldY": -768,
 	"worldDepth": 0,
 	"pxWid": 768,
 	"pxHei": 768,
@@ -76,7 +76,7 @@
 					"px": [288,480],
 					"fieldInstances": [],
 					"__worldX": 288,
-					"__worldY": -576
+					"__worldY": -288
 				}
 			]
 		},
@@ -508,5 +508,5 @@
 			"entityInstances": []
 		}
 	],
-	"__neighbours": [ { "levelIid": "c24a48e0-8990-11ee-94a7-3d3f425ee144", "dir": "n" }, { "levelIid": "546df553-c640-11ed-8990-3f25e5085b95", "dir": "s" }, { "levelIid": "49d60130-8990-11ee-a13c-7d4ae0661be6", "dir": "s" } ]
+	"__neighbours": [ { "levelIid": "546df553-c640-11ed-8990-3f25e5085b95", "dir": "s" }, { "levelIid": "49d60130-8990-11ee-a13c-7d4ae0661be6", "dir": "s" }, { "levelIid": "7ab56830-8990-11ee-a550-1380b8d0b8e4", "dir": "n" }, { "levelIid": "dd78f4e0-8990-11ee-a550-8328dbe0c3aa", "dir": "n" } ]
 }

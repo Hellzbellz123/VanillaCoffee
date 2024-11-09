@@ -12,7 +12,7 @@
 	"iid": "546df553-c640-11ed-8990-3f25e5085b95",
 	"uid": 17,
 	"worldX": 704,
-	"worldY": -288,
+	"worldY": 0,
 	"worldDepth": 0,
 	"pxWid": 704,
 	"pxHei": 704,
@@ -78,7 +78,7 @@
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
 					"__worldX": 1072,
-					"__worldY": 80
+					"__worldY": 368
 				}
 			]
 		},
@@ -620,6 +620,6 @@
 		{ "levelIid": "49d60130-8990-11ee-a13c-7d4ae0661be6", "dir": "w" },
 		{ "levelIid": "07c8c8a0-8990-11ee-a13c-658f4c52f50f", "dir": "e" },
 		{ "levelIid": "c24d3c10-c640-11ed-8990-6d252beb4b76", "dir": "s" },
-		{ "levelIid": "5b782c80-c640-11ed-8990-fd73507372fd", "dir": "s" }
+		{ "levelIid": "b5c0a960-c640-11ed-8990-3b6e14a80e56", "dir": "s" }
 	]
 }

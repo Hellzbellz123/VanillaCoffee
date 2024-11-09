@@ -1,6 +1,4 @@
-use std::sync::{Arc, Mutex};
 
-use bevy_console::BevyLogBuffer;
 use serde::{Deserialize, Serialize};
 
 use bevy::{
@@ -13,7 +11,6 @@ use bevy_ecs_ldtk::assets::LdtkProject;
 use bevy_framepace::{FramepaceSettings, Limiter};
 use bevy_inspector_egui::prelude::*;
 use bevy_kira_audio::{AudioChannel, AudioControl};
-use tracing_subscriber::Registry;
 
 use crate::{
     game::audio::{AmbienceSoundChannel, GameSoundChannel, MusicSoundChannel},
@@ -35,7 +32,7 @@ pub struct ConfigFile {
     /// rendering settings
     pub render_settings: RenderSettings,
     /// sound settings
-    pub sound_settings: SoundSettings,
+    pub sound_settings: AudioSettings,
     /// general settings like zoom and difficulty
     pub general_settings: GeneralSettings,
 }
@@ -47,7 +44,7 @@ impl Default for ConfigFile {
             // log_filter: Some("trace,log=warn,wgpu=error,naga=warn,gilrs=warn,bevy_ecs_tilemap=debug".into()),
             window_settings: WindowSettings::default(),
             render_settings: RenderSettings::default(),
-            sound_settings: SoundSettings::default(),
+            sound_settings: AudioSettings::default(),
             general_settings: GeneralSettings::default(),
         }
     }
@@ -126,22 +123,35 @@ pub struct GeneralSettings {
     Reflect, Debug, Serialize, Deserialize, Resource, Copy, Clone, Component, InspectorOptions,
 )]
 #[reflect(Resource, InspectorOptions)]
-pub struct SoundSettings {
-    /// Total sound scale for game
-    #[inspector(min = 0.0, max = 1.0)]
-    pub master_volume: f64,
+pub struct AudioSettings {
+    /// maximum distance at which audio can be heard
+    #[inspector(min = 32.0, max = 10000.0)]
+    pub max_distance: f32,
+    /// game max sound amount
+    #[inspector(min = 20, max = 5000)]
+    pub max_sounds: i32,
+    /// sound volume config resource
+    pub volume_config: VolumeConfig,
+}
 
-    /// Sound effects from environment
+#[derive(
+    Reflect, Debug, Serialize, Deserialize, Resource, Copy, Clone, Component, InspectorOptions,
+)]
+#[reflect(InspectorOptions)]
+/// sound decible scales
+pub struct VolumeConfig {
+    /// global sound scales
     #[inspector(min = 0.0, max = 1.0)]
-    pub ambience_volume: f64,
-
-    /// Game soundtrack volume
+    pub master: f64,
+    /// weapon sounds, monster sounds footsteps
     #[inspector(min = 0.0, max = 1.0)]
-    pub music_volume: f64,
-
-    /// Important sounds from game
+    pub gameplay: f64,
+    /// ambience sound settings like creaking howling etc
     #[inspector(min = 0.0, max = 1.0)]
-    pub sound_volume: f64,
+    pub ambience: f64,
+    /// ingame music settings
+    #[inspector(min = 0.0, max = 1.0)]
+    pub music: f64,
 }
 
 // TODO: refactor actors module to use this global difficulty resource
@@ -215,13 +225,17 @@ impl Default for WindowSettings {
     }
 }
 
-impl Default for SoundSettings {
+impl Default for AudioSettings {
     fn default() -> Self {
         Self {
-            master_volume: 0.2,
-            ambience_volume: 0.2,
-            music_volume: 0.2,
-            sound_volume: 0.2,
+            max_distance: 350.0,
+            max_sounds: 200,
+            volume_config: VolumeConfig {
+                master: 0.2,
+                gameplay: 0.2,
+                ambience: 0.2,
+                music: 0.2,
+            },
         }
     }
 }
@@ -238,7 +252,7 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
                 cfg_file.log_filter.unwrap_or_default()
             },
             level: bevy::log::Level::TRACE,
-            custom_layer: crate::dev_tools::console::init_log_layers
+            custom_layer: crate::dev_tools::console::init_log_layers,
         },
         AssetPlugin {
             file_path: "assets".to_string(),
@@ -317,7 +331,7 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
         Update,
         (
             apply_window_settings.run_if(resource_changed::<WindowSettings>),
-            apply_sound_settings.run_if(resource_changed::<SoundSettings>),
+            apply_sound_settings.run_if(resource_changed::<AudioSettings>),
             apply_camera_zoom.run_if(resource_changed::<GeneralSettings>),
             update_difficulty_settings.run_if(resource_changed::<GeneralSettings>),
             on_resize_system.run_if(on_event::<WindowResized>()),
@@ -357,7 +371,7 @@ fn apply_window_settings(
 
     if let Some(requested_fps_target) = window_settings.frame_rate_target {
         let requested_fps_target = requested_fps_target.clamp(16.0, 999.0);
-        let requested_limiter = Limiter::from_framerate(requested_fps_target as f64);
+        let requested_limiter = Limiter::from_framerate(f64::from(requested_fps_target));
         if frame_limiter_cfg.limiter != requested_limiter {
             frame_limiter_cfg.limiter = requested_limiter;
         }
@@ -379,17 +393,19 @@ fn apply_window_settings(
 
 /// modifies `AudioChannel` volume if `SoundSettings` changes
 fn apply_sound_settings(
-    sound_settings: Res<SoundSettings>,
+    sound_settings: Res<AudioSettings>,
     music_channel: Res<AudioChannel<MusicSoundChannel>>,
     ambience_channel: Res<AudioChannel<AmbienceSoundChannel>>,
     sound_channel: Res<AudioChannel<GameSoundChannel>>,
 ) {
     //sound settings
     info!("volumes changed, applying settings");
-    let mastervolume = sound_settings.master_volume;
-    music_channel.set_volume(sound_settings.music_volume * mastervolume);
-    ambience_channel.set_volume(sound_settings.ambience_volume * mastervolume);
-    sound_channel.set_volume(sound_settings.sound_volume * mastervolume);
+    let sound_settings = sound_settings.volume_config;
+
+    let mastervolume = sound_settings.master;
+    music_channel.set_volume(sound_settings.music * mastervolume);
+    ambience_channel.set_volume(sound_settings.ambience * mastervolume);
+    sound_channel.set_volume(sound_settings.gameplay * mastervolume);
 }
 
 /// applies camera zoom setting

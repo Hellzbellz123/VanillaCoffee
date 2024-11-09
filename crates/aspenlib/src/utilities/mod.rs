@@ -9,7 +9,6 @@ use bevy::{
     prelude::*,
     window::CursorGrabMode,
 };
-use bevy_rapier2d::{pipeline::CollisionEvent, rapier::geometry::CollisionEventFlags};
 
 use crate::{
     consts::TILE_SIZE, game::characters::components::MoveDirection,
@@ -20,26 +19,6 @@ use crate::{
 #[derive(Debug, Component, Deref, DerefMut, Reflect)]
 #[reflect(Component)]
 pub struct EntityCreator(pub Entity);
-
-/// takes array of types and runs `app.register_type::<T>()` on each
-#[allow(unused_macros)]
-#[macro_export]
-macro_rules! register_types {
-    ($app:expr, [ $($t:ty),* ]) => {
-        $(
-            $app.register_type::<$t>();
-        )*
-    };
-}
-
-/// simple macro that generates an add system for OnEnter(state)
-#[allow(unused_macros)]
-macro_rules! on_enter {
-    ($system_name:ident, $state:expr) => {
-        app.add_systems(OnEnter($state), $system_name)
-            .run_if(in_state($state))
-    };
-}
 
 /// # Panics
 /// will panic if it cant find a window to attach icons, or the icon is not present
@@ -139,15 +118,15 @@ fn get_velocity_angle(vec: Vec2) -> f32 {
     angle
 }
 
-/// turns a collision event into its parts
-pub const fn collision_to_data(
-    event: &CollisionEvent,
-) -> (Entity, Entity, &CollisionEventFlags, bool) {
-    match event {
-        CollisionEvent::Started(a, b, flags) => (*a, *b, flags, true),
-        CollisionEvent::Stopped(a, b, flags) => (*a, *b, flags, false),
-    }
-}
+// /// turns a collision event into its parts
+// pub const fn collision_to_data(
+//     event: &CollisionEvent,
+// ) -> (Entity, Entity, &CollisionEventFlags, bool) {
+//     match event {
+//         CollisionEvent::Started(a, b, flags) => (*a, *b, flags, true),
+//         CollisionEvent::Stopped(a, b, flags) => (*a, *b, flags, false),
+//     }
+// }
 
 /// despawn any entity with T: Component
 pub fn despawn_with<T: Component>(

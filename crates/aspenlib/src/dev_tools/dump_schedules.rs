@@ -1,10 +1,12 @@
 use bevy::prelude::*;
-use std::{fs, path::{Path, PathBuf}};
 use bevy_mod_debugdump::{render_graph, render_graph_dot, schedule_graph, schedule_graph_dot};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 /// dumps scheduling graphs for given App
 pub fn debug_dump_graphs(app: &mut App) {
-
     let target = Path::new(".schedule");
     match target.try_exists() {
         Err(error) => {
@@ -47,7 +49,6 @@ pub fn debug_dump_graphs(app: &mut App) {
             let post_update_schedule = schedule_graph_dot(app, PostUpdate, &settings);
             let last_schedule = schedule_graph_dot(app, Last, &settings);
             let render_graph = render_graph_dot(app, &render_graph_settings);
-
 
             write_graphs(
                 target.to_path_buf(),

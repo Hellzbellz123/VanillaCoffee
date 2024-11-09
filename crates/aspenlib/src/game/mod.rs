@@ -1,11 +1,14 @@
+use avian2d::prelude::Collider;
 use bevy::{prelude::*, render::primitives::Aabb};
-use bevy_rapier2d::prelude::Collider;
 
 use crate::{
     bundles::NeedsCollider,
-    game::components::{ActorColliderType, TimeToLive},
+    game::{
+        components::{ActorColliderType, TimeToLive},
+        game_world::dungeonator_v2::GeneratorState,
+    },
     playing_game, register_types,
-    utilities::EntityCreator,
+    utilities::EntityCreator, GameStage,
 };
 
 /// animation functionality
@@ -77,8 +80,15 @@ impl Plugin for AspenHallsPlugin {
             ))
             .add_systems(Update, time_to_live.run_if(playing_game()))
             .add_systems(
-                PreUpdate,
-                add_aabb_based_colliders.run_if(any_with_component::<NeedsCollider>),
+                PostUpdate,
+                add_aabb_based_colliders
+                    .run_if(
+                        any_with_component::<NeedsCollider>.and_then(
+                            in_state(GameStage::SelectCharacter)
+                                .or_else(in_state(GeneratorState::FinishedDungeonGen)),
+                        ),
+                    )
+                    .after(TransformSystem::TransformPropagate),
             );
     }
 }
@@ -103,26 +113,35 @@ fn time_to_live(
 fn add_aabb_based_colliders(
     mut cmds: Commands,
     aabbs_q: Query<&Aabb>,
-    needscollider_q: Query<(Entity, &Parent), (Without<Collider>, With<NeedsCollider>)>,
+    needscollider_q: Query<(Entity, &Parent, &NeedsCollider), Without<Collider>>,
 ) {
-    for (needs_collider, parent) in &needscollider_q {
-        let Ok(aabb) = aabbs_q.get(parent.get()) else {
-            continue;
-        };
-        let start = Vec2::ZERO
-            + Vec2 {
-                x: 0.0,
-                y: aabb.half_extents.x / 2.0,
-            };
-        let end = Vec2::ZERO
-            + Vec2 {
-                x: 0.0,
-                y: aabb.half_extents.y,
-            };
+    for (needs_collider, parent, collider_type) in &needscollider_q {
+        let collider = match collider_type {
+            NeedsCollider::Aabb => {
+                let Ok(aabb) = aabbs_q.get(parent.get()) else {
+                    continue;
+                };
+                let start = Vec2::ZERO
+                    + Vec2 {
+                        x: 0.0,
+                        y: aabb.half_extents.x / 2.0,
+                    };
+                let end = Vec2::ZERO
+                    + Vec2 {
+                        x: 0.0,
+                        y: aabb.half_extents.y,
+                    };
 
-        let collider = Collider::capsule(start, end, aabb.half_extents.x / 2.0);
+                Collider::capsule_endpoints(aabb.half_extents.x / 2.0, start, end)
+            }
+            NeedsCollider::Rectangle { x, y } => Collider::rectangle(*x, *y),
+        };
+
         cmds.entity(needs_collider)
             .remove::<NeedsCollider>()
-            .insert(collider);
+            .insert((collider, GeneratedCollider));
     }
 }
+
+#[derive(Component)]
+pub struct GeneratedCollider;

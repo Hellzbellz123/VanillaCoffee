@@ -1,5 +1,6 @@
 #![allow(clippy::unnecessary_struct_initialization)]
 
+use avian2d::prelude::RigidBody;
 use bevy::{
     log::{error, warn},
     math::Vec2,
@@ -9,9 +10,9 @@ use bevy_ecs_ldtk::{
     ldtk::ReferenceToAnEntityInstance,
     prelude::{EntityInstance, LdtkFields},
 };
-use bevy_rapier2d::prelude::{ActiveEvents, Collider};
 
 use crate::{
+    bundles::NeedsCollider,
     game::game_world::components::{
         CharacterSpawner, HeroLocation, PlayerStartLocation, SpawnerTimer, SpawnerWave, Teleporter,
         TpTriggerEffect, WeaponSpawner,
@@ -27,8 +28,14 @@ pub const fn start_location_from_instance(instance: &EntityInstance) -> PlayerSt
 }
 
 /// creates a `Collider` from `EntityInstance` width/height
-pub fn teleporter_collider_from_instance(instance: &EntityInstance) -> Collider {
-    Collider::cuboid((instance.width / 4) as f32, (instance.height / 4) as f32)
+pub const fn teleporter_collider_from_instance(instance: &EntityInstance) -> NeedsCollider {
+    // TODO: wtf how is this working? for some reason the colliders are the correct size too match the underlying tiles
+    // but the created collider is 1x1 tile?
+    // sometimes the colliders are spawned/generated at the incorrect position, this didnt appear too happen with rapier so im very confused
+    // let shape =
+    // Collider::compound(vec![(Vec2::ZERO, 0.0, shape)])
+    // Collider::rectangle(32.0, 32.0)
+    NeedsCollider::Rectangle { x: 32.0, y: 32.0 }
 }
 
 /// creates `Teleporter` from `EntityInstance`
@@ -48,6 +55,11 @@ pub fn teleporter_from_instance(instance: &EntityInstance) -> Teleporter {
 /// creates `Name` from `EntityInstance.identifier`
 pub fn name_from_instance(instance: &EntityInstance) -> Name {
     Name::new(instance.identifier.clone())
+}
+
+/// creates default rigidbody for most sensors
+pub const fn sensor_rigidbody(instance: &EntityInstance) -> RigidBody {
+    RigidBody::Static
 }
 
 /// creates Spawner from spawner `EntityInstance`
@@ -135,10 +147,10 @@ pub fn spawn_timer_from_instance(entity_instance: &EntityInstance) -> SpawnerTim
     SpawnerTimer(Timer::from_seconds(ldtk_ent_duration, TimerMode::Repeating))
 }
 
-/// creates `ActiveEvents` from `EntityInstance`
-pub const fn events_from_instance(_: &EntityInstance) -> ActiveEvents {
-    ActiveEvents::COLLISION_EVENTS
-}
+// /// creates `ActiveEvents` from `EntityInstance`
+// pub const fn events_from_instance(_: &EntityInstance) -> ActiveEvents {
+//     ActiveEvents::COLLISION_EVENTS
+// }
 
 /// gets list of `RegistryIdentifiers` from ldtk entity instance
 pub fn get_spawn_identifiers(instance: &EntityInstance) -> Vec<RegistryIdentifier> {

@@ -1,9 +1,9 @@
+use avian2d::prelude::{CollisionLayers, LayerMask};
 use bevy::prelude::*;
-use bevy_rapier2d::geometry::CollisionGroups;
 use rand::{thread_rng, Rng};
 
 use crate::{
-    bundles::{AspenColliderBundle, NeedsCollider},
+    bundles::{Aspen2dPhysicsBundle, AspenColliderBundle, NeedsCollider},
     consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
     game::components::ActorColliderType,
     loading::{
@@ -44,19 +44,21 @@ pub fn spawn_weapon(
         commands
             .spawn((
                 weapon_bundle.clone(),
+                Aspen2dPhysicsBundle::default_item(),
                 SpatialBundle::from_transform(Transform::from_translation(
                     position.extend(ACTOR_Z_INDEX),
                 )),
             ))
             .with_children(|child| {
                 let collider_name = format!("{}Collider", weapon_bundle.name.as_str());
+                // TODO: change so all collider bundles are constified
                 child.spawn(AspenColliderBundle {
                     tag: ActorColliderType::Item,
                     name: Name::new(collider_name),
-                    collider: NeedsCollider,
-                    collision_groups: CollisionGroups::new(
-                        AspenCollisionLayer::ACTOR,
-                        AspenCollisionLayer::EVERYTHING,
+                    collider: NeedsCollider::Aabb,
+                    collision_groups: CollisionLayers::new(
+                        AspenCollisionLayer::DynamicActor,
+                        LayerMask::ALL,
                     ),
                     transform_bundle: TransformBundle {
                         local: Transform {

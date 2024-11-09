@@ -12,7 +12,7 @@
 	"iid": "7d76f110-c640-11ed-8990-37d3767ef8ed",
 	"uid": 16,
 	"worldX": 0,
-	"worldY": 1120,
+	"worldY": 1408,
 	"worldDepth": 0,
 	"pxWid": 1216,
 	"pxHei": 1216,
@@ -78,7 +78,7 @@
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
 					"__worldX": 496,
-					"__worldY": 1616
+					"__worldY": 1904
 				},
 				{
 					"__identifier": "CharacterSpawner",
@@ -99,7 +99,7 @@
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
 					"__worldX": 848,
-					"__worldY": 1968
+					"__worldY": 2256
 				}
 			]
 		},
@@ -1574,5 +1574,5 @@
 			"entityInstances": []
 		}
 	],
-	"__neighbours": [ { "levelIid": "c24d3c10-c640-11ed-8990-6d252beb4b76", "dir": "n" }, { "levelIid": "5b782c80-c640-11ed-8990-fd73507372fd", "dir": "ne" }, { "levelIid": "6fb48610-8990-11ee-a13c-05b036331883", "dir": "s" }, { "levelIid": "634e3f30-c640-11ed-8990-3f0928c55308", "dir": "e" } ]
+	"__neighbours": [ { "levelIid": "c24d3c10-c640-11ed-8990-6d252beb4b76", "dir": "n" }, { "levelIid": "b5c0a960-c640-11ed-8990-3b6e14a80e56", "dir": "ne" }, { "levelIid": "6fb48610-8990-11ee-a13c-05b036331883", "dir": "s" }, { "levelIid": "634e3f30-c640-11ed-8990-3f0928c55308", "dir": "e" } ]
 }

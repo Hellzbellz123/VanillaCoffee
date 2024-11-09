@@ -3,18 +3,21 @@ mod decode_instance;
 /// systems too control hydrated instances
 mod systems;
 
+use avian2d::prelude::{RigidBody, Sensor};
 use bevy::prelude::{Bundle, Name};
-use bevy_ecs_ldtk::prelude::LdtkEntity;
-use bevy_rapier2d::prelude::{ActiveEvents, Collider, Sensor};
+use bevy_ecs_ldtk::{prelude::LdtkEntity, EntityInstance};
 
 pub use self::systems::*;
 
-use crate::game::game_world::{
-    components::{
-        CharacterSpawner, HeroLocation, PlayerStartLocation, SpawnerTimer, SpawnerWave, Teleporter,
-        WeaponSpawner,
+use crate::{
+    bundles::NeedsCollider,
+    game::game_world::{
+        components::{
+            CharacterSpawner, HeroLocation, PlayerStartLocation, SpawnerTimer, SpawnerWave,
+            Teleporter, WeaponSpawner,
+        },
+        world_objects::decode_instance::*,
     },
-    world_objects::decode_instance::*,
 };
 
 /// locations for placing playable heroes and hireable heroes
@@ -73,20 +76,25 @@ pub struct LdtkWeaponSpawner {
 }
 
 /// teleporter bundle that binds to `LdtkEntity` instances
-#[derive(Bundle, LdtkEntity, Default)]
+#[derive(Bundle, LdtkEntity)]
 pub struct LdtkTeleporter {
-    /// marks this collider as a sensor
-    sensor_tag: Sensor,
     /// sensor name
     #[with(name_from_instance)]
     name: Name,
     /// teleporter data
     #[with(teleporter_from_instance)]
     teleporter: Teleporter,
+    /// rigidbody of collider
+    #[with(sensor_rigidbody)]
+    rigidbody: RigidBody,
+    /// marks this collider as a sensor
+    #[with(sensor_tag)]
+    sensor_tag: Sensor,
     /// shape of sensor
     #[with(teleporter_collider_from_instance)]
-    collision_shape: Collider,
-    /// events from sensor
-    #[with(events_from_instance)]
-    events: ActiveEvents,
+    collision_shape: NeedsCollider,
+}
+
+const fn sensor_tag(_: &EntityInstance) -> Sensor {
+    Sensor
 }

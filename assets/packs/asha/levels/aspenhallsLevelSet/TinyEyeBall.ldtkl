@@ -12,7 +12,7 @@
 	"iid": "6b44d230-c640-11ed-8990-01a5cc32fb81",
 	"uid": 20,
 	"worldX": 2112,
-	"worldY": -288,
+	"worldY": 0,
 	"worldDepth": 0,
 	"pxWid": 704,
 	"pxHei": 704,
@@ -78,7 +78,7 @@
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
 					"__worldX": 2544,
-					"__worldY": 144
+					"__worldY": 432
 				},
 				{
 					"__identifier": "CharacterSpawner",
@@ -99,7 +99,7 @@
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
 					"__worldX": 2384,
-					"__worldY": -16
+					"__worldY": 272
 				}
 			]
 		},

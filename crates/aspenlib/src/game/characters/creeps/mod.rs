@@ -29,12 +29,11 @@ pub struct EventSpawnCreep {
 
 /// creep spawn function
 pub mod utils {
+    
     use bevy::prelude::*;
 
-    use bevy_rapier2d::geometry::CollisionGroups;
-
     use crate::{
-        bundles::{AspenColliderBundle, NeedsCollider},
+        bundles::{Aspen2dPhysicsBundle, AspenColliderBundle, NeedsCollider},
         consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX},
         game::{
             characters::creeps::EventSpawnCreep, components::ActorColliderType,
@@ -70,6 +69,7 @@ pub mod utils {
             let spawned_enemy = cmds
                 .spawn((
                     character.clone(),
+                    Aspen2dPhysicsBundle::default_character(),
                     SpatialBundle::from_transform(Transform::from_translation(
                         spawn_event.position.extend(ACTOR_Z_INDEX),
                     )),
@@ -89,11 +89,8 @@ pub mod utils {
                             }),
                             ..default()
                         },
-                        collider: NeedsCollider,
-                        collision_groups: CollisionGroups {
-                            memberships: AspenCollisionLayer::ACTOR,
-                            filters: AspenCollisionLayer::EVERYTHING,
-                        },
+                        collider: NeedsCollider::Aabb,
+                        collision_groups: AspenCollisionLayer::dynamic_actor(),
                     });
                 })
                 .id();

@@ -21,10 +21,10 @@ fn android() {
                 .join(&env::var("CARGO_NDK_ANDROID_TARGET").unwrap())
                 .join("libc++_shared.so"),
         ) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 println!("could not find target: {e}")
-            },
+            }
         };
     }
 }

@@ -1,5 +1,5 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 
 use crate::{
     bundles::{Aspen2dPhysicsBundle, AspenColliderBundle, NeedsCollider, ProjectileBundle},
@@ -47,6 +47,7 @@ pub fn delegate_unarmed_attacks(
             // create projectile in attack direction.
             cmds.spawn((
                 Sensor,
+                // TODO: get requesters stats and build projectile speed/damage from that
                 ProjectileBundle {
                     name: Name::new("MonsterProjectile"),
                     projectile_stats: ProjectileStats {
@@ -68,40 +69,25 @@ pub fn delegate_unarmed_attacks(
                         },
                         ..default()
                     },
-                    rigidbody_bundle: Aspen2dPhysicsBundle {
-                        velocity: Velocity::linear(attack.direction * 250.0),
-                        rigidbody: RigidBody::Dynamic,
-                        friction: Friction::coefficient(0.2),
-                        how_bouncy: Restitution::coefficient(0.8),
-                        mass_prop: ColliderMassProperties::Density(2.1),
-                        rotation_locks: LockedAxes::ROTATION_LOCKED,
-                        damping_prop: Damping {
-                            linear_damping: 0.1,
-                            angular_damping: 0.1,
-                        },
-                    },
+                    rigidbody_bundle: Aspen2dPhysicsBundle::new_projectile(
+                        attack.direction * 250.0,
+                    ),
                 },
             ))
             .with_children(|bullet_parts| {
-                bullet_parts.spawn((
-                    ActiveEvents::COLLISION_EVENTS,
-                    AspenColliderBundle {
-                        name: Name::new("MonsterProjectileCollider"),
-                        transform_bundle: TransformBundle {
-                            local: (Transform {
-                                translation: Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
-                                ..default()
-                            }),
+                bullet_parts.spawn((AspenColliderBundle {
+                    name: Name::new("MonsterProjectileCollider"),
+                    transform_bundle: TransformBundle {
+                        local: (Transform {
+                            translation: Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
                             ..default()
-                        },
-                        tag: ActorColliderType::Projectile,
-                        collider: NeedsCollider, //Collider::ball(10.0),
-                        collision_groups: CollisionGroups::new(
-                            AspenCollisionLayer::PROJECTILE,
-                            AspenCollisionLayer::WORLD | AspenCollisionLayer::ACTOR,
-                        ),
+                        }),
+                        ..default()
                     },
-                ));
+                    tag: ActorColliderType::Projectile,
+                    collider: NeedsCollider::Aabb,
+                    collision_groups: AspenCollisionLayer::projectile_actor(),
+                },));
             });
 
             // TODO: brainstorm possible delegations

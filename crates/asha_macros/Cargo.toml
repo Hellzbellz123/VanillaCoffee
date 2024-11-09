@@ -1,0 +1,8 @@
+[package]
+name = "asha_macros"
+version = "0.1.0"
+
+[dependencies]
+
+[lints]
+workspace = true

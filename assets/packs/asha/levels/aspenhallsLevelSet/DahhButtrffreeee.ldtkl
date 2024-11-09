@@ -11,8 +11,8 @@
 	"identifier": "DahhButtrffreeee",
 	"iid": "b5c0a960-c640-11ed-8990-3b6e14a80e56",
 	"uid": 21,
-	"worldX": 2432,
-	"worldY": 416,
+	"worldX": 1216,
+	"worldY": 704,
 	"worldDepth": 0,
 	"pxWid": 1216,
 	"pxHei": 704,
@@ -77,8 +77,8 @@
 						{ "__identifier": "MaxEnemies", "__type": "Int", "__value": null, "__tile": null, "defUid": 95, "realEditorValues": [] },
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
-					"__worldX": 3376,
-					"__worldY": 752
+					"__worldX": 2160,
+					"__worldY": 1040
 				},
 				{
 					"__identifier": "CharacterSpawner",
@@ -98,8 +98,8 @@
 						{ "__identifier": "MaxEnemies", "__type": "Int", "__value": null, "__tile": null, "defUid": 95, "realEditorValues": [] },
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
-					"__worldX": 2672,
-					"__worldY": 656
+					"__worldX": 1456,
+					"__worldY": 944
 				},
 				{
 					"__identifier": "CharacterSpawner",
@@ -119,8 +119,8 @@
 						{ "__identifier": "MaxEnemies", "__type": "Int", "__value": null, "__tile": null, "defUid": 95, "realEditorValues": [] },
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
-					"__worldX": 2672,
-					"__worldY": 880
+					"__worldX": 1456,
+					"__worldY": 1168
 				}
 			]
 		},
@@ -910,5 +910,14 @@
 			"entityInstances": []
 		}
 	],
-	"__neighbours": [ { "levelIid": "6b44d230-c640-11ed-8990-01a5cc32fb81", "dir": "n" }, { "levelIid": "5b782c80-c640-11ed-8990-fd73507372fd", "dir": "w" }, { "levelIid": "58803c60-8990-11ee-a13c-2d27b2a54703", "dir": "s" }, { "levelIid": "634e3f30-c640-11ed-8990-3f0928c55308", "dir": "sw" } ]
+	"__neighbours": [
+		{ "levelIid": "546df553-c640-11ed-8990-3f25e5085b95", "dir": "n" },
+		{ "levelIid": "6b44d230-c640-11ed-8990-01a5cc32fb81", "dir": "n" },
+		{ "levelIid": "07c8c8a0-8990-11ee-a13c-658f4c52f50f", "dir": "n" },
+		{ "levelIid": "c24d3c10-c640-11ed-8990-6d252beb4b76", "dir": "w" },
+		{ "levelIid": "5b782c80-c640-11ed-8990-fd73507372fd", "dir": "e" },
+		{ "levelIid": "7d76f110-c640-11ed-8990-37d3767ef8ed", "dir": "sw" },
+		{ "levelIid": "58803c60-8990-11ee-a13c-2d27b2a54703", "dir": "se" },
+		{ "levelIid": "634e3f30-c640-11ed-8990-3f0928c55308", "dir": "s" }
+	]
 }

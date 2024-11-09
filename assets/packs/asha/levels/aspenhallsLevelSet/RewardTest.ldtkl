@@ -11,8 +11,8 @@
 	"identifier": "RewardTest",
 	"iid": "c24a48e0-8990-11ee-94a7-3d3f425ee144",
 	"uid": 48,
-	"worldX": 0,
-	"worldY": -1696,
+	"worldX": -896,
+	"worldY": 1184,
 	"worldDepth": 0,
 	"pxWid": 512,
 	"pxHei": 640,
@@ -61,7 +61,27 @@
 			"seed": 6977720,
 			"overrideTilesetUid": null,
 			"gridTiles": [],
-			"entityInstances": []
+			"entityInstances": [
+				{
+					"__identifier": "WeaponSpawner",
+					"__grid": [7,11],
+					"__pivot": [0.5,0.5],
+					"__tags": ["world"],
+					"__tile": null,
+					"__smartColor": "#94A6D9",
+					"iid": "55872b80-9b00-11ef-a1e3-3fe1663fb980",
+					"width": 32,
+					"height": 32,
+					"defUid": 71,
+					"px": [240,368],
+					"fieldInstances": [
+						{ "__identifier": "SpawnIdentifiers", "__type": "Array<String>", "__value": [null], "__tile": null, "defUid": 73, "realEditorValues": [null] },
+						{ "__identifier": "Interacted", "__type": "Bool", "__value": false, "__tile": null, "defUid": 78, "realEditorValues": [] }
+					],
+					"__worldX": -656,
+					"__worldY": 1552
+				}
+			]
 		},
 		{
 			"__identifier": "Building_Layer",
@@ -363,5 +383,5 @@
 			"entityInstances": []
 		}
 	],
-	"__neighbours": [{ "levelIid": "ab01cb70-c640-11ed-8990-97df4ce06d05", "dir": "s" }]
+	"__neighbours": [{ "levelIid": "e48949c0-8990-11ee-a550-f91ac169a863", "dir": "n" }]
 }

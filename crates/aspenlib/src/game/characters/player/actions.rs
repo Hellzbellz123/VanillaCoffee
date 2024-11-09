@@ -1,10 +1,10 @@
+use avian2d::prelude::CollisionLayers;
 use bevy::prelude::*;
-use bevy_rapier2d::geometry::CollisionGroups;
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
     bundles::{AspenColliderBundle, NeedsCollider},
-    consts::{ACTOR_PHYSICS_Z_INDEX, TILE_SIZE},
+    consts::{ACTOR_PHYSICS_Z_INDEX, ACTOR_Z_INDEX, TILE_SIZE},
     game::{
         characters::{components::WeaponSlot, player::PlayerSelectedHero, EventSpawnCharacter},
         combat::{AttackDirection, EventRequestAttack},
@@ -246,8 +246,9 @@ pub fn equip_closest_weapon(
                 f.spawn(AspenColliderBundle {
                     name: Name::new("DroppedWeaponCollider"),
                     tag: ActorColliderType::Item,
-                    collider: NeedsCollider,
-                    collision_groups: CollisionGroups::default(),
+                    collider: NeedsCollider::Aabb,
+                    // TODO: standard weapon Colliderbundles
+                    collision_groups: CollisionLayers::default(),
                     transform_bundle: TransformBundle::from_transform(Transform::from_translation(
                         Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
                     )),
@@ -280,5 +281,5 @@ pub fn equip_closest_weapon(
         .or_insert(None);
     *socket_value = Some(closest_weapon);
 
-    weapon_pos.translation = Vec3::ZERO;
+    weapon_pos.translation = Vec2::ZERO.extend(ACTOR_Z_INDEX + 1.0);
 }

@@ -81,12 +81,14 @@ bevy = { path = "../../deps/bevy", default-features = false, features = [
 ] }
 
 # Bevy Dependencies are located in deps folder
+asha_macros = { path = "../asha_macros" }
 big-brain = { path = "../../deps/big_brain" }
 bevy_aseprite_ultra = { path = "../../deps/bevy_aseprite_ultra" }
-bevy_rapier2d= {path = "../../deps/bevy_rapier/bevy_rapier2d"}
 bevy_console = { path = "../../deps/bevy_console" }
 bevy_framepace = { path = "../../deps/bevy_framepace" }
 bevy_touch_stick = { path = "../../deps/bevy_touch_stick" }
+avian2d = { path = "../../deps/avian/crates/avian2d" }
+bevy_transform_interpolation = { path = "../../deps/bevy_transform_interpolation" }
 bevy_mod_debugdump = { optional = true, path = "../../deps/bevy_mod_debugdump", features = [
   "render_graph",
 ] }
