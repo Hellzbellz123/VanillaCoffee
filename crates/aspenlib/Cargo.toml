@@ -62,7 +62,7 @@ clap = { version = "4.2" }
 serde = { version = "1.0" }
 toml = { version = "0.8" }
 ron = { version = "0.8" }
-winit = { version = "0.30" }
+winit = { version = "0.30", default-features = false }
 image = { version = "0.25", default-features = false, features = ["png"] }
 bevy = { path = "../../deps/bevy", default-features = false, features = [
   "bevy_pbr",         # bevy_pbr / bevy_asset / bevy_render / bevy_core_pipeline

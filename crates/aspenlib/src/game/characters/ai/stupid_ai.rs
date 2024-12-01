@@ -2,36 +2,30 @@
 all credit for this goes to Shane Satterfield @ https://github.com/shanesatterfield
 for being the only real useful example of big-brain as far as im concerned
 */
+use rand::{thread_rng, Rng};
 
 use avian2d::prelude::{
     Collider, LayerMask, LinearVelocity, ShapeHitData, SpatialQuery, SpatialQueryFilter,
 };
-use bevy::prelude::*;
-use bevy::{hierarchy::HierarchyQueryExt, utils::HashSet};
+use bevy::{hierarchy::HierarchyQueryExt, prelude::*, utils::HashSet};
 use big_brain::{
     prelude::{ActionState, Actor, Score},
     thinker::ThinkerBuilder,
     BigBrainSet,
 };
-use rand::{thread_rng, Rng};
 
 use crate::{
-    consts::TILE_SIZE,
-    game::{
+    consts::TILE_SIZE, game::{
         characters::{
             ai::components::{
-                AIChaseAction, AICombatAggroConfig, AIWanderAction, AIWanderConfig, AttackScorer,
-                ChaseScorer,
+                AIAutoShootConfig, AIChaseAction, AICombatAggroConfig, AIShootAction,
+                AIWanderAction, AIWanderConfig, AttackScorer, ChaseScorer,
             },
             player::PlayerSelectedHero,
         },
         combat::{AttackDirection, EventRequestAttack},
-    },
-    playing_game,
-    utilities::tiles_to_f32,
+    }, loading::splashscreen::MainCamera, playing_game, utilities::tiles_to_f32
 };
-
-use super::components::{AIAutoShootConfig, AIShootAction};
 
 /// stupid ai systems and functions
 pub struct StupidAiPlugin;
@@ -66,11 +60,9 @@ pub struct BasicAiBundle {
     pub thinker: ThinkerBuilder,
 }
 
-//TODO: rework ai
 /// updates character attack/chase score
 #[allow(clippy::type_complexity)]
 fn stupid_ai_aggro_manager(
-    names: Query<&Name>,
     physics_query: SpatialQuery,
     // player
     player_query: Query<(Entity, &Transform), With<PlayerSelectedHero>>,
@@ -101,7 +93,22 @@ fn stupid_ai_aggro_manager(
         let player_pos = player_transform.translation.truncate();
         let enemy_pos = enemy_transform.translation.truncate();
         let distance_to_target = enemy_pos.distance(player_pos).abs();
-        let direction_to_target = Vec2::normalize_or_zero(player_pos - enemy_pos);
+        let direction_to_target = Vec2::normalize(player_pos - enemy_pos);
+
+        let Some(actor_collider) = children
+            .iter_descendants(this_actor)
+            .find(|f| colliders.get(*f).is_ok())
+        else {
+            continue;
+        };
+
+        if distance_to_target <= 0.0 || distance_to_target >= TILE_SIZE * 32.0 {
+            continue;
+        }
+
+        let mut excluded_entities = HashSet::new();
+        excluded_entities.insert(actor_collider);
+        excluded_entities.insert(this_actor);
 
         let ray = physics_query.cast_shape(
             &Collider::circle(TILE_SIZE),
@@ -112,7 +119,7 @@ fn stupid_ai_aggro_manager(
             true,
             &SpatialQueryFilter {
                 mask: LayerMask::ALL,
-                excluded_entities: HashSet::new(),
+                excluded_entities,
             },
         );
 
@@ -209,10 +216,10 @@ fn chase_action(
     }
 }
 
+// this action should handle determining if the requested
+// ai actor has a weapon or not and either send melee or weapon attack
 /// handles enemy's that can attack
 fn attack_action(
-    // rapier_context: Res<RapierContext>,
-    // player_collider_query: Query<Entity, With<PlayerColliderTag>>,
     time: Res<Time>,
     player_query: Query<(Entity, &Transform), With<PlayerSelectedHero>>,
     mut enemy_query: Query<(&Transform, &mut AIAutoShootConfig)>,
@@ -266,24 +273,34 @@ fn attack_action(
 
 /// handles enemy's that are doing the wander action
 fn wander_action(
+    time: Res<Time>,
     rapier_context: SpatialQuery,
+    camera_pos: Query<&Transform, With<MainCamera>>,
     mut enemy_query: Query<(
         &Transform,
         &mut LinearVelocity,
         &mut Sprite,
         &mut AIWanderConfig,
-    )>,
+    ), Without<MainCamera>>,
     mut thinker_query: Query<(&Actor, &mut ActionState), With<AIWanderAction>>,
+    children: Query<&Children>,
+    colliders: Query<&Collider>,
 ) {
     for (Actor(actor), mut state) in &mut thinker_query {
         if let Ok((enemy_transform, mut velocity, _sprite, mut can_meander_tag)) =
             enemy_query.get_mut(*actor)
         {
+            let camera_pos = camera_pos.single().translation.truncate();
+            let enemy_pos = enemy_transform.translation.truncate();
+
+            if camera_pos.distance(enemy_pos) >= 32.0 * TILE_SIZE {
+                continue;
+            }
+
             let mut rng = thread_rng();
             let target_pos = can_meander_tag.wander_target;
             let wander_distance = can_meander_tag.wander_distance as f32 * TILE_SIZE;
             let target_deviation = rng.gen_range(25.0..=75.0);
-            let enemy_pos = enemy_transform.translation.truncate();
 
             let spawn_pos = can_meander_tag
                 .spawn_position
@@ -295,16 +312,27 @@ fn wander_action(
                     *state = ActionState::Failure;
                 }
                 ActionState::Requested => {
-                    if target_pos.is_some_and(|f| f.distance(enemy_pos).abs() <= target_deviation)
-                        || target_pos.is_none()
-                    {
-                        can_meander_tag.wander_target = Some(Vec2 {
-                            x: (spawn_pos.x + rng.gen_range(-wander_distance..=wander_distance)),
-                            y: (spawn_pos.y + rng.gen_range(-wander_distance..=wander_distance)),
-                        });
-                        *state = ActionState::Requested;
+                    if can_meander_tag.idle_timer.finished() {
+                        // TODO: scale this based on some 'enemy_jumpiness' setting
+                        // make the max idle lower as difficulty increases
+                        can_meander_tag.idle_timer =
+                            Timer::from_seconds(rng.gen_range(0.0..6.0), TimerMode::Once);
+                        if target_pos
+                            .is_some_and(|f| f.distance(enemy_pos).abs() <= target_deviation)
+                            || target_pos.is_none()
+                        {
+                            can_meander_tag.wander_target = Some(Vec2 {
+                                x: (spawn_pos.x
+                                    + rng.gen_range(-wander_distance..=wander_distance)),
+                                y: (spawn_pos.y
+                                    + rng.gen_range(-wander_distance..=wander_distance)),
+                            });
+                            *state = ActionState::Requested;
+                        }
+                        *state = ActionState::Executing;
+                    } else {
+                        can_meander_tag.idle_timer.tick(time.delta());
                     }
-                    *state = ActionState::Executing;
                 }
                 ActionState::Executing => {
                     let Some(target_pos) = target_pos else {
@@ -313,6 +341,21 @@ fn wander_action(
                     };
                     let direction = (target_pos - enemy_pos).normalize_or_zero();
                     let distance = enemy_pos.distance(target_pos).abs();
+
+                    let Some(actor_collider) = children
+                        .iter_descendants(*actor)
+                        .find(|f| colliders.get(*f).is_ok())
+                    else {
+                        continue;
+                    };
+
+                    if distance <= 0.0 {
+                        continue;
+                    }
+
+                    let mut excluded_entities = HashSet::new();
+                    excluded_entities.insert(actor_collider);
+                    excluded_entities.insert(*actor);
 
                     let ray = rapier_context.cast_shape(
                         &Collider::circle(TILE_SIZE),
@@ -323,7 +366,7 @@ fn wander_action(
                         true,
                         &SpatialQueryFilter {
                             mask: LayerMask::ALL,
-                            excluded_entities: HashSet::new(),
+                            excluded_entities,
                         },
                     );
 

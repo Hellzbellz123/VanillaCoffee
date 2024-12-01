@@ -15,15 +15,21 @@ impl Plugin for SoftwareCursorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.register_type::<SoftWareCursor>();
 
-        app.add_systems(
-            PreUpdate,
+        app
+        // .add_systems(
+        //     Update,
+        //     update_software_cursor_position.run_if(
+        //         resource_exists::<AspenCursorPosition>
+        //             .and_then(any_with_component::<SoftWareCursor>)
+        //             .and_then(|res: Res<WindowSettings>| res.software_cursor_enabled),
+        //     ),
+        // )
+        .add_systems(
+            Update,
             (
                 cursor_grab_system,
                 control_software_cursor.run_if(resource_exists::<AspenInitHandles>),
-                (
-                    update_software_cursor_position,
-                    update_software_cursor_image,
-                )
+                (update_software_cursor_image, update_software_cursor_position)
                     .run_if(
                         resource_exists::<AspenCursorPosition>
                             .and_then(any_with_component::<SoftWareCursor>)
@@ -172,7 +178,7 @@ fn update_software_cursor_image(
         // if cursor is over 'interactable actor/enemy' set TextureAtlas.index too 'HasTarget' otherwise 'NoTarget'
         cursor_data.offset = node_size.size() / 2.0;
         for (interactble_pos, interactable_aabb) in &interactables {
-            let pos = interactble_pos.translation() + Vec3::from(interactable_aabb.center);
+            let pos = interactble_pos.translation(); // + Vec3::from(interactable_aabb.center);
             if Rect::from_center_half_size(
                 pos.truncate(),
                 Vec3::from(interactable_aabb.half_extents).truncate(),
@@ -203,8 +209,8 @@ pub enum CursorType {
 
 /// updates software cursor position based on `LookLocal` (`LookLocal` is just `winit::Window.cursor_position()`)
 fn update_software_cursor_position(
-    cursor_pos: Res<AspenCursorPosition>,
     mut software_cursor: Query<(&mut Style, &SoftWareCursor), With<Node>>,
+    cursor_pos: Res<AspenCursorPosition>,
     window_query: Query<&Window>,
 ) {
     let Ok((mut cursor_style, cursor_data)) = software_cursor.get_single_mut() else {

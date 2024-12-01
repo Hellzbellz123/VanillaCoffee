@@ -33,7 +33,7 @@ impl Plugin for TouchInputUIPlugin {
             handle_touch_controls_visibility.run_if(any_with_component::<TouchControlsRoot>),
         );
         app.add_systems(
-            PreUpdate,
+            Update,
             (
                 update_button_colors,
                 shunts::touch_pause_game,

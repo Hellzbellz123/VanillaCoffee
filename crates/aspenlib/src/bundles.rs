@@ -4,6 +4,7 @@ use bevy_aseprite_ultra::{
     prelude::{Animation, AnimationState, Aseprite},
     NotLoaded,
 };
+use bevy_transform_interpolation::TranslationInterpolation;
 
 use crate::{
     game::{
@@ -128,6 +129,7 @@ pub struct Aspen2dPhysicsBundle {
     pub velocity: LinearVelocity,
     pub ang_vel: AngularVelocity,
     pub rotation_locks: LockedAxes,
+    pub interpolate_loc: TranslationInterpolation
 }
 pub const GRAVITY: f32 = 9.81;
 
@@ -164,6 +166,7 @@ impl Aspen2dPhysicsBundle {
             rotation_locks: NO_LOCKED_AXES,
             linear_damping: LinearDamping(0.1),
             angular_damping: AngularDamping(0.1),
+            interpolate_loc: TranslationInterpolation
         }
     }
 
@@ -185,6 +188,7 @@ impl Aspen2dPhysicsBundle {
             rotation_locks: LockedAxes::ROTATION_LOCKED,
             linear_damping: LinearDamping(1.0),
             angular_damping: AngularDamping(1.0),
+            interpolate_loc: TranslationInterpolation
         }
     }
 
@@ -206,6 +210,7 @@ impl Aspen2dPhysicsBundle {
             rotation_locks: NO_LOCKED_AXES,
             linear_damping: LinearDamping(0.8),
             angular_damping: AngularDamping(0.6),
+            interpolate_loc: TranslationInterpolation
         }
     }
 }

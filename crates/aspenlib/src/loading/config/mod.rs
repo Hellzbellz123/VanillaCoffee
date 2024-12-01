@@ -98,7 +98,7 @@ pub enum GameDifficulty {
     /// only 1 dungeon and if more than 1 enemy is spawned
     Debug,
     /// custom
-    Custom(DifficultyScales),
+    Custom(DifficultySettings),
 }
 
 /// Settings like zoom and difficulty
@@ -113,7 +113,8 @@ pub struct GeneralSettings {
     /// camera zoom
     #[inspector(min = 0.0, max = 150.0)]
     pub camera_zoom: f32,
-    /// game difficulty,
+    /// master game difficulty,
+    /// configures the actual difficulty settings
     /// value ranging from 1-4, 1 being easiest, 4 being hardest
     pub game_difficulty: GameDifficulty,
 }
@@ -160,7 +161,9 @@ pub struct VolumeConfig {
 #[derive(Reflect, Debug, Serialize, Deserialize, Resource, Copy, Clone, PartialEq, PartialOrd)]
 #[reflect(Resource, Default)]
 /// difficulty resource used globally for configuring actors and dungeons
-pub struct DifficultyScales {
+pub struct DifficultySettings {
+    /// can actors of the same AI_TYPE cause damage too eachother
+    pub friendly_fire_enabled: bool,
     /// not a scale, just an amount multiplied by total rooms
     pub max_enemies_per_room: i32,
     /// i32 used too scale, multiples dungeon amount
@@ -181,7 +184,7 @@ pub struct DifficultyScales {
     pub enemy_speed_scale: f32,
 }
 
-impl Default for DifficultyScales {
+impl Default for DifficultySettings {
     fn default() -> Self {
         Self {
             max_enemies_per_room: 20,
@@ -192,6 +195,7 @@ impl Default for DifficultyScales {
             enemy_damage_scale: 1.0,
             enemy_speed_scale: 1.0,
             player_speed_scale: 1.0,
+            friendly_fire_enabled: false,
         }
     }
 }
@@ -200,9 +204,9 @@ impl Default for GeneralSettings {
     fn default() -> Self {
         Self {
             camera_zoom: 5.5,
-            game_difficulty: GameDifficulty::Custom(DifficultyScales::default()),
+            game_difficulty: GameDifficulty::Custom(DifficultySettings::default()),
             enable_debug: cfg!(feature = "develop"),
-            enable_touch_controls: cfg!(target_os = "android") | cfg!(target_os = "ios"),
+            enable_touch_controls: cfg!(target_os = "android") || cfg!(target_os = "ios"),
         }
     }
 }
@@ -454,7 +458,7 @@ fn update_difficulty_settings(
     if let GameDifficulty::Custom(scales) = general_settings.game_difficulty {
         cmds.insert_resource(scales);
     } else {
-        let difficulty_settings: DifficultyScales =
+        let difficulty_settings: DifficultySettings =
             create_difficulty_scales(*general_settings, Some(level_amount));
         cmds.insert_resource(difficulty_settings);
     }
@@ -464,12 +468,12 @@ fn update_difficulty_settings(
 fn create_difficulty_scales(
     general_settings: GeneralSettings,
     level_amount: Option<i32>,
-) -> DifficultyScales {
+) -> DifficultySettings {
     let level_amount = level_amount.unwrap_or(1);
 
     match general_settings.game_difficulty {
         GameDifficulty::Custom(a) => a,
-        GameDifficulty::Debug => DifficultyScales {
+        GameDifficulty::Debug => DifficultySettings {
             max_enemies_per_room: 1,
             max_dungeon_amount: 1,
             player_health_scale: 1.0,
@@ -478,8 +482,9 @@ fn create_difficulty_scales(
             enemy_health_scale: 1.0,
             enemy_damage_scale: 1.0,
             enemy_speed_scale: 1.0,
+            friendly_fire_enabled: false,
         },
-        GameDifficulty::Easy => DifficultyScales {
+        GameDifficulty::Easy => DifficultySettings {
             max_enemies_per_room: 10 * level_amount,
             player_health_scale: 1.25,
             player_damage_scale: 1.25,
@@ -488,8 +493,9 @@ fn create_difficulty_scales(
             max_dungeon_amount: 5,
             enemy_speed_scale: 0.9,
             player_speed_scale: 1.2,
+            friendly_fire_enabled: false,
         },
-        GameDifficulty::Medium => DifficultyScales {
+        GameDifficulty::Medium => DifficultySettings {
             max_enemies_per_room: 20 * level_amount,
             player_health_scale: 1.00,
             player_damage_scale: 1.00,
@@ -498,8 +504,9 @@ fn create_difficulty_scales(
             max_dungeon_amount: 7,
             enemy_speed_scale: 1.0,
             player_speed_scale: 1.0,
+            friendly_fire_enabled: false,
         },
-        GameDifficulty::Hard => DifficultyScales {
+        GameDifficulty::Hard => DifficultySettings {
             max_enemies_per_room: 30 * level_amount,
             player_health_scale: 1.0,
             player_damage_scale: 1.0,
@@ -508,8 +515,9 @@ fn create_difficulty_scales(
             max_dungeon_amount: 9,
             enemy_speed_scale: 1.2,
             player_speed_scale: 1.0,
+            friendly_fire_enabled: false,
         },
-        GameDifficulty::Insane => DifficultyScales {
+        GameDifficulty::Insane => DifficultySettings {
             max_enemies_per_room: 35 * level_amount,
             player_health_scale: 1.25,
             player_damage_scale: 1.25,
@@ -518,8 +526,9 @@ fn create_difficulty_scales(
             max_dungeon_amount: 15,
             enemy_speed_scale: 1.5,
             player_speed_scale: 1.0,
+            friendly_fire_enabled: false,
         },
-        GameDifficulty::MegaDeath => DifficultyScales {
+        GameDifficulty::MegaDeath => DifficultySettings {
             max_enemies_per_room: 50 * level_amount,
             player_health_scale: 1.25,
             player_damage_scale: 1.25,
@@ -528,6 +537,7 @@ fn create_difficulty_scales(
             max_dungeon_amount: 25,
             enemy_speed_scale: 1.7,
             player_speed_scale: 0.8,
+            friendly_fire_enabled: false,
         },
     }
 }

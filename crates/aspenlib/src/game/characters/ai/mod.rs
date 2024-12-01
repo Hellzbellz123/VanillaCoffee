@@ -10,14 +10,30 @@ use crate::{
                 AIWanderAction, AIWanderConfig, AiType, AttackScorer, ChaseScorer,
             },
             skillsusing_ai::{
-                AIPatternEnergy, AIShootPatternsConfig, ShootPattern, SkillusingAiPlugin,
-                MAX_PATTERN_ENERGY,
+                AIPatternEnergy, AIShootPatternsConfig, PatternCost, ShootPattern,
+                SkillusingAiPlugin, MAX_PATTERN_ENERGY,
             },
         },
         player::PlayerSelectedHero,
     },
     register_types,
 };
+
+
+// TODO: get actor ai values from definition and use them when spawning/inserting actors ai
+
+// move ai config too `AiType` enum, each ai type gets a scorer that
+// determines its actions using config data held inside AiType,
+// AiType is defined inside character_definition
+
+// merge AiCombatAggroConfig and AiAutoShoot config into a AiBasicCombatConfig
+// move pattern related code into combat module and make all combat event based.
+
+// basic combat should have 3 actions
+// chase, attack, flee
+// if basiccombat fails then we should go back too wander action
+
+
 
 use self::stupid_ai::StupidAiPlugin;
 
@@ -68,13 +84,12 @@ fn initialize_ai(
     mut commands: Commands,
     ai_controlled: Query<
         (Entity, &AiType, &GlobalTransform),
-        (Added<AiType>, Without<PlayerSelectedHero>),
+        Added<AiType>,
     >,
 ) {
     for (character, wanted_ai, pos) in &ai_controlled {
         match wanted_ai {
             AiType::Stupid => {
-                //TODO: get definition and use values from definition
                 insert_stupid_ai(&mut commands, character, pos);
             }
             AiType::Boss => {
@@ -86,7 +101,7 @@ fn initialize_ai(
             AiType::FollowerHero => error!("ai type not implemented"),
         }
 
-        commands.entity(character).remove::<AiType>();
+        // commands.entity(character).remove::<AiType>();
     }
 }
 
@@ -104,13 +119,15 @@ fn insert_stupid_ai(commands: &mut Commands<'_, '_>, character: Entity, pos: &Gl
             wander_target: None,
             spawn_position: Some(pos.translation().truncate()),
             wander_distance: 7,
+            idle_timer: Timer::from_seconds(2.0, TimerMode::Once),
         },
         shoot_config: AIAutoShootConfig {
             find_target_range: 8,
-            timer: Timer::new(Duration::from_secs_f32(0.5), TimerMode::Once),
+            timer: Timer::new(Duration::from_secs_f32(0.2), TimerMode::Once),
             should_shoot: false,
             can_shoot: false,
         },
+        // thinker builder should be built differently
         thinker: Thinker::build()
             .picker(big_brain::pickers::Highest)
             .when(ChaseScorer, AIChaseAction)
@@ -120,10 +137,10 @@ fn insert_stupid_ai(commands: &mut Commands<'_, '_>, character: Entity, pos: &Gl
 }
 
 /// default bullet spawn pattern
-fn basic_bullet_pattern() -> VecDeque<(i32, ShootPattern)> {
+fn basic_bullet_pattern() -> VecDeque<(PatternCost, ShootPattern)> {
     let mut map = VecDeque::new();
     map.push_front((
-        40,
+        PatternCost(40),
         ShootPattern::BulletsOverArc {
             arc: 360,
             amount: 16,
@@ -132,7 +149,7 @@ fn basic_bullet_pattern() -> VecDeque<(i32, ShootPattern)> {
         },
     ));
     map.push_front((
-        40,
+        PatternCost(40),
         ShootPattern::BulletsOverArc {
             arc: 360,
             amount: 12,
@@ -141,7 +158,7 @@ fn basic_bullet_pattern() -> VecDeque<(i32, ShootPattern)> {
         },
     ));
     map.push_front((
-        10,
+        PatternCost(10),
         ShootPattern::BulletsOverArc {
             arc: 45,
             amount: 8,
@@ -168,12 +185,12 @@ fn insert_skillusing_ai(commands: &mut Commands<'_, '_>, character: Entity, pos:
             combat_config: AICombatAggroConfig {
                 chase_start: 10,
                 chase_end: 16,
-                shoot_range: 6,
+                shoot_range: 8,
                 personal_space: 3,
                 runaway_hp: 20.0,
             },
             shoot_config: AIAutoShootConfig {
-                find_target_range: 6,
+                find_target_range: 8,
                 timer: Timer::new(Duration::from_secs_f32(0.5), TimerMode::Once),
                 should_shoot: false,
                 can_shoot: false,
@@ -181,7 +198,8 @@ fn insert_skillusing_ai(commands: &mut Commands<'_, '_>, character: Entity, pos:
             wander_config: AIWanderConfig {
                 wander_target: None,
                 spawn_position: Some(pos.translation().truncate()),
-                wander_distance: 5,
+                wander_distance: 8,
+                idle_timer: Timer::from_seconds(2.0, TimerMode::Once),
             },
             thinker: Thinker::build()
                 .picker(big_brain::pickers::Highest)

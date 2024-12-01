@@ -1,25 +1,19 @@
+use avian2d::prelude::CollisionStarted;
 use bevy::{ecs::system::SystemParam, prelude::*};
 
 use crate::{
     game::{
-        attributes_stats::{CharacterStats, DamageQueue},
-        characters::player::PlayerSelectedHero,
         combat::unarmed::EventAttackUnarmed,
-        game_world::{
-            components::{ActorTeleportEvent, TpTriggerEffect},
-            dungeonator_v2::GeneratorState,
-            RegenReason, RegenerateDungeonEvent,
-        },
         items::weapons::{
             components::{WeaponDescriptor, WeaponHolder},
             EventAttackWeapon,
         },
-        progress::CurrentRunInformation,
     },
     utilities::EntityCreator,
     AppStage,
 };
 
+pub mod damage;
 /// handles attacks from characters without weapons
 pub mod unarmed;
 
@@ -34,88 +28,18 @@ impl Plugin for CombatPlugin {
 
         app.add_systems(
             PreUpdate,
-            apply_damage_system.run_if(in_state(AppStage::Running)),
+            damage::apply_damage_system.run_if(in_state(AppStage::Running)),
         );
 
         app.add_systems(
             Update,
             (
+                damage::handle_death_system,
+                damage::projectile_hits.run_if(on_event::<CollisionStarted>()),
                 delegate_attack_events.run_if(on_event::<EventRequestAttack>()),
-                handle_death_system,
             )
                 .run_if(in_state(AppStage::Running)),
         );
-    }
-}
-
-// TODO: have damaged characters use particle effect or red tint when damaged
-/// applys
-#[allow(clippy::type_complexity)]
-fn apply_damage_system(
-    mut game_info: ResMut<CurrentRunInformation>,
-    mut damaged_characters: Query<
-        (&mut CharacterStats, Entity, &mut DamageQueue),
-        Changed<DamageQueue>,
-    >,
-    player_controlled: Query<&PlayerSelectedHero>,
-) {
-    for (mut character_stats, character, mut damage_queue) in &mut damaged_characters {
-        for damage in damage_queue.iter_queue() {
-            if character_stats.get_current_health() <= 0.0 {
-                return;
-            }
-            if player_controlled.get(character).is_ok() {
-                game_info.player_physical_damage_taken += damage.physical.0;
-            } else {
-                game_info.enemy_physical_damage_taken += damage.physical.0;
-            }
-            character_stats.apply_damage(*damage);
-        }
-        damage_queue.empty_queue();
-    }
-}
-
-/// gathers entitys that have damage and despawns them if have no remaining health
-#[allow(clippy::type_complexity)]
-fn handle_death_system(
-    mut game_info: ResMut<CurrentRunInformation>,
-    mut cmds: Commands,
-    mut damaged_query: Query<
-        (Entity, &mut CharacterStats, Option<&PlayerSelectedHero>),
-        Changed<CharacterStats>,
-    >,
-    dungeon_state: Res<State<GeneratorState>>,
-    mut regen_event: EventWriter<RegenerateDungeonEvent>,
-    mut tp_event: EventWriter<ActorTeleportEvent>,
-) {
-    for (ent, mut stats, player_control) in &mut damaged_query {
-        if stats.get_current_health() <= 0.0 {
-            // should probably despawn player and rebuild.
-            // or auto use postion and if dead restart
-            if player_control.is_some() {
-                info!("player died, resetting player");
-                stats.set_health(150.0);
-                game_info.player_deaths += 1;
-
-                if *dungeon_state.get() == GeneratorState::FinishedDungeonGen {
-                    regen_event.send(RegenerateDungeonEvent {
-                        reason: RegenReason::PlayerDeath,
-                    });
-                } else {
-                    tp_event.send(ActorTeleportEvent {
-                        tp_type: TpTriggerEffect::Event("TeleportStartLocation".to_string()),
-                        target: Some(ent),
-                        sender: Some(ent),
-                    });
-                }
-                continue;
-            }
-
-            // entity that died is not player
-            error!("despawning entity");
-            game_info.enemies_deaths += 1;
-            cmds.entity(ent).despawn_recursive();
-        }
     }
 }
 

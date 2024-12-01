@@ -159,7 +159,7 @@ pub fn create_bullet(
                     physical: weapon_damage.physical,
                     elemental: weapon_damage.elemental,
                 },
-                entity_that_shot: entity,
+                bullet_creator: entity,
             },
             ttl: TimeToLive(Timer::from_seconds(3.5, TimerMode::Repeating)),
             sprite_bundle: SpriteBundle {

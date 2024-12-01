@@ -14,7 +14,7 @@ use crate::{
                 WeaponDescriptor, WeaponHolder, WeaponTimers,
             },
             forms::GunShootEvent,
-            hit_detection::projectile_hits,
+            
         },
     },
     loading::registry::RegistryIdentifier,
@@ -63,7 +63,6 @@ impl Plugin for WeaponItemPlugin {
             .add_systems(
                 Update,
                 (
-                    projectile_hits.run_if(on_event::<CollisionStarted>()),
                     handle_weapon_attacks.run_if(on_event::<EventAttackWeapon>()),
                     flip_weapon_sprites,
                     weapon_visibility_system,
@@ -214,7 +213,7 @@ fn equipped_weapon_positioning(
                     x: 0.0,
                     // aabb top is above head,  subtract about 1/4 too get it closer too hands
                     y: aabb.half_extents.y.mul_add(-0.25, aabb.half_extents.y),
-                    z: layer,
+                    z: if move_state.0.length() <= 1.0 {1.0} else {layer},
                 }
             }
         });

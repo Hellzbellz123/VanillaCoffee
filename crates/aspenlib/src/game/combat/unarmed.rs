@@ -51,7 +51,7 @@ pub fn delegate_unarmed_attacks(
                 ProjectileBundle {
                     name: Name::new("MonsterProjectile"),
                     projectile_stats: ProjectileStats {
-                        entity_that_shot: attack.requester,
+                        bullet_creator: attack.requester,
                         damage: Damage {
                             physical: PhysicalDamage(5.0),
                             elemental: ElementalEffect::Fire(1.0),

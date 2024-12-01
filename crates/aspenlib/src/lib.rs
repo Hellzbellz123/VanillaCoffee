@@ -94,7 +94,7 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
         bevy_ecs_ldtk::LdtkPlugin,
         bevy_framepace::FramepacePlugin,
         avian2d::PhysicsPlugins::default().with_length_unit(32.0),
-        bevy_transform_interpolation::TransformInterpolationPlugin::interpolate_all(),
+        bevy_transform_interpolation::TransformInterpolationPlugin::default(),
     ));
 
     vanillacoffee.insert_resource(Gravity(Vec2::ZERO));

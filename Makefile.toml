@@ -48,6 +48,24 @@ description = ""
 command = "cargo"
 args = ["run", "--features=develop,dynamic"]
 
+[tasks.run-windows]
+env = { "CARGO_FEATURE_PURE" = "1" }
+dependencies = ["copy-crate-assets"]
+cwd = "crates/desktop/"
+workspace = false
+description = ""
+command = "cargo"
+args = ["xwin", "run", "--features=develop", "--target=x86_64-pc-windows-msvc"]
+
+[tasks.run-linux]
+dependencies = ["copy-crate-assets"]
+cwd = "crates/desktop/"
+workspace = false
+description = ""
+command = "cargo"
+args = ["run", "--features=develop,dynamic", "--target=x86_64-unknown-linux-gnu"]
+
+
 [tasks.run-web]
 dependencies = ["copy-crate-assets"]
 cwd = "crates/wasm/"

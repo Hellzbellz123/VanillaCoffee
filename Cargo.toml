@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-default-members = ["crates/aspenlib", "crates/desktop"]
+default-members = ["crates/asha_macros", "crates/aspenlib", "crates/desktop"]
 members = [
   "crates/asha_macros",
   "crates/aspenlib",
@@ -45,7 +45,7 @@ cast_possible_wrap = { level = "allow" }
 [profile.dev.package."*"]
 codegen-units = 32
 incremental = false
-opt-level = 1
+opt-level = 3
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
