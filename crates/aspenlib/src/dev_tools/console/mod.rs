@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy_console::{
-    AddConsoleCommand, ConsoleConfiguration, ConsolePlugin,
-};
+use bevy_console::{AddConsoleCommand, ConsoleConfiguration, ConsolePlugin};
 use tracing_subscriber::Registry;
 
 /// holds definitions of commands

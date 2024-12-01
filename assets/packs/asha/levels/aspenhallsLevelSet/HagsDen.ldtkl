@@ -11,8 +11,8 @@
 	"identifier": "HagsDen",
 	"iid": "d513f760-8990-11ee-94a7-dbb291629cb2",
 	"uid": 47,
-	"worldX": 3552,
-	"worldY": -1536,
+	"worldX": 4800,
+	"worldY": -1408,
 	"worldDepth": 0,
 	"pxWid": 704,
 	"pxHei": 704,
@@ -91,8 +91,8 @@
 						{ "__identifier": "MaxEnemies", "__type": "Int", "__value": null, "__tile": null, "defUid": 95, "realEditorValues": [] },
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
-					"__worldX": 3920,
-					"__worldY": -1168
+					"__worldX": 5168,
+					"__worldY": -1040
 				},
 				{
 					"__identifier": "SpawnerWave",
@@ -116,8 +116,8 @@
 						"id": "V_String",
 						"params": ["slime"]
 					} ] }],
-					"__worldX": 3760,
-					"__worldY": -1360
+					"__worldX": 5008,
+					"__worldY": -1232
 				}
 			]
 		},
@@ -632,5 +632,5 @@
 			"entityInstances": []
 		}
 	],
-	"__neighbours": [{ "levelIid": "467e84f0-fec0-11ee-864c-75fa94197935", "dir": "w" }]
+	"__neighbours": [{ "levelIid": "467e84f0-fec0-11ee-864c-75fa94197935", "dir": "s" }]
 }

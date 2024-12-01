@@ -12,7 +12,7 @@
 	"iid": "49d60130-8990-11ee-a13c-7d4ae0661be6",
 	"uid": 30,
 	"worldX": 0,
-	"worldY": -288,
+	"worldY": 0,
 	"worldDepth": 0,
 	"pxWid": 704,
 	"pxHei": 704,
@@ -78,7 +78,7 @@
 						{ "__identifier": "WaitTime", "__type": "Float", "__value": 0, "__tile": null, "defUid": 97, "realEditorValues": [] }
 					],
 					"__worldX": 368,
-					"__worldY": 80
+					"__worldY": 368
 				}
 			]
 		},

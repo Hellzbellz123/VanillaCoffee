@@ -108,13 +108,16 @@ impl Plugin for DungeonGeneratorPlugin {
                 layout_dungeon,
                 apply_deferred,
             )
+                .before(TransformSystem::TransformPropagate)
                 .chain(),
         );
 
+        // create tilegraph by premtively filling in spots based on roomgraph data, plus the requested border for rooms instead of below systems
         app.add_systems(
             Update,
             (tile_graph::create_tile_graph, apply_deferred)
                 .chain()
+                .after(TransformSystem::TransformPropagate)
                 .run_if(in_state(GeneratorState::CompleteHallways)),
         );
 
@@ -156,43 +159,46 @@ fn spawn_new_dungeon(
     );
     info!("spawning dungeon at {origin:?}");
 
-    cmds.spawn(DungeonContainerBundle {
-        name: "The Aspen Halls".into(),
-        dungeon: Dungeon {
-            settings: DungeonSettings {
-                level,
-                // border is applied too each room asset so 0 here
-                border: 4,
-                // room placing settings
-                size: TilemapSize { x: 64, y: 64 },
-                // TODO: use this but make it working
-                // tiles_between_rooms: 4,
-                distribution: RoomDistribution {
-                    small_short: 3,
-                    small_long: 2,
-                    medium_short: 1,
-                    medium_long: 1,
-                    large_short: 0,
-                    large_long: 0,
-                    huge_short: 0,
-                    huge_long: 0,
-                    special: 2,
+    cmds.spawn((
+        DungeonContainerBundle {
+            name: "The Aspen Halls".into(),
+            dungeon: Dungeon {
+                settings: DungeonSettings {
+                    level,
+                    // border is applied too each room asset so 0 here
+                    border: 4,
+                    // room placing settings
+                    size: TilemapSize { x: 64, y: 64 },
+                    // TODO: use this but make it working
+                    // tiles_between_rooms: 4,
+                    distribution: RoomDistribution {
+                        small_short: 3,
+                        small_long: 2,
+                        medium_short: 1,
+                        medium_long: 1,
+                        large_short: 0,
+                        large_long: 0,
+                        huge_short: 0,
+                        huge_long: 0,
+                        special: 2,
+                    },
+                    // hallway placing settings/data
+                    hallway_loop_chance: 0.08,
                 },
-                // hallway placing settings/data
-                hallway_loop_chance: 0.08,
+                tile_graph: TileGraph {
+                    graph: Graph::new_undirected(),
+                    center_world: origin.translation.truncate(),
+                },
+                room_graph: RoomGraph::default(),
             },
-            tile_graph: TileGraph {
-                graph: Graph::new_undirected(),
-                center_world: origin.translation.truncate(),
+            ldtk_project: ldtk_project_handles.default_levels.clone(),
+            spatial: SpatialBundle {
+                transform: origin,
+                ..default()
             },
-            room_graph: RoomGraph::default(),
         },
-        ldtk_project: ldtk_project_handles.default_levels.clone(),
-        spatial: SpatialBundle {
-            transform: origin,
-            ..default()
-        },
-    });
+        // Position(origin.translation.truncate()),
+    ));
 }
 
 /// creates vec of `RoomPreset` too be built into `DungeonRoomBundles` using  `DungeonSettings` and current progress in the dungeon
@@ -223,16 +229,18 @@ pub fn layout_dungeon(
     info!("spawning rooms");
     room_graph.node_weights().for_each(|weight| {
         if let room_graph::RoomGraphNode::Room(bp) = weight {
-            cmds.entity(dungon_id).with_children(|rooms| {
-                rooms.spawn(DungeonRoomBundle {
+            cmds.spawn((
+                DungeonRoomBundle {
                     name: bp.name.clone().into(),
                     id: bp.asset_id.clone(),
                     room: bp.clone(),
                     spatial: SpatialBundle::from_transform(Transform::from_translation(
                         bp.room_space.min.as_vec2().extend(0.0),
                     )),
-                });
-            });
+                },
+                // Position(bp.room_space.min.as_vec2()),
+            ))
+            .set_parent(dungon_id);
         };
     });
 

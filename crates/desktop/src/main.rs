@@ -5,8 +5,8 @@
 "]
 
 use aspenlib::{
-    save_load::save_settings, ConfigFile, GeneralSettings, RenderSettings, SoundSettings,
-    WindowSettings,
+    save_load::save_settings, AudioSettings, ConfigFile, GeneralSettings, RenderSettings,
+    VolumeConfig, WindowSettings,
 };
 use bevy::{log::info, math::Vec2};
 use std::path::Path;
@@ -79,16 +79,23 @@ pub fn load_settings() -> ConfigFile {
                     window_scale: cfg.window_settings.window_scale,
                     ui_scale: cfg.window_settings.ui_scale,
                 },
-
-                sound_settings: SoundSettings {
-                    master_volume: cfg.sound_settings.master_volume,
-                    ambience_volume: cfg.sound_settings.ambience_volume,
-                    music_volume: cfg.sound_settings.music_volume,
-                    sound_volume: cfg.sound_settings.sound_volume,
+                sound_settings: AudioSettings {
+                    max_distance: 350.0,
+                    max_sounds: 200,
+                    volume_config: VolumeConfig {
+                        master: cfg.sound_settings.volume_config.master,
+                        ambience: cfg.sound_settings.volume_config.ambience,
+                        music: cfg.sound_settings.volume_config.music,
+                        gameplay: cfg.sound_settings.volume_config.gameplay,
+                    },
                 },
 
                 general_settings: GeneralSettings {
-                    enable_debug: if cfg!(feature = "develop") {true} else {cfg.general_settings.enable_debug},
+                    enable_debug: if cfg!(feature = "develop") {
+                        true
+                    } else {
+                        cfg.general_settings.enable_debug
+                    },
                     enable_touch_controls: cfg.general_settings.enable_touch_controls,
                     camera_zoom: cfg.general_settings.camera_zoom,
                     game_difficulty: cfg.general_settings.game_difficulty,

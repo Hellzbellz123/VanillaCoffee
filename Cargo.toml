@@ -1,7 +1,13 @@
 [workspace]
 resolver = "2"
-default-members = ["crates/aspenlib", "crates/desktop"]
-members = ["crates/aspenlib", "crates/desktop", "crates/mobile", "crates/wasm"]
+default-members = ["crates/asha_macros", "crates/aspenlib", "crates/desktop"]
+members = [
+  "crates/asha_macros",
+  "crates/aspenlib",
+  "crates/desktop",
+  "crates/mobile",
+  "crates/wasm",
+]
 exclude = ["deps"]
 
 [workspace.lints.rust]
@@ -39,7 +45,7 @@ cast_possible_wrap = { level = "allow" }
 [profile.dev.package."*"]
 codegen-units = 32
 incremental = false
-opt-level = 1
+opt-level = 3
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
@@ -61,6 +67,7 @@ lto = "fat"
 # Cargo will use both versions of bevy so the patches usually
 # just break compiling if dependencies use different
 # bevy versions
+avian2d = { path = "deps/avian/crates/avian2d" }
 bevy_ecs_tilemap = { path = "deps/bevy_ecs_tilemap" }
 bevy_egui = { path = "deps/bevy_egui" }
 bevy_common_assets = { path = "deps/bevy_common_assets" }

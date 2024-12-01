@@ -1,7 +1,7 @@
+use avian2d::prelude::Collider;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
 use bevy_ecs_tilemap::prelude::TilemapSize;
-use bevy_rapier2d::geometry::Collider;
 
 use image::{ImageBuffer, Rgba};
 use petgraph::{prelude::NodeIndex, visit::IntoNodeReferences, Graph, Undirected};

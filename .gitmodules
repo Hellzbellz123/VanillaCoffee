@@ -55,3 +55,12 @@
 [submodule "deps/bevy_aseprite_ultra"]
 	path = deps/bevy_aseprite_ultra
 	url = https://github.com/Lommix/bevy_aseprite_ultra.git
+[submodule "deps/avian"]
+	path = deps/avian
+	url = https://github.com/Jondolf/avian.git
+[submodule "deps/avian_interpolation"]
+	path = deps/avian_interpolation
+	url = https://github.com/janhohenheim/avian_interpolation
+[submodule "deps/bevy_transform_interpolation"]
+	path = deps/bevy_transform_interpolation
+	url = https://github.com/Jondolf/bevy_transform_interpolation.git

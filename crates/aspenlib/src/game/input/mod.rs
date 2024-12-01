@@ -6,7 +6,7 @@ use leafwing_input_manager::{
     prelude::{ActionState, InputMap},
 };
 
-use crate::{loading::splashscreen::MainCamera, register_types};
+use crate::{loading::splashscreen::MainCamera, register_types, GeneralSettings};
 
 // / entity selection in playing stage handled with this plugin
 // / TODO: implement targeting system for interactions/combat
@@ -39,7 +39,11 @@ impl Plugin for InputPlugin {
         // initial input plugin config
         app.add_plugins(InputManagerPlugin::<action_maps::Gameplay>::default())
             .init_resource::<ActionState<action_maps::Gameplay>>()
-            .insert_resource(action_maps::Gameplay::default_input_map());
+            .insert_resource(action_maps::Gameplay::default_input_map())
+            .insert_resource(AspenCursorPosition {
+                world: Vec2::default(),
+                screen: Vec2::default(),
+            });
 
         // TODO: make this plugin only active by default if target_platform == (ANDROID || IOS) else make it a setting too enable
         // TODO: make software cursor an option in the settings, mostly only useful for debugging
@@ -47,18 +51,13 @@ impl Plugin for InputPlugin {
         // implement targeting system reticle that snaps too nearest interactable actor too cursor. interaction and pickup uses this system?
         // app.add_plugins(actor_targeting::ActorTargetingPlugin);
 
-        app.insert_resource(AspenCursorPosition {
-            world: Vec2::default(),
-            screen: Vec2::default(),
-        });
-
         app.add_systems(
             PreUpdate,
             (update_cursor_position_resource.before(AspenInputSystemSet::SoftwareCursor),),
         );
 
         app.configure_sets(
-            PreUpdate,
+            Update,
             (
                 AspenInputSystemSet::KBMInput,
                 AspenInputSystemSet::TouchInput,
@@ -87,6 +86,7 @@ fn update_cursor_position_resource(
     camera_query: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     input: Res<ActionState<action_maps::Gameplay>>,
     mut cursor_position: ResMut<AspenCursorPosition>,
+    general_settings: Res<GeneralSettings>,
 ) {
     let Ok(window) = window_query.get_single() else {
         return;
@@ -95,7 +95,7 @@ fn update_cursor_position_resource(
     let window_half_size = Vec2::new(window.width(), window.height()) / 2.0;
     let joy_axis = input.clamped_axis_pair(&action_maps::Gameplay::Look);
 
-    let cursor_screen_pos: Vec2 = if joy_axis == Vec2::ZERO {
+    let cursor_screen_pos: Vec2 = if joy_axis == Vec2::ZERO || !general_settings.enable_touch_controls {
         window_query
             .single()
             .cursor_position()

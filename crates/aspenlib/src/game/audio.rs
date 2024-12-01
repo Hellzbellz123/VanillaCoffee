@@ -6,7 +6,6 @@ use bevy_kira_audio::{
     prelude::{AudioControl, AudioEmitter, AudioReceiver, SpatialAudio},
     AudioApp, AudioChannel, AudioPlugin as InternalAudioPlugin, AudioSettings, AudioSource,
 };
-use bevy_rapier2d::dynamics::Velocity;
 
 use crate::{
     consts::ACTOR_Z_INDEX,
@@ -17,7 +16,7 @@ use crate::{
         },
         items::weapons::components::WeaponDescriptor,
     },
-    loading::{assets::AspenAudioHandles, config::SoundSettings, registry::RegistryIdentifier},
+    loading::{assets::AspenAudioHandles, registry::RegistryIdentifier},
     playing_game, register_types, AppStage,
 };
 
@@ -133,15 +132,17 @@ fn process_event_sounds(
 
 /// initial volume from sound settings
 fn setup_sound_volume(
-    sound_settings: ResMut<SoundSettings>,
+    sound_settings: ResMut<crate::loading::config::AudioSettings>,
     music_channel: Res<AudioChannel<MusicSoundChannel>>,
     ambience_channel: Res<AudioChannel<AmbienceSoundChannel>>,
     sound_channel: Res<AudioChannel<GameSoundChannel>>,
 ) {
-    let mastervolume = sound_settings.master_volume;
-    music_channel.set_volume(sound_settings.music_volume * mastervolume);
-    ambience_channel.set_volume(sound_settings.ambience_volume * mastervolume);
-    sound_channel.set_volume(sound_settings.sound_volume * mastervolume);
+    let sound_settings = sound_settings.volume_config;
+
+    let mastervolume = sound_settings.master;
+    music_channel.set_volume(sound_settings.music * mastervolume);
+    ambience_channel.set_volume(sound_settings.ambience * mastervolume);
+    sound_channel.set_volume(sound_settings.gameplay * mastervolume);
 }
 
 /// play game soundtrack
@@ -226,13 +227,13 @@ fn prepare_actor_spatial_sound(
 // TODO: make this use actor velocity and gait too calculate footsteps
 /// play footstep sound sound for actor
 fn actor_footstep_sounds(
+    sound_cfg: Res<crate::loading::config::AudioSettings>,
     game_sound: Res<AudioChannel<GameSoundChannel>>,
     mut actor_query: Query<(
         &AnimationState,
         &CharacterMoveState,
         &ActorSoundMap,
         &mut AudioEmitter,
-        &Velocity,
         &GlobalTransform,
     )>,
     listener: Query<&GlobalTransform, With<AudioReceiver>>,
@@ -241,12 +242,10 @@ fn actor_footstep_sounds(
         return;
     };
 
-    for (animator_state, move_state, sound_map, mut spatial_emmiter, velocity, transform) in
-        &mut actor_query
+    for (animator_state, move_state, sound_map, mut spatial_emmiter, transform) in &mut actor_query
     {
-        if velocity.angvel == 0.0 && velocity.linvel == Vec2::ZERO
-            || move_state.move_status.0 == CurrentMovement::None
-            || listener.translation().distance(transform.translation()) > 250.0
+        if move_state.move_status.0 == CurrentMovement::None
+            || listener.translation().distance(transform.translation()) > sound_cfg.max_distance
         {
             continue;
         }

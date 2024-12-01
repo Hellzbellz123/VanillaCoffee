@@ -44,11 +44,15 @@ fn main() {
             window_scale: 1.0,
             ui_scale: 1.0,
         },
-        sound_settings: SoundSettings {
-            master_volume: 0.5,
-            ambience_volume: 1.01,
-            music_volume: 1.0,
-            sound_volume: 1.0,
+        sound_settings: AudioSettings {
+            max_distance: 350.0,
+            max_sounds: 200,
+            volume_config: VolumeConfig {
+                master: 0.5,
+                gameplay: 1.0,
+                ambience: 1.0,
+                music: 1.0,
+            },
         },
         general_settings: GeneralSettings {
             enable_debug: cfg!(feature = "develop"),

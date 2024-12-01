@@ -51,6 +51,8 @@ pub struct AIAutoShootConfig {
 #[derive(Component, Default, Clone, Debug, Reflect, serde::Deserialize)]
 #[reflect(Component)]
 pub struct AIWanderConfig {
+    /// how long should the ai wait before changing too the new wander target
+    pub idle_timer: Timer,
     /// how far can we wander from spawn
     pub wander_distance: i32,
     /// wander too here
@@ -74,8 +76,6 @@ pub struct AIChaseAction;
 #[reflect(Component)]
 pub struct AIWanderAction;
 
-// TODO: move ai config too this enum, each ai type gets a scorer that determines its actions using config data held inside AiType, AiType is defined inside character_definition
-
 /// type of ai this ai wanting character should get
 #[derive(
     Debug,
@@ -84,6 +84,7 @@ pub struct AIWanderAction;
     Clone,
     PartialEq,
     Eq,
+    PartialOrd, Ord,
     serde::Deserialize,
     serde::Serialize,
     Reflect,

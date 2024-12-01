@@ -145,9 +145,11 @@ pub struct EquipmentStats {
 /// projectile data
 #[derive(Debug, Component, Clone, Copy, Reflect, serde::Deserialize, serde::Serialize)]
 pub struct ProjectileStats {
-    /// did this projectile originate from a player
-    pub entity_that_shot: Entity,
-    /// damage from this projectile
+    /// actor that created this projectile
+    /// if a character is holding a weapon, this value should be that character.
+    pub bullet_creator: Entity,
+    /// damage from this projectile derived from character stats
+    /// weapon stats are included if a weapon created this projectile
     pub damage: Damage,
 }
 

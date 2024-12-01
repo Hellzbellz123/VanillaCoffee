@@ -1,21 +1,26 @@
-use bevy::prelude::*;
-use bevy_rapier2d::{pipeline::CollisionEvent, prelude::Velocity};
+use avian2d::prelude::{AngularVelocity, CollisionStarted, LinearVelocity, PhysicsSet};
+use bevy::{prelude::*, render::primitives::Aabb};
 
 use crate::{
     game::{
         attributes_stats::EquipmentStats,
-        characters::player::PlayerSelectedHero,
+        characters::{
+            components::MoveDirection,
+            player::PlayerSelectedHero,
+        },
         items::weapons::{
             components::{
                 AttackDamage, CurrentlyDrawnWeapon, WeaponAmmoCount, WeaponCarrier,
                 WeaponDescriptor, WeaponHolder, WeaponTimers,
             },
             forms::GunShootEvent,
-            hit_detection::projectile_hits,
+            
         },
     },
     loading::registry::RegistryIdentifier,
-    register_types, AppStage,
+    register_types,
+    utilities::vector_to_cardinal_direction,
+    AppStage,
 };
 
 /// combat related components
@@ -50,19 +55,26 @@ impl Plugin for WeaponItemPlugin {
         app.add_event::<EventAttackWeapon>()
             .add_systems(
                 PreUpdate,
-                update_selected_weapon.run_if(in_state(AppStage::Running)),
+                (
+                    update_selected_weapon.run_if(in_state(AppStage::Running)),
+                    prepare_weapons,
+                ),
             )
-            .add_systems(PreUpdate, prepare_weapons)
             .add_systems(
                 Update,
                 (
-                    projectile_hits.run_if(on_event::<CollisionEvent>()),
                     handle_weapon_attacks.run_if(on_event::<EventAttackWeapon>()),
                     flip_weapon_sprites,
-                    equipped_weapon_positioning,
                     weapon_visibility_system,
                 )
                     .run_if(in_state(AppStage::Running)),
+            )
+            .add_systems(
+                PostUpdate,
+                equipped_weapon_positioning
+                    .run_if(in_state(AppStage::Running))
+                    .after(PhysicsSet::Sync)
+                    .before(TransformSystem::TransformPropagate),
             );
     }
 }
@@ -165,10 +177,10 @@ fn flip_weapon_sprites(
 fn equipped_weapon_positioning(
     children: Query<&Children>,
     // actors that can equip weapons
-    characters: Query<Entity, With<WeaponCarrier>>,
+    characters: Query<(Entity, &Aabb, &LinearVelocity), With<WeaponCarrier>>,
     mut weapon_query: Query<
         // all weapons equipped too entity
-        (&mut Transform, &mut Velocity),
+        (&mut Transform, &mut LinearVelocity, &mut AngularVelocity),
         (
             With<WeaponHolder>,
             Without<WeaponCarrier>,
@@ -176,21 +188,32 @@ fn equipped_weapon_positioning(
         ),
     >,
 ) {
-    for character in &characters {
+    for (character, aabb, move_state) in &characters {
         children.iter_descendants(character).for_each(|f| {
-            if let Ok((mut weapon_transform, mut weapon_velocity)) = weapon_query.get_mut(f) {
-                if weapon_velocity.linvel != Vec2::ZERO {
-                    weapon_velocity.linvel = Vec2::ZERO;
+            if let Ok((mut weapon_transform, mut linear_velocity, mut angular_velocity)) =
+                weapon_query.get_mut(f)
+            {
+                if **linear_velocity != Vec2::ZERO {
+                    *linear_velocity = LinearVelocity::ZERO;
                 }
-                if weapon_velocity.angvel != 0.0 {
-                    weapon_velocity.angvel = 0.0;
+                if *angular_velocity != AngularVelocity::ZERO {
+                    *angular_velocity = AngularVelocity::ZERO;
                 }
-                // get holder and offset by holders +aabb.y / 2
-                // allow changing anchor on weapon between 3 options
+
+                let layer: f32 = match vector_to_cardinal_direction(**move_state) {
+                    MoveDirection::South | MoveDirection::West => 1.0,
+                    // player shouldnt hold weapon behind back...
+                    // nor should the player be constantly moving weapon between hands...
+                    MoveDirection::North | MoveDirection::East => -1.0,
+                    _ => 1.0,
+                };
+
+                // TODO: allow changing anchor on weapon between 3 options
                 weapon_transform.translation = Vec3 {
                     x: 0.0,
-                    y: 12.0,
-                    z: 1.0,
+                    // aabb top is above head,  subtract about 1/4 too get it closer too hands
+                    y: aabb.half_extents.y.mul_add(-0.25, aabb.half_extents.y),
+                    z: if move_state.0.length() <= 1.0 {1.0} else {layer},
                 }
             }
         });
@@ -241,6 +264,7 @@ fn update_selected_weapon(
             // get slots with values != None
             let equipped_weapons = socket.weapon_slots.values().flatten();
 
+            // TODO: maybe weapon was despawned for some reason?
             for weapon in equipped_weapons {
                 if weapon != drawn_weapon {
                     if selected_weapon.get(*weapon).is_ok() {

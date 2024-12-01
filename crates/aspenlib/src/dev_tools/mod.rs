@@ -1,14 +1,15 @@
 use std::time::Duration;
 
+use avian2d::{debug_render::PhysicsDebugPlugin, prelude::PhysicsGizmos};
 use bevy::{
     diagnostic::{
         EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin,
         SystemInformationDiagnosticsPlugin,
     },
     prelude::*,
+    render::view::RenderLayers,
 };
 use bevy_ecs_ldtk::{prelude::LdtkProject, GridCoords, IntGridCell, LayerMetadata};
-use bevy_rapier2d::prelude::{DebugRenderContext, RapierDebugRenderPlugin};
 use big_brain::{
     choices::Choice,
     prelude::{Actor, HasThinker, Score, Scorer, Thinker},
@@ -21,20 +22,16 @@ use crate::{
     register_types, GeneralSettings,
 };
 
-#[cfg(not(any(
-    target_os = "ios",
-    target_os = "android",
-    target_family = "wasm",
-    not(feature = "develop")
-)))]
+#[cfg(all(
+    feature = "develop",
+    not(any(target_os = "ios", target_os = "android", target_family = "wasm"))
+))]
 pub mod debug_dirs;
 
-#[cfg(not(any(
-    target_os = "ios",
-    target_os = "android",
-    target_family = "wasm",
-    not(feature = "develop")
-)))]
+#[cfg(all(
+    feature = "develop",
+    not(any(target_os = "ios", target_os = "android", target_family = "wasm"))
+))]
 pub mod dump_schedules;
 
 pub mod console;
@@ -76,6 +73,7 @@ pub struct AspenDevToolsPlugin;
 
 impl Plugin for AspenDevToolsPlugin {
     fn build(&self, app: &mut App) {
+        register_types!(app, [PhysicsGizmos]);
         // debug tools unregistered types
         register_types!(app, [DrawnMap, DebugDraw, DebugConfig]);
         // ldtk unregistered types
@@ -111,7 +109,7 @@ impl Plugin for AspenDevToolsPlugin {
             debug_visuals::DebugVisualsPlugin,
             egui_tools::EguiToolsPlugin,
             // external tools
-            RapierDebugRenderPlugin::default(),
+            PhysicsDebugPlugin::new(FixedPostUpdate),
             FrameTimeDiagnosticsPlugin,
             EntityCountDiagnosticsPlugin,
             SystemInformationDiagnosticsPlugin,
@@ -122,6 +120,19 @@ impl Plugin for AspenDevToolsPlugin {
             },
         ));
 
+        app.insert_gizmo_config(
+            PhysicsGizmos::all().with_mesh_visibility(true),
+            GizmoConfig {
+                enabled: false,
+                line_width: 2.0,
+                line_perspective: false,
+                line_style: GizmoLineStyle::default(),
+                depth_bias: 0.0,
+                render_layers: RenderLayers::default(),
+                line_joints: GizmoLineJoint::default(),
+            },
+        );
+
         app.add_systems(
             Update,
             (
@@ -131,12 +142,10 @@ impl Plugin for AspenDevToolsPlugin {
             ),
         );
 
-        #[cfg(not(any(
-            target_os = "ios",
-            target_os = "android",
-            target_family = "wasm",
-            not(feature = "develop")
-        )))]
+        #[cfg(all(
+            feature = "develop",
+            not(any(target_os = "ios", target_os = "android", target_family = "wasm"))
+        ))]
         {
             debug_dirs::dump_launch_directory();
             dump_schedules::debug_dump_graphs(app);
@@ -171,9 +180,10 @@ fn toggle_debug_systems(
 
 fn toggle_physics_visualizations(
     debug_ctrl: Res<DebugConfig>,
-    mut physics_debug: ResMut<DebugRenderContext>,
+    mut store: ResMut<GizmoConfigStore>,
 ) {
-    if physics_debug.enabled != debug_ctrl.physics_draw {
-        physics_debug.enabled = debug_ctrl.physics_draw;
+    let (config, _gizmos) = store.config_mut::<PhysicsGizmos>();
+    if config.enabled != debug_ctrl.physics_draw {
+        config.enabled = debug_ctrl.physics_draw;
     }
 }

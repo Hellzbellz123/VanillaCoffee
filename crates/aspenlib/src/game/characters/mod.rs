@@ -1,6 +1,5 @@
+use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
-// use bevy_asepritesheet::sprite::AnimHandle;
-use bevy_rapier2d::dynamics::Velocity;
 use rand::prelude::{thread_rng, Rng};
 
 use crate::{
@@ -155,13 +154,8 @@ fn handle_character_spawn(
                 position: spawn_pos,
             });
         }
-        CharacterType::Hero
-        | CharacterType::CreepElite
-        | CharacterType::MiniBoss
-        | CharacterType::Critter
-        | CharacterType::HeroPet
-        | CharacterType::Shopkeep => {
-            info!("character type unimplemented");
+        e => {
+            error!("spawning for this character type unimplemented: {:?}", e);
         }
     }
 }
@@ -169,19 +163,21 @@ fn handle_character_spawn(
 /// updates actors move status component based on actors velocity and speed attribute
 fn update_character_move_state(
     mut actor_query: Query<
-        (&mut CharacterMoveState, &Velocity, &CharacterStats),
-        Changed<Velocity>,
+        (&mut CharacterMoveState, &LinearVelocity, &CharacterStats),
+        Changed<LinearVelocity>,
     >,
 ) {
     for (mut move_state, velocity, stats) in &mut actor_query {
         let stats = stats.attrs();
-        let total_velocity = velocity.linvel.abs();
-        let velocity = velocity.linvel;
+        let total_velocity = velocity.abs();
+        let velocity = **velocity;
 
         let walk_speed = stats.base_speed * WALK_MODIFIER;
 
         let dir = vector_to_pi8(velocity);
         move_state.move_status.1 = dir;
+
+        // TODO: fix this floating around walk/run when character is moving oblique.
 
         if (MIN_VELOCITY..=walk_speed).contains(&total_velocity.length()) {
             // walking

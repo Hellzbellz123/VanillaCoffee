@@ -77,12 +77,16 @@ pub struct SkillusingAIBundle {
 #[reflect(Component)]
 pub struct AIShootPatterns;
 
+/// resource amount required too use pattern
+#[derive(Deref, DerefMut, Clone, Copy, Default, Debug, Reflect)]
+pub struct PatternCost(pub i32);
+
 /// shhoot pattern config component
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 pub struct AIShootPatternsConfig {
     /// list of possible patterns that can be used
-    pub patterns: VecDeque<(i32, ShootPattern)>,
+    pub patterns: VecDeque<(PatternCost, ShootPattern)>,
     /// cooldown time between patterns
     pub time_between_patterns: Timer,
 }
@@ -165,7 +169,7 @@ fn ai_patterns_use_system(
             && patterns_cfg
                 .patterns
                 .iter()
-                .any(|(cost, _)| (*cost as f32) < pattern_energy.current)
+                .any(|(cost, _)| (**cost as f32) < pattern_energy.current)
         {
             let thinker_ent = has_thinkers.get(actor).unwrap().entity();
 
@@ -229,7 +233,7 @@ fn ai_patternskill_action(
         if enemy_patterns
             .patterns
             .iter()
-            .all(|(cost, _)| (*cost as f32) > pattern_energy.current)
+            .all(|(cost, _)| (**cost as f32) > pattern_energy.current)
         {
             // pattern energy is empty and we should skip until its recharged more
             continue;
@@ -238,14 +242,14 @@ fn ai_patternskill_action(
         let Some((cost, pattern)) = enemy_patterns
             .patterns
             .iter()
-            .find(|(cost, _)| (*cost as f32) < pattern_energy.current)
+            .find(|(cost, _)| (**cost as f32) < pattern_energy.current)
         else {
             error!("Ai actor did not have a 'ShootPattern' inside AiShootPatternsConfig");
             continue;
         };
 
         info!("creating shoot pattern spawner");
-        pattern_energy.current -= *cost as f32;
+        pattern_energy.current -= **cost as f32;
         *action_state = ActionState::Success;
         cmds.spawn((
             Name::new("ShootPatternSpawner"),

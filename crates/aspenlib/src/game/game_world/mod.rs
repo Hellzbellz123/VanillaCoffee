@@ -87,7 +87,10 @@ impl Plugin for GameWorldPlugin {
                     process_tile_enum_tags.run_if(any_with_component::<TileEnumTags>),
                     handle_teleport_events.run_if(on_event::<ActorTeleportEvent>()),
                     (
-                        listen_rebuild_dungeon_request,
+                        listen_rebuild_dungeon_request.run_if(
+                            in_state(GeneratorState::FinishedDungeonGen)
+                                .or_else(in_state(GeneratorState::NoDungeon)),
+                        ),
                         debug_regen_dungeon,
                         game_world::world_objects::character_spawners_system
                             .after(TransformSystem::TransformPropagate)
@@ -248,7 +251,7 @@ fn handle_teleport_events(
                     .translation()
                     .truncate()
                     .extend(ACTOR_Z_INDEX);
-                move_state.teleport_status = TeleportStatus::Teleporting;
+                move_state.teleport_status = TeleportStatus::Done;
             }
             TpTriggerEffect::Global(pos) => {
                 target_transform.translation = pos.extend(ACTOR_Z_INDEX);
@@ -262,10 +265,8 @@ fn handle_teleport_events(
                         regen_event.send(RegenerateDungeonEvent {
                             reason: RegenReason::FirstGeneration,
                         });
-                        move_state.teleport_status = TeleportStatus::Teleporting;
                     }
                     "TeleportStartLocation" => {
-                        move_state.teleport_status = TeleportStatus::None;
                         if let Ok(loc) = start_locations.get_single() {
                             target_transform.translation =
                                 loc.translation().truncate().extend(ACTOR_Z_INDEX);
@@ -284,6 +285,7 @@ fn handle_teleport_events(
                         warn!("unhandled Teleport Event Action: {}", event);
                     }
                 }
+                move_state.teleport_status = TeleportStatus::None;
             }
         }
     }

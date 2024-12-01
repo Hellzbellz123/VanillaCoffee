@@ -1,5 +1,5 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 
 use crate::{
     bundles::{Aspen2dPhysicsBundle, AspenColliderBundle, NeedsCollider, ProjectileBundle},
@@ -151,6 +151,7 @@ pub fn create_bullet(
     };
 
     cmds.spawn((
+        // TODO: load weapon projectile as seperate sprite resource?
         ProjectileBundle {
             name: Name::new("GunProjectile"),
             projectile_stats: ProjectileStats {
@@ -158,7 +159,7 @@ pub fn create_bullet(
                     physical: weapon_damage.physical,
                     elemental: weapon_damage.elemental,
                 },
-                entity_that_shot: entity,
+                bullet_creator: entity,
             },
             ttl: TimeToLive(Timer::from_seconds(3.5, TimerMode::Repeating)),
             sprite_bundle: SpriteBundle {
@@ -170,18 +171,9 @@ pub fn create_bullet(
                 },
                 ..default()
             },
-            rigidbody_bundle: Aspen2dPhysicsBundle {
-                velocity: Velocity::linear(velocity_direction * projectile_speed),
-                rigidbody: RigidBody::Dynamic,
-                friction: Friction::coefficient(0.2),
-                how_bouncy: Restitution::coefficient(0.8),
-                mass_prop: ColliderMassProperties::Density(2.1),
-                rotation_locks: LockedAxes::ROTATION_LOCKED,
-                damping_prop: Damping {
-                    linear_damping: 0.1,
-                    angular_damping: 0.1,
-                },
-            },
+            rigidbody_bundle: Aspen2dPhysicsBundle::new_projectile(
+                velocity_direction * projectile_speed,
+            ),
         },
         Sensor,
     ))
@@ -197,15 +189,12 @@ pub fn create_bullet(
                     }),
                     ..default()
                 },
-                collider: NeedsCollider, //Collider::ball(3.0),
-                collision_groups: CollisionGroups::new(
-                    AspenCollisionLayer::PROJECTILE,
-                    AspenCollisionLayer::WORLD | AspenCollisionLayer::ACTOR,
-                ),
+                collider: NeedsCollider::Aabb, //Collider::ball(3.0),
+                collision_groups: AspenCollisionLayer::projectile_actor(),
                 tag: ActorColliderType::Projectile,
             },
-            ActiveEvents::COLLISION_EVENTS,
-            ActiveHooks::FILTER_CONTACT_PAIRS,
+            // ActiveEvents::COLLISION_EVENTS,
+            // ActiveHooks::FILTER_CONTACT_PAIRS,
         ));
     });
 }
@@ -243,7 +232,7 @@ pub fn create_bullet(
 //         Transform, TransformBundle, Update, Vec2, Vec3, With,
 //     },
 // };
-// use bevy_rapier2d::prelude::{
+//  use avian2d::prelude::{
 //     ActiveEvents, Collider, ColliderMassProperties, CollisionGroups, Damping, Friction, LockedAxes,
 //     Restitution, RigidBody, Sensor, Velocity,
 // };

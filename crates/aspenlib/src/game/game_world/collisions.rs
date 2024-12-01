@@ -1,6 +1,6 @@
+use avian2d::prelude::{Collider, CollisionLayers, RigidBody};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::TileEnumTags;
-use bevy_rapier2d::prelude::{Collider, CollisionGroups, Group, RigidBody, Rot, Vect};
 
 use crate::consts::AspenCollisionLayer;
 
@@ -14,7 +14,7 @@ pub struct LdtkTileCollider {
     /// collision shape
     pub collision_shape: Collider,
     /// what too collide with
-    pub collision_group: CollisionGroups,
+    pub collision_group: CollisionLayers,
 }
 
 // TODO:
@@ -32,104 +32,131 @@ pub fn handle_and_removed_collider_tag(
 
     let tag_was_handled = match tag {
         "CollideUp" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(0.0, -12.), 0.0, Collider::cuboid(16.0, 4.0))];
+            let shape: Vec<(Vec2, f32, Collider)> =
+                vec![(Vec2::new(0.0, -12.), 0.0, Collider::rectangle(32.0, 8.0))];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideDown" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(0.0, 12.0), 0.0, Collider::cuboid(16.0, 4.0))];
+            let shape: Vec<(Vec2, f32, Collider)> =
+                vec![(Vec2::new(0.0, 12.0), 0.0, Collider::rectangle(32.0, 8.0))];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideLeft" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(12.0, 0.0), 0.0, Collider::cuboid(4.0, 16.0))];
+            let shape: Vec<(Vec2, f32, Collider)> =
+                vec![(Vec2::new(12.0, 0.0), 0.0, Collider::rectangle(8.0, 32.0))];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideRight" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(-12.0, 0.0), 0.0, Collider::cuboid(4.0, 16.0))];
+            let shape: Vec<(Vec2, f32, Collider)> =
+                vec![(Vec2::new(-12.0, 0.0), 0.0, Collider::rectangle(8.0, 32.0))];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideCornerLR" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(-12.0, 12.0), 0.0, Collider::cuboid(4.0, 4.0))];
+            let shape: Vec<(Vec2, f32, Collider)> =
+                vec![(Vec2::new(-11.0, 11.0), 0.0, Collider::rectangle(10.0, 10.0))];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideCornerUR" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(-12.0, -12.0), 0.0, Collider::cuboid(4.0, 4.0))];
+            let shape: Vec<(Vec2, f32, Collider)> = vec![(
+                Vec2::new(-11.0, -11.0),
+                0.0,
+                Collider::rectangle(10.0, 10.0),
+            )];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideCornerLL" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(12.0, 12.0), 0.0, Collider::cuboid(4.0, 4.0))];
+            let shape: Vec<(Vec2, f32, Collider)> =
+                vec![(Vec2::new(11.0, 11.0), 0.0, Collider::rectangle(10.0, 10.0))];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideCornerUL" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(12.0, -12.0), 0.0, Collider::cuboid(4.0, 4.0))];
+            let shape: Vec<(Vec2, f32, Collider)> =
+                vec![(Vec2::new(11.0, -11.0), 0.0, Collider::rectangle(10.0, 10.0))];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideInnerUL" => {
-            let shape: Vec<(Vect, Rot, Collider)> = vec![
-                (Vec2::new(-12.0, -4.0), degrees, Collider::cuboid(12.0, 4.0)),
-                (Vec2::new(0.0, 12.0), 0.0, Collider::cuboid(16.0, 4.0)),
+            let shape: Vec<(Vec2, f32, Collider)> = vec![
+                (
+                    Vec2::new(-12.0, -4.0),
+                    degrees,
+                    Collider::rectangle(24.0, 8.0),
+                ),
+                (Vec2::new(0.0, 12.0), 0.0, Collider::rectangle(32.0, 8.0)),
             ];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideInnerLL" => {
-            let shape: Vec<(Vect, Rot, Collider)> = vec![
-                (Vec2::new(-12.0, 4.0), degrees, Collider::cuboid(12.0, 4.0)),
-                (Vec2::new(0.0, -12.0), 0.0, Collider::cuboid(16.0, 4.0)),
+            let shape: Vec<(Vec2, f32, Collider)> = vec![
+                (
+                    Vec2::new(-12.0, 4.0),
+                    degrees,
+                    Collider::rectangle(24.0, 8.0),
+                ),
+                (Vec2::new(0.0, -12.0), 0.0, Collider::rectangle(32.0, 8.0)),
             ];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideInnerUR" => {
-            let shape: Vec<(Vect, Rot, Collider)> = vec![
-                (Vec2::new(12.0, -4.0), degrees, Collider::cuboid(12.0, 4.0)),
-                (Vec2::new(0.0, 12.0), 0.0, Collider::cuboid(16.0, 4.0)),
+            let shape: Vec<(Vec2, f32, Collider)> = vec![
+                (
+                    Vec2::new(12.0, -4.0),
+                    degrees,
+                    Collider::rectangle(24.0, 8.0),
+                ),
+                (Vec2::new(0.0, 12.0), 0.0, Collider::rectangle(32.0, 8.0)),
             ];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideInnerLR" => {
-            let shape: Vec<(Vect, Rot, Collider)> = vec![
-                (Vec2::new(12.0, 4.0), degrees, Collider::cuboid(12.0, 4.0)),
-                (Vec2::new(0.0, -12.0), 0.0, Collider::cuboid(16.0, 4.0)),
+            let shape: Vec<(Vec2, f32, Collider)> = vec![
+                (
+                    Vec2::new(12.0, 4.0),
+                    degrees,
+                    Collider::rectangle(24.0, 8.0),
+                ),
+                (Vec2::new(0.0, -12.0), 0.0, Collider::rectangle(32.0, 8.0)),
             ];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "DoubleWallVertical" => {
-            let shape: Vec<(Vect, Rot, Collider)> = vec![
-                (Vec2::new(12.0, 4.0), degrees, Collider::cuboid(16.0, 4.0)),
-                (Vec2::new(-12.0, 4.0), degrees, Collider::cuboid(16.0, 4.0)),
+            let shape: Vec<(Vec2, f32, Collider)> = vec![
+                (
+                    Vec2::new(12.0, 4.0),
+                    degrees,
+                    Collider::rectangle(32.0, 8.0),
+                ),
+                (
+                    Vec2::new(-12.0, 4.0),
+                    degrees,
+                    Collider::rectangle(32.0, 8.0),
+                ),
             ];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "DoubleWallHorizontal" => {
-            let shape: Vec<(Vect, Rot, Collider)> = vec![
-                (Vec2::new(12.0, 4.0), 0.0, Collider::cuboid(16.0, 4.0)),
-                (Vec2::new(-12.0, 4.0), 0.0, Collider::cuboid(16.0, 4.0)),
+            let shape: Vec<(Vec2, f32, Collider)> = vec![
+                (Vec2::new(12.0, 4.0), 0.0, Collider::rectangle(32.0, 8.0)),
+                (Vec2::new(-12.0, 4.0), 0.0, Collider::rectangle(32.0, 8.0)),
             ];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
         "CollideInnerWall" | "CollideOuterWall" => {
-            let shape: Vec<(Vect, Rot, Collider)> =
-                vec![(Vec2::new(0.0, 14.0), 0.0, Collider::cuboid(16.0, 4.0))];
+            let shape: Vec<(Vec2, f32, Collider)> =
+                vec![(Vec2::new(0.0, 14.0), 0.0, Collider::rectangle(32.0, 8.0))];
             insert_tile_collider(cmds, entity, shape, tag);
             true
         }
@@ -150,11 +177,8 @@ fn insert_tile_collider(
 ) {
     commands.entity(entity).insert((LdtkTileCollider {
         name: Name::new(tag.to_owned()),
-        rigidbody: RigidBody::Fixed,
+        rigidbody: RigidBody::Static,
         collision_shape: Collider::compound(shape),
-        collision_group: CollisionGroups {
-            memberships: AspenCollisionLayer::WORLD,
-            filters: Group::ALL,
-        },
+        collision_group: AspenCollisionLayer::static_object(),
     },));
 }

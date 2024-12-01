@@ -21,11 +21,12 @@ mod loading;
 /// misc util functions that cant find a place
 mod utilities;
 
-use crate::{game::combat::SameUserDataFilter, loading::assets::AspenInitHandles};
+use crate::loading::assets::AspenInitHandles;
+use avian2d::prelude::Gravity;
 use bevy::prelude::*;
 
+pub use asha_macros::{on_enter, register_types};
 pub use bevy::color::palettes::css as colors;
-use bevy_rapier2d::prelude::{RapierConfiguration, RapierContext};
 pub use loading::config::*;
 
 /// application stages
@@ -92,14 +93,11 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
         bevy_mod_picking::DefaultPickingPlugins,
         bevy_ecs_ldtk::LdtkPlugin,
         bevy_framepace::FramepacePlugin,
-        bevy_rapier2d::plugin::RapierPhysicsPlugin::<SameUserDataFilter>::pixels_per_meter(32.0),
+        avian2d::PhysicsPlugins::default().with_length_unit(32.0),
+        bevy_transform_interpolation::TransformInterpolationPlugin::default(),
     ));
 
-    vanillacoffee.add_plugins((
-        dev_tools::AspenDevToolsPlugin,
-        loading::AppLoadingPlugin,
-        game::AspenHallsPlugin,
-    ));
+    vanillacoffee.insert_resource(Gravity(Vec2::ZERO));
 
     vanillacoffee.add_systems(
         Update,
@@ -107,16 +105,13 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
             .run_if(resource_exists::<AspenInitHandles>.and_then(run_once())),),
     );
 
-    vanillacoffee.add_systems(Last, (fix_rapier_gravity,));
     vanillacoffee.add_systems(OnEnter(AppStage::Starting), start_app_functionality);
 
-    vanillacoffee
-}
+    vanillacoffee.add_plugins((loading::AppLoadingPlugin, game::AspenHallsPlugin));
 
-/// set rapiers default gravity too 0.0
-fn fix_rapier_gravity(mut rapier_ctx: Query<(&RapierContext, &mut RapierConfiguration)>) {
-    let (_rapier_ctx, mut rapier_cfg) = rapier_ctx.single_mut();
-    rapier_cfg.gravity = Vec2::ZERO;
+    vanillacoffee.add_plugins(dev_tools::AspenDevToolsPlugin);
+
+    vanillacoffee
 }
 
 // TODO: track pack loading and only continue when base game packs are initialized
