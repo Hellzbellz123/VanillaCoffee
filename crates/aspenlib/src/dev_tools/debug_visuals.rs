@@ -22,8 +22,7 @@ impl Plugin for DebugVisualsPlugin {
 fn debugdraw_aabb(mut gizmos: Gizmos, query: Query<(&GlobalTransform, &Aabb)>) {
     for (t, a) in &query {
         gizmos.rect_2d(
-            t.translation().truncate() + a.center.truncate(),
-            Rot2::degrees(0.0),
+            Isometry2d::from_translation(t.translation().truncate() + a.center.truncate()),
             a.half_extents.truncate() * 2.0,
             colors::AQUA,
         );
@@ -105,8 +104,7 @@ fn debug_draws(
                     aabb.map_or_else(|| Vec3::splat(0.5), |aabb| (aabb.half_extents * 2.0).into());
 
                 gizmos.rounded_cuboid(
-                    transform.translation(),
-                    transform.to_scale_rotation_translation().1,
+                    transform.to_isometry(),
                     size,
                     colors::AZURE,
                 );

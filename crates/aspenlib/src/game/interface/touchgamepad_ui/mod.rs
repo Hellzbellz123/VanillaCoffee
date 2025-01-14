@@ -3,7 +3,7 @@ pub mod shunts;
 
 use bevy::prelude::*;
 use bevy_touch_stick::{
-    TouchStick, TouchStickGamepadMapping, TouchStickPlugin, TouchStickType, TouchStickUiBundle,
+    TouchStick, TouchStickGamepadMapping, TouchStickPlugin, TouchStickType,
     TouchStickUiKnob, TouchStickUiOutline,
 };
 use leafwing_input_manager::prelude::ActionState;
@@ -51,7 +51,7 @@ impl Plugin for TouchInputUIPlugin {
                 .in_set(AspenInputSystemSet::TouchInput)
                 .run_if(
                     resource_exists::<ActionState<action_maps::Gameplay>>
-                        .and_then(|res: Res<GeneralSettings>| res.enable_touch_controls),
+                        .and(|res: Res<GeneralSettings>| res.enable_touch_controls),
                 ),
         );
     }
@@ -125,7 +125,7 @@ pub enum TouchStickBinding {
 fn handle_touch_controls_visibility(
     game_state: Option<Res<State<GameStage>>>,
     cfg: Res<GeneralSettings>,
-    mut touch_root_query: Query<&mut Style, (With<Node>, With<TouchControlsRoot>)>,
+    mut touch_root_query: Query<&mut Node, With<TouchControlsRoot>>,
 ) {
     let Ok(mut touch_root_style) = touch_root_query.get_single_mut() else {
         info!("no touch controls");
@@ -163,19 +163,16 @@ fn spawn_touch_gamepad(
                 .spawn((
                     TouchControlsRoot,
                     Name::new("TouchControls"),
-                    NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Auto),
-                            border: UiRect::all(Val::Px(2.0)),
-                            display: Display::None,
-                            position_type: PositionType::Absolute,
-                            // flex_direction: FlexDirection::Column,
-                            // align_items: AlignItems::Center,
-                            // align_self: AlignSelf::Center,
-                            width: Val::Percent(100.0),
-                            height: Val::Percent(100.0),
-                            ..default()
-                        },
+                    Node {
+                        margin: UiRect::all(Val::Auto),
+                        border: UiRect::all(Val::Px(2.0)),
+                        display: Display::None,
+                        position_type: PositionType::Absolute,
+                        // flex_direction: FlexDirection::Column,
+                        // align_items: AlignItems::Center,
+                        // align_self: AlignSelf::Center,
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
                         ..default()
                     },
                 ))
@@ -183,18 +180,15 @@ fn spawn_touch_gamepad(
                     touch_controls_root_children
                         .spawn((
                             Name::new("LeftControlsPod"),
-                            NodeBundle {
-                                style: Style {
-                                    position_type: PositionType::Absolute,
-                                    width: Val::Percent(20.0),
-                                    height: Val::Percent(40.0),
-                                    margin: UiRect {
-                                        left: Val::Px(25.0),
-                                        right: Val::Auto,
-                                        top: Val::Auto,
-                                        bottom: Val::Px(25.0),
-                                    },
-                                    ..default()
+                            Node {
+                                position_type: PositionType::Absolute,
+                                width: Val::Percent(20.0),
+                                height: Val::Percent(40.0),
+                                margin: UiRect {
+                                    left: Val::Px(25.0),
+                                    right: Val::Auto,
+                                    top: Val::Auto,
+                                    bottom: Val::Px(25.0),
                                 },
                                 ..default()
                             },
@@ -221,19 +215,16 @@ fn spawn_touch_gamepad(
                     touch_controls_root_children
                         .spawn((
                             Name::new("RightControlsPod"),
-                            NodeBundle {
-                                style: Style {
-                                    position_type: PositionType::Absolute,
-                                    flex_direction: FlexDirection::Column,
-                                    width: Val::Px(230.0),
-                                    height: Val::Percent(95.0),
-                                    margin: UiRect {
-                                        left: Val::Auto,
-                                        right: Val::Px(25.0),
-                                        top: Val::Auto,
-                                        bottom: Val::Px(25.0),
-                                    },
-                                    ..default()
+                            Node {
+                                position_type: PositionType::Absolute,
+                                flex_direction: FlexDirection::Column,
+                                width: Val::Px(230.0),
+                                height: Val::Percent(95.0),
+                                margin: UiRect {
+                                    left: Val::Auto,
+                                    right: Val::Px(25.0),
+                                    top: Val::Auto,
+                                    bottom: Val::Px(25.0),
                                 },
                                 ..default()
                             },
@@ -266,15 +257,12 @@ fn create_button_rows(right_pod_parts: &mut ChildBuilder, touch_assets: &Res<Asp
     right_pod_parts
         .spawn((
             Name::new("RightPodButtons"),
-            NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    position_type: PositionType::Relative,
-                    width: Val::Percent(100.0),
-                    height: Val::Auto,
-                    flex_grow: 0.95,
-                    ..default()
-                },
+            Node {
+                flex_direction: FlexDirection::Column,
+                position_type: PositionType::Relative,
+                width: Val::Percent(100.0),
+                height: Val::Auto,
+                flex_grow: 0.95,
                 ..default()
             },
         ))
@@ -282,17 +270,14 @@ fn create_button_rows(right_pod_parts: &mut ChildBuilder, touch_assets: &Res<Asp
             button_rows
                 .spawn((
                     Name::new("TopButtonContainer"),
-                    NodeBundle {
-                        style: Style {
-                            width: Val::Px(250.0),
-                            height: Val::Px(100.0),
-                            margin: UiRect {
-                                left: Val::Auto,
-                                right: Val::Px(0.0),
-                                top: Val::Px(0.0),
-                                bottom: Val::Auto,
-                            },
-                            ..default()
+                    Node {
+                        width: Val::Px(250.0),
+                        height: Val::Px(100.0),
+                        margin: UiRect {
+                            left: Val::Auto,
+                            right: Val::Px(0.0),
+                            top: Val::Px(0.0),
+                            bottom: Val::Auto,
                         },
                         ..default()
                     },
@@ -304,17 +289,14 @@ fn create_button_rows(right_pod_parts: &mut ChildBuilder, touch_assets: &Res<Asp
             button_rows
                 .spawn((
                     Name::new("MiddleButtonContainer"),
-                    NodeBundle {
-                        style: Style {
-                            width: Val::Px(250.0),
-                            height: Val::Px(100.0),
-                            margin: UiRect {
-                                left: Val::Auto,
-                                right: Val::Px(0.0),
-                                top: Val::Auto,
-                                bottom: Val::Auto,
-                            },
-                            ..default()
+                    Node {
+                        width: Val::Px(250.0),
+                        height: Val::Px(100.0),
+                        margin: UiRect {
+                            left: Val::Auto,
+                            right: Val::Px(0.0),
+                            top: Val::Auto,
+                            bottom: Val::Auto,
                         },
                         ..default()
                     },
@@ -424,54 +406,43 @@ fn spawn_controlsbutton<S: Component>(
 ) {
     let debug_name = name.trim().to_string();
 
-    let image = image.map_or_else(UiImage::default, UiImage::new);
+    // let image = image.map_or_else(ImageNode::default, ImageNode::new);
 
     touch_controls_builder
         .spawn((
             Name::new(debug_name),
             id,
-            ButtonBundle {
-                button: Button,
-                style: Style {
-                    display: Display::Flex,
-                    position_type: PositionType::Absolute,
-                    margin: position,
-                    // padding: UiRect::all(Val::Auto),
-                    border: UiRect::all(Val::Px(2.0)),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    // left: position.left,
-                    // right: position.right,
-                    // top: position.top,
-                    // bottom: position.right,
-                    width: size.0,
-                    height: size.1,
-                    ..default()
-                },
-                // background_color: BackgroundColor(crate::colors::PURPLE.into()),
-                // border_color: BorderColor(crate::colors::RED.into()),
-                z_index: ZIndex::Local(1),
-                // TODO: change from button with text too fancier image
-                image,
-                ..default()
-            },
-        ))
-        .with_children(|text| {
-            let mut text_bundle = TextBundle::from_section(
-                name,
-                TextStyle {
-                    font_size: 14.0,
-                    color: Color::WHITE,
-                    ..default()
-                },
-            )
-            .with_style(Style {
+            Button,
+            Node {
                 display: Display::Flex,
                 position_type: PositionType::Absolute,
+                margin: position,
+                // padding: UiRect::all(Val::Auto),
+                border: UiRect::all(Val::Px(2.0)),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                // left: position.left,
+                // right: position.right,
+                // top: position.top,
+                // bottom: position.right,
+                width: size.0,
+                height: size.1,
                 ..default()
-            });
-            text_bundle.z_index = ZIndex::Local(2);
-            text.spawn(text_bundle);
+            },
+            ZIndex(1),
+        ))
+        .with_children(|text| {
+            text.spawn((
+                Text::new(name),
+                TextColor(Color::WHITE),
+                TextFont::from_font_size(14.0),
+                Node {
+                    display: Display::Flex,
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
+                ZIndex(2),
+            ));
         });
 }
 
@@ -503,24 +474,20 @@ fn spawn_touchstick<
             Name::new(name),
             mapping.1,
             // BackgroundColor(crate::colors::ANTIQUE_WHITE.with_alpha(0.25).into()),
-            TouchStickUiBundle {
-                stick: TouchStick {
-                    id: mapping.0,
-                    stick_type: TouchStickType::Fixed,
-                    dead_zone: 0.001,
-                    // base_position: (),
-                    ..default()
-                },
-                // configure the interactable area through bevy_ui
-                style: Style {
-                    width: size.0,
-                    height: size.1,
-                    border: UiRect::all(Val::Px(2.0)),
-                    position_type: PositionType::Relative,
-                    margin: position,
-                    padding: UiRect::all(Val::Auto),
-                    ..default()
-                },
+            Node {
+                width: size.0,
+                height: size.1,
+                border: UiRect::all(Val::Px(2.0)),
+                position_type: PositionType::Relative,
+                margin: position,
+                padding: UiRect::all(Val::Auto),
+                ..default()
+            },
+            TouchStick {
+                id: mapping.0,
+                stick_type: TouchStickType::Fixed,
+                dead_zone: 0.001,
+                // base_position: (),
                 ..default()
             },
         ))
@@ -528,41 +495,35 @@ fn spawn_touchstick<
             parent.spawn((
                 Name::new("TouchStickKnob"),
                 TouchStickUiKnob,
-                ImageBundle {
-                    image: UiImage {
-                        texture: images.0.clone(),
-                        color: crate::colors::ORANGE.with_alpha(0.3).into(),
-                        ..default()
-                    },
-                    style: Style {
-                        // (Val::Px(100.0), Val::Px(100.0)),
-                        width: size.0 / 2.0,
-                        height: size.1 / 2.0,
-                        position_type: PositionType::Absolute,
-                        margin: UiRect::all(Val::Auto),
-                        padding: UiRect::all(Val::Auto),
-                        ..default()
-                    },
+                ImageNode {
+                    image: images.0.clone(),
+                    color: crate::colors::ORANGE.with_alpha(0.3).into(),
+                    ..default()
+                },
+                Node {
+                    // (Val::Px(100.0), Val::Px(100.0)),
+                    width: size.0 / 2.0,
+                    height: size.1 / 2.0,
+                    position_type: PositionType::Absolute,
+                    margin: UiRect::all(Val::Auto),
+                    padding: UiRect::all(Val::Auto),
                     ..default()
                 },
             ));
             parent.spawn((
                 Name::new("TouchStickOutline"),
                 TouchStickUiOutline,
-                ImageBundle {
-                    image: UiImage {
-                        texture: images.1.clone(),
-                        color: crate::colors::ORANGE.with_alpha(0.3).into(),
-                        ..default()
-                    },
-                    style: Style {
-                        position_type: PositionType::Absolute,
-                        width: Val::Px(150.),
-                        height: Val::Px(150.),
-                        margin: UiRect::all(Val::Auto),
-                        padding: UiRect::all(Val::Auto),
-                        ..default()
-                    },
+                ImageNode {
+                    image: images.1.clone(),
+                    color: crate::colors::ORANGE.with_alpha(0.3).into(),
+                    ..default()
+                },
+                Node {
+                    position_type: PositionType::Absolute,
+                    width: Val::Px(150.),
+                    height: Val::Px(150.),
+                    margin: UiRect::all(Val::Auto),
+                    padding: UiRect::all(Val::Auto),
                     ..default()
                 },
             ));

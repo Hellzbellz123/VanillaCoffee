@@ -44,24 +44,24 @@ impl Plugin for EguiToolsPlugin {
         }
 
         app.add_plugins((
-            ResourceInspectorPlugin::<DebugConfig>::new().run_if(
-                resource_exists::<DebugConfig>.and_then(|res: Res<DebugConfig>| res.enabled),
+            ResourceInspectorPlugin::<DebugConfig>::default().run_if(
+                resource_exists::<DebugConfig>.and(|res: Res<DebugConfig>| res.enabled),
             ),
             StateInspectorPlugin::<AppStage>::default().run_if(
                 resource_exists::<DebugConfig>
-                    .and_then(|res: Res<DebugConfig>| res.enabled && res.show_appstate),
+                    .and(|res: Res<DebugConfig>| res.enabled && res.show_appstate),
             ),
             StateInspectorPlugin::<GeneratorState>::default().run_if(
                 resource_exists::<DebugConfig>
-                    .and_then(|res: Res<DebugConfig>| res.enabled && res.show_generatorstate),
+                    .and(|res: Res<DebugConfig>| res.enabled && res.show_generatorstate),
             ),
             StateInspectorPlugin::<GameStage>::default().run_if(
                 resource_exists::<DebugConfig>
-                    .and_then(|res: Res<DebugConfig>| res.enabled && res.show_gamestate),
+                    .and(|res: Res<DebugConfig>| res.enabled && res.show_gamestate),
             ),
-            WorldInspectorPlugin::new().run_if(
+            WorldInspectorPlugin::default().run_if(
                 resource_exists::<DebugConfig>
-                    .and_then(|res: Res<DebugConfig>| res.enabled && res.show_world_inspector),
+                    .and(|res: Res<DebugConfig>| res.enabled && res.show_world_inspector),
             ),
         ));
     }
@@ -90,9 +90,6 @@ pub struct WorldInspectorPlugin {
 }
 
 impl WorldInspectorPlugin {
-    pub fn new() -> Self {
-        Self::default()
-    }
     /// Only show the UI of the specified condition is active
     pub fn run_if<M>(mut self, condition: impl Condition<M>) -> Self {
         let condition_system = IntoSystem::into_system(condition);
@@ -139,12 +136,21 @@ pub fn ui_for_world(world: &mut World, ui: &mut egui::Ui) {
     egui::CollapsingHeader::new("Entities")
         .default_open(true)
         .show(ui, |ui| {
-            ui_for_world_entities_filtered::<(
-                With<bevy::prelude::Name>,
-                Without<bevy::prelude::Parent>,
-                Without<big_brain::prelude::ActionState>,
-                Without<bevy::ecs::observer::ObserverState>,
-            )>(world, ui, true);
+            if cfg!(feature = "develop") {
+                ui_for_world_entities_filtered::<(
+                    // With<bevy::prelude::Name>,
+                    Without<bevy::prelude::Parent>,
+                    // Without<big_brain::prelude::ActionState>,
+                    // Without<bevy::ecs::observer::ObserverState>,
+                )>(world, ui, true);
+            } else {
+                ui_for_world_entities_filtered::<(
+                    With<bevy::prelude::Name>,
+                    Without<bevy::prelude::Parent>,
+                    Without<big_brain::prelude::ActionState>,
+                    Without<bevy::ecs::observer::ObserverState>,
+                )>(world, ui, true);
+            }
         });
     egui::CollapsingHeader::new("Resources").show(ui, |ui| {
         ui_for_resources(world, ui);
@@ -171,10 +177,6 @@ impl<T> Default for ResourceInspectorPlugin<T> {
 }
 
 impl<T> ResourceInspectorPlugin<T> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Only show the UI of the specified condition is active
     pub fn run_if<M>(mut self, condition: impl Condition<M>) -> Self {
         let condition_system = IntoSystem::into_system(condition);
@@ -233,10 +235,6 @@ impl<T> Default for StateInspectorPlugin<T> {
     }
 }
 impl<T> StateInspectorPlugin<T> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Only show the UI of the specified condition is active
     pub fn run_if<M>(mut self, condition: impl Condition<M>) -> Self {
         let condition_system = IntoSystem::into_system(condition);
@@ -295,10 +293,6 @@ impl<A> Default for AssetInspectorPlugin<A> {
     }
 }
 impl<A> AssetInspectorPlugin<A> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Only show the UI of the specified condition is active
     pub fn run_if<M>(mut self, condition: impl Condition<M>) -> Self {
         let condition_system = IntoSystem::into_system(condition);

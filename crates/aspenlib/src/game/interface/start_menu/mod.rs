@@ -56,7 +56,7 @@ pub struct ExitGameTag;
 
 /// set start menu container too `Display::Flex` if `AppState` == `StartMenu`
 fn show_start_menu(
-    mut start_menu_query: Query<&mut Style, (With<Node>, With<StartMenuTag>)>,
+    mut start_menu_query: Query<&mut Node, With<StartMenuTag>>,
     game_state: Option<Res<State<GameStage>>>,
 ) {
     let Ok(mut start_menu_style) = start_menu_query.get_single_mut() else {
@@ -85,27 +85,24 @@ fn spawn_start_menu(
                 .spawn((
                     Name::new("StartMenu"),
                     StartMenuTag,
-                    NodeBundle {
-                        style: Style {
-                            display: Display::None,
-                            position_type: PositionType::Absolute,
-                            overflow: Overflow::clip(),
-                            flex_direction: FlexDirection::Column,
-                            min_height: Val::Percent(60.0),
-                            min_width: Val::Vw(30.0),
-                            // aspect_ratio: Some(0.8),
-                            align_self: AlignSelf::Center,
-                            justify_content: JustifyContent::FlexStart,
-                            margin: UiRect {
-                                left: Val::Vw(40.0),
-                                right: Val::Px(0.0),
-                                top: Val::Percent(10.0),
-                                bottom: Val::Percent(10.0),
-                            },
-                            padding: UiRect::all(Val::Px(0.0)).with_top(Val::Px(5.0)),
-                            ..default()
+                    BackgroundColor(random_color(Some(0.8))),
+                    Node {
+                        display: Display::None,
+                        position_type: PositionType::Absolute,
+                        overflow: Overflow::clip(),
+                        flex_direction: FlexDirection::Column,
+                        min_height: Val::Percent(60.0),
+                        min_width: Val::Vw(30.0),
+                        // aspect_ratio: Some(0.8),
+                        align_self: AlignSelf::Center,
+                        justify_content: JustifyContent::FlexStart,
+                        margin: UiRect {
+                            left: Val::Vw(40.0),
+                            right: Val::Px(0.0),
+                            top: Val::Percent(10.0),
+                            bottom: Val::Percent(10.0),
                         },
-                        background_color: BackgroundColor(random_color(Some(0.8))),
+                        padding: UiRect::all(Val::Px(0.0)).with_top(Val::Px(5.0)),
                         ..default()
                     },
                 ))
@@ -119,21 +116,18 @@ fn spawn_start_menu(
                     start_menu_container_childs
                         .spawn((
                             Name::new("ButtonContainer"),
-                            NodeBundle {
-                                style: Style {
-                                    flex_direction: FlexDirection::Column,
-                                    position_type: PositionType::Relative,
-                                    align_items: AlignItems::Center,
-                                    row_gap: Val::Px(15.0),
-                                    margin: UiRect {
-                                        left: Val::Auto,
-                                        right: Val::Auto,
-                                        top: Val::Px(15.0),
-                                        bottom: Val::Px(15.0),
-                                    },
-                                    ..default()
+                            BorderColor(random_color(None)),
+                            Node {
+                                flex_direction: FlexDirection::Column,
+                                position_type: PositionType::Relative,
+                                align_items: AlignItems::Center,
+                                row_gap: Val::Px(15.0),
+                                margin: UiRect {
+                                    left: Val::Auto,
+                                    right: Val::Auto,
+                                    top: Val::Px(15.0),
+                                    bottom: Val::Px(15.0),
                                 },
-                                border_color: BorderColor(random_color(None)),
                                 ..default()
                             },
                         ))
@@ -166,7 +160,7 @@ fn spawn_start_menu(
 fn start_button_interaction(
     mut cmds: Commands,
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<StartGameTag>)>,
-    mut start_menu_query: Query<&mut Style, (With<Node>, With<StartMenuTag>)>,
+    mut start_menu_query: Query<&mut Node, With<StartMenuTag>>,
 ) {
     for interaction in &interaction_query {
         if matches!(interaction, Interaction::Pressed) {

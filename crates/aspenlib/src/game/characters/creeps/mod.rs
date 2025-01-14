@@ -11,7 +11,7 @@ impl Plugin for CreepPlugin {
             Update,
             utils::spawn_creep
                 .after(TransformSystem::TransformPropagate)
-                .run_if(on_event::<EventSpawnCreep>()),
+                .run_if(on_event::<EventSpawnCreep>),
         );
     }
 }
@@ -29,7 +29,7 @@ pub struct EventSpawnCreep {
 
 /// creep spawn function
 pub mod utils {
-    
+
     use bevy::prelude::*;
 
     use crate::{
@@ -70,22 +70,17 @@ pub mod utils {
                 .spawn((
                     character.clone(),
                     Aspen2dPhysicsBundle::default_character(),
-                    SpatialBundle::from_transform(Transform::from_translation(
-                        spawn_event.position.extend(ACTOR_Z_INDEX),
-                    )),
+                    Transform::from_translation(spawn_event.position.extend(ACTOR_Z_INDEX)),
                 ))
                 .with_children(|child| {
                     child.spawn(AspenColliderBundle {
                         tag: ActorColliderType::Character,
                         name: Name::new(format!("{}Collider", character.name.clone().as_str())),
-                        transform_bundle: TransformBundle {
-                            local: (Transform {
-                                translation: (Vec3 {
-                                    x: 0.0,
-                                    y: 0.0,
-                                    z: ACTOR_PHYSICS_Z_INDEX,
-                                }),
-                                ..default()
+                        transform: Transform {
+                            translation: (Vec3 {
+                                x: 0.0,
+                                y: 0.0,
+                                z: ACTOR_PHYSICS_Z_INDEX,
                             }),
                             ..default()
                         },

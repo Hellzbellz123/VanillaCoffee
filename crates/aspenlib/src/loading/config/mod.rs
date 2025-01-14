@@ -2,13 +2,9 @@
 use serde::{Deserialize, Serialize};
 
 use bevy::{
-    asset::AssetMetaCheck,
-    log::LogPlugin,
-    prelude::*,
-    window::{Cursor, PresentMode, WindowMode, WindowResized, WindowResolution},
+    asset::AssetMetaCheck, log::LogPlugin, prelude::*, sprite::SpritePlugin, window::{PresentMode, WindowMode, WindowResized, WindowResolution}
 };
-use bevy_ecs_ldtk::assets::LdtkProject;
-use bevy_framepace::{FramepaceSettings, Limiter};
+use bevy_ecs_ldtk::LdtkProjectHandle;
 use bevy_inspector_egui::prelude::*;
 use bevy_kira_audio::{AudioChannel, AudioControl};
 
@@ -162,7 +158,7 @@ pub struct VolumeConfig {
 #[reflect(Resource, Default)]
 /// difficulty resource used globally for configuring actors and dungeons
 pub struct DifficultySettings {
-    /// can actors of the same AI_TYPE cause damage too eachother
+    /// can actors of the same `AI_TYPE` cause damage too eachother
     pub friendly_fire_enabled: bool,
     /// not a scale, just an amount multiplied by total rooms
     pub max_enemies_per_room: i32,
@@ -293,30 +289,30 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
                             // if full screen is true, use borderless full screen
                             // cursor mode is confined to the window so it cant
                             // leave without alt tab
-                            WindowMode::BorderlessFullscreen
+                            WindowMode::BorderlessFullscreen(MonitorSelection::Primary)
                         } else {
                             WindowMode::Windowed
                         }
                     },
                     window_level: bevy::window::WindowLevel::Normal,
-                    cursor: Cursor {
-                        icon: CursorIcon::Crosshair,
-                        visible: true,
-                        ..default()
-                    },
+                    // cursor: Cursor {
+                    //     icon: CursorIcon::Crosshair,
+                    //     visible: true,
+                    //     ..default()
+                    // },
                     ..default()
                 }),
                 ..default()
-            })
+            }).set(SpritePlugin { add_picking: true })
             .set(ImagePlugin::default_nearest())
             .disable::<LogPlugin>()
             .disable::<AssetPlugin>()
     })
-    .insert_resource(if cfg_file.render_settings.msaa {
-        Msaa::Sample4
-    } else {
-        Msaa::Off
-    })
+    // .insert_resource(if cfg_file.render_settings.msaa {
+    //     Msaa::Sample4
+    // } else {
+    //     Msaa::Off
+    // })
     .insert_resource(ClearColor(Color::srgba(
         26.0 / 255.0,
         25.0 / 255.0,
@@ -338,7 +334,7 @@ pub fn create_configured_app(cfg_file: ConfigFile) -> App {
             apply_sound_settings.run_if(resource_changed::<AudioSettings>),
             apply_camera_zoom.run_if(resource_changed::<GeneralSettings>),
             update_difficulty_settings.run_if(resource_changed::<GeneralSettings>),
-            on_resize_system.run_if(on_event::<WindowResized>()),
+            on_resize_system.run_if(on_event::<WindowResized>),
         ),
     );
 
@@ -354,11 +350,11 @@ fn apply_window_settings(
     // winit: NonSend<bevy::winit::WinitWindows>,
     window_settings: Res<WindowSettings>,
     mut ui_scale: ResMut<UiScale>,
-    mut frame_limiter_cfg: ResMut<FramepaceSettings>,
+    // frame_limiter_cfg: ResMut<FramepaceSettings>,
     mut mut_window_entity: Query<(Entity, &mut Window)>,
     mut last_resolution: Local<Vec2>,
 ) {
-    let (_w_ent, mut b_window) = mut_window_entity.single_mut();
+    let (_w_ent, b_window) = mut_window_entity.single_mut();
 
     // TODO: fix this system too work better?
     if window_settings.resolution != *last_resolution
@@ -373,21 +369,23 @@ fn apply_window_settings(
 
     *ui_scale = UiScale(window_settings.ui_scale as f32);
 
-    if let Some(requested_fps_target) = window_settings.frame_rate_target {
-        let requested_fps_target = requested_fps_target.clamp(16.0, 999.0);
-        let requested_limiter = Limiter::from_framerate(f64::from(requested_fps_target));
-        if frame_limiter_cfg.limiter != requested_limiter {
-            frame_limiter_cfg.limiter = requested_limiter;
-        }
-    }
 
-    if window_settings.full_screen && b_window.mode != WindowMode::BorderlessFullscreen {
-        b_window.mode = WindowMode::BorderlessFullscreen;
-    }
-    if !window_settings.full_screen && b_window.mode == WindowMode::BorderlessFullscreen {
-        b_window.mode = WindowMode::Windowed;
-        b_window.resolution = window_settings.resolution.into();
-    }
+    // TODO: fix config file application
+    // if let Some(requested_fps_target) = window_settings.frame_rate_target {
+    //     let requested_fps_target = requested_fps_target.clamp(16.0, 999.0);
+    //     let requested_limiter = Limiter::from_framerate(f64::from(requested_fps_target));
+    //     if frame_limiter_cfg.limiter != requested_limiter {
+    //         frame_limiter_cfg.limiter = requested_limiter;
+    //     }
+    // }
+
+    // if window_settings.full_screen && b_window.mode != WindowMode::BorderlessFullscreen {
+    //     b_window.mode = WindowMode::BorderlessFullscreen;
+    // }
+    // if !window_settings.full_screen && b_window.mode == WindowMode::BorderlessFullscreen {
+    //     b_window.mode = WindowMode::Windowed;
+    //     b_window.resolution = window_settings.resolution.into();
+    // }
 
     info!(
         "Requested Window Resolution {}, Actual Resolution {:?}",
@@ -450,7 +448,8 @@ fn on_resize_system(
 
 /// updates `DifficultySettings` if player changes difficulty settings
 fn update_difficulty_settings(
-    levels: Query<(Entity, &Handle<LdtkProject>), With<Parent>>,
+    // TODO: this is not correct
+    levels: Query<(Entity, &LdtkProjectHandle), With<Parent>>,
     general_settings: Res<GeneralSettings>,
     mut cmds: Commands,
 ) {

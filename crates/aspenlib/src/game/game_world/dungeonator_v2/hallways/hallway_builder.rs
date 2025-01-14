@@ -414,7 +414,7 @@ pub fn spawn_tile(
     if path_with_direction.iter().all(|(_, f, _)| *f != coord) && !node.data.is_hallway() {
         let tile_entity = parent
             .spawn((
-                SpatialBundle::from_transform(local_transfrorm),
+                local_transfrorm,
                 populate_enum_tags(tex_id),
                 TileBundle {
                     position: coord,
@@ -442,7 +442,7 @@ pub fn spawn_tile_unchecked(
 
     let tile_entity = parent
         .spawn((
-            SpatialBundle::from_transform(local_transfrorm),
+            local_transfrorm,
             populate_enum_tags(tex_id),
             TileBundle {
                 position: coord,

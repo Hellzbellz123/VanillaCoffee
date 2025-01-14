@@ -1,4 +1,4 @@
-use avian2d::prelude::{AngularVelocity, CollisionStarted, LinearVelocity, PhysicsSet};
+use avian2d::prelude::{AngularVelocity, LinearVelocity, PhysicsSet};
 use bevy::{prelude::*, render::primitives::Aabb};
 
 use crate::{
@@ -63,7 +63,7 @@ impl Plugin for WeaponItemPlugin {
             .add_systems(
                 Update,
                 (
-                    handle_weapon_attacks.run_if(on_event::<EventAttackWeapon>()),
+                    handle_weapon_attacks.run_if(on_event::<EventAttackWeapon>),
                     flip_weapon_sprites,
                     weapon_visibility_system,
                 )

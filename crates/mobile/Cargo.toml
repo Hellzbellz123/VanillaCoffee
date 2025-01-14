@@ -21,7 +21,7 @@ develop = ["aspenlib/develop"]
 
 [dependencies]
 aspenlib = { path = "../aspenlib" }
-bevy = { version = "*", features = [
+bevy = { workspace = true, default-features = false, features = [
   "android_shared_stdcxx", # this is for cpal/oboe
 ] }
 

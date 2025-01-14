@@ -85,19 +85,19 @@ impl Plugin for GameWorldPlugin {
                 Update,
                 (
                     process_tile_enum_tags.run_if(any_with_component::<TileEnumTags>),
-                    handle_teleport_events.run_if(on_event::<ActorTeleportEvent>()),
+                    handle_teleport_events.run_if(on_event::<ActorTeleportEvent>),
                     (
                         listen_rebuild_dungeon_request.run_if(
                             in_state(GeneratorState::FinishedDungeonGen)
-                                .or_else(in_state(GeneratorState::NoDungeon)),
+                                .or(in_state(GeneratorState::NoDungeon)),
                         ),
                         debug_regen_dungeon,
                         game_world::world_objects::character_spawners_system
                             .after(TransformSystem::TransformPropagate)
                             .run_if(
-                                all_levels_transformed.and_then(
+                                all_levels_transformed.and(
                                     in_state(GeneratorState::NoDungeon)
-                                        .or_else(in_state(GeneratorState::FinishedDungeonGen)),
+                                        .or(in_state(GeneratorState::FinishedDungeonGen)),
                                 ),
                             ),
                     )

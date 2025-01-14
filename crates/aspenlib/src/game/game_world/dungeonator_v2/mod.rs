@@ -92,9 +92,9 @@ impl Plugin for DungeonGeneratorPlugin {
         app.add_systems(
             Update,
             room_database::build_room_presets.run_if(
-                resource_exists::<AspenLevelsetHandles>.and_then(
+                resource_exists::<AspenLevelsetHandles>.and(
                     resource_changed::<Assets<LdtkExternalLevel>>
-                        .or_else(resource_changed::<Assets<LdtkProject>>),
+                        .or(resource_changed::<Assets<LdtkProject>>),
                 ),
             ),
         );
@@ -130,7 +130,7 @@ impl Plugin for DungeonGeneratorPlugin {
             Update,
             hallways::hallway_builder::build_hallways.run_if(
                 in_state(GeneratorState::FinalizeHallways)
-                    .and_then(any_with_component::<HallwayLayer>),
+                    .and(any_with_component::<HallwayLayer>),
             ),
         );
     }
@@ -191,11 +191,9 @@ fn spawn_new_dungeon(
                 },
                 room_graph: RoomGraph::default(),
             },
-            ldtk_project: ldtk_project_handles.default_levels.clone(),
-            spatial: SpatialBundle {
-                transform: origin,
-                ..default()
-            },
+            ldtk_project: bevy_ecs_ldtk::LdtkProjectHandle { handle: ldtk_project_handles.default_levels.clone() },
+            spatial: origin,
+            visual: Visibility::Visible
         },
         // Position(origin.translation.truncate()),
     ));
@@ -234,9 +232,10 @@ pub fn layout_dungeon(
                     name: bp.name.clone().into(),
                     id: bp.asset_id.clone(),
                     room: bp.clone(),
-                    spatial: SpatialBundle::from_transform(Transform::from_translation(
+                    spatial: Transform::from_translation(
                         bp.room_space.min.as_vec2().extend(0.0),
-                    )),
+                    ),
+                    visual: Visibility::Inherited
                 },
                 // Position(bp.room_space.min.as_vec2()),
             ))
@@ -275,9 +274,10 @@ pub fn layout_dungeon(
                     connected_rooms: (*source.get_node_id(), *target.get_node_id()),
                     built: false,
                 },
-                spatial: SpatialBundle::from_transform(Transform::from_translation(
+                spatial: Transform::from_translation(
                     start_pos.as_vec2().extend(0.0),
-                )),
+                ),
+                visual: Visibility::Inherited
             })
             .set_parent(dungon_id);
         } else {

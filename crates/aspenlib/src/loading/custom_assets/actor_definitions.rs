@@ -30,10 +30,7 @@ impl Plugin for ActorAssetPlugin {
                 TomlAssetPlugin::<ItemDefinition>::new(&["weapon.toml"]),
                 RonAssetPlugin::<ItemDefinition>::new(&["weapon.ron"]),
                 // actor sprite sheet data
-                // AsepritesheetPlugin::new(&["sprite.json"]),
-                bevy_aseprite_ultra::BevySprityPlugin, // bevy_aseprite_ultra::BevyAsepriteUltraPlugin {
-                                                       //     max_atlas_size: UVec2::splat(8192),
-                                                       // }
+                bevy_aseprite_ultra::AsepriteUltraPlugin
             ));
     }
 }

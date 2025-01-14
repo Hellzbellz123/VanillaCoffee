@@ -1,8 +1,4 @@
-use bevy::{
-    core_pipeline::tonemapping::{DebandDither, Tonemapping},
-    prelude::*,
-    render::{camera::ScalingMode, primitives::Frustum},
-};
+use bevy::prelude::*;
 
 use crate::{loading::assets::AspenInitHandles, register_types, utilities::despawn_with, AppStage};
 
@@ -52,10 +48,10 @@ impl Plugin for SplashPlugin {
 
 /// spawns main camera
 fn spawn_main_camera(mut commands: Commands) {
-    commands.insert_resource(AmbientLight {
-        color: Color::WHITE,
-        brightness: 0.9,
-    });
+    // commands.insert_resource(AmbientLight {
+    //     color: Color::WHITE,
+    //     brightness: 0.9,
+    // });
     commands.spawn((
         Name::new("MainCamera"),
         MainCamera {
@@ -66,29 +62,22 @@ fn spawn_main_camera(mut commands: Commands) {
             player_still_recenter_speed: 0.05,
             movement_scales: Vec2 { x: 0.65, y: 0.65 },
         },
-        Camera2dBundle {
-            camera: Camera {
-                is_active: true,
-                order: 1,
-                hdr: true,
-                clear_color: ClearColorConfig::Default,
-                ..default()
-            },
-            tonemapping: Tonemapping::TonyMcMapface,
-            deband_dither: DebandDither::Enabled,
-            projection: OrthographicProjection {
-                near: 0.001,
-                far: 999.0,
-                viewport_origin: Vec2 { x: 0.5, y: 0.5 },
-                scaling_mode: ScalingMode::WindowSize(10.0),
-                scale: 3.5,
-                ..default()
-            },
-            frustum: Frustum::default(),
-            transform: Transform::from_xyz(200.0, 100.0, 999.0),
+        // if cfg.render_settings.msaa {
+        //     Msaa::Sample4
+        // } else {
+        //     Msaa::Off
+        // },
+        Camera2d,
+        Camera {
+            is_active: true,
+            order: 1,
+            hdr: false,
+            clear_color: ClearColorConfig::Default,
             ..default()
         },
-        // UiCameraConfig { show_ui: true },
+        // DebandDither::Enabled,
+        // Tonemapping::TonyMcMapface,
+        Transform::from_xyz(200.0, 100.0, 999.0),
     ));
     info!("Main Camera Spawned");
 }
@@ -99,20 +88,17 @@ fn splash_setup(mut commands: Commands, init_assets: Res<AspenInitHandles>) {
     commands.spawn((
         Name::new("SplashScreenImage"),
         OnlySplashScreen,
-        ImageBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                margin: UiRect::all(Val::Px(0.0)),
-                min_width: Val::Percent(100.0),
-                min_height: Val::Percent(100.0),
-                max_width: Val::Percent(100.0),
-                max_height: Val::Percent(100.0),
-                ..default()
-            },
-            image: UiImage {
-                texture: init_assets.img_splashscreen.clone(),
-                ..default()
-            },
+        Node {
+            position_type: PositionType::Absolute,
+            margin: UiRect::all(Val::Px(0.0)),
+            min_width: Val::Percent(100.0),
+            min_height: Val::Percent(100.0),
+            max_width: Val::Percent(100.0),
+            max_height: Val::Percent(100.0),
+            ..default()
+        },
+        ImageNode {
+            image: init_assets.img_splashscreen.clone(),
             ..default()
         },
     ));

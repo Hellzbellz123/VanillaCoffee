@@ -6,12 +6,12 @@ use bevy::{
     },
     log::warn,
     math::{IVec2, Vec2},
-    prelude::{Component, Handle, IRect, Name, SpatialBundle},
+    prelude::{Component, IRect, Name, Transform, Visibility},
     reflect::Reflect,
 };
 use bevy_ecs_ldtk::{
-    prelude::{ldtk::FieldInstance, FieldValue, LdtkProject},
-    LevelIid,
+    prelude::{ldtk::FieldInstance, FieldValue},
+    LdtkProjectHandle, LevelIid,
 };
 use bevy_ecs_tilemap::prelude::TilemapSize;
 
@@ -34,9 +34,11 @@ pub struct DungeonContainerBundle {
     /// configures spawning of child rooms and hallways
     pub dungeon: Dungeon,
     /// data used too spawn with
-    pub ldtk_project: Handle<LdtkProject>,
-    /// gives dungeons a position
-    pub spatial: SpatialBundle,
+    pub ldtk_project: LdtkProjectHandle,
+    /// position
+    pub spatial: Transform,
+    /// visibility
+    pub visual: Visibility,
 }
 
 /// placeable room preset
@@ -48,8 +50,10 @@ pub struct DungeonRoomBundle {
     pub id: LevelIid,
     /// identifies dungeon rooms
     pub room: RoomBlueprint,
-    /// spatial data
-    pub spatial: SpatialBundle,
+    /// position
+    pub spatial: Transform,
+    /// visibility
+    pub visual: Visibility,
 }
 
 /// bundle for easy spawning of Dungeon Hallways
@@ -59,8 +63,10 @@ pub struct DungeonHallWayBundle {
     pub name: Name,
     /// identifies dungeon hallways
     pub hallway: HallWayBlueprint,
-    /// spatial data
-    pub spatial: SpatialBundle,
+    /// position
+    pub spatial: Transform,
+    /// visibility
+    pub visual: Visibility,
 }
 
 /// database generated from ldtk level assets on startup or when assets are changed,

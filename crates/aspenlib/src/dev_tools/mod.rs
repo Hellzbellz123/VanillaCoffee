@@ -4,7 +4,6 @@ use avian2d::{debug_render::PhysicsDebugPlugin, prelude::PhysicsGizmos};
 use bevy::{
     diagnostic::{
         EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin,
-        SystemInformationDiagnosticsPlugin,
     },
     prelude::*,
     render::view::RenderLayers,
@@ -15,6 +14,9 @@ use big_brain::{
     prelude::{Actor, HasThinker, Score, Scorer, Thinker},
 };
 use leafwing_input_manager::prelude::ActionState;
+
+#[cfg(not(feature="develop"))]
+use bevy::diagnostic::SystemInformationDiagnosticsPlugin;
 
 use crate::{
     dev_tools::debug_visuals::{DebugDraw, DrawnMap},
@@ -37,6 +39,7 @@ pub mod dump_schedules;
 pub mod console;
 pub mod debug_visuals;
 pub mod egui_tools;
+pub mod picking_debug;
 
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Resource, Reflect, Clone)]
@@ -112,7 +115,9 @@ impl Plugin for AspenDevToolsPlugin {
             PhysicsDebugPlugin::new(FixedPostUpdate),
             FrameTimeDiagnosticsPlugin,
             EntityCountDiagnosticsPlugin,
+            #[cfg(not(feature="develop"))]
             SystemInformationDiagnosticsPlugin,
+            picking_debug::DebugPickingPlugin,
             LogDiagnosticsPlugin {
                 debug: false,
                 wait_duration: Duration::from_secs(5),

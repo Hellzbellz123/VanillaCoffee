@@ -1,16 +1,10 @@
 use bevy::{prelude::*, utils::hashbrown::HashMap};
-use bevy_mod_picking::{
-    events::{Down, Pointer},
-    prelude::{ListenerInput, On, PickingInteraction},
-    PickableBundle,
-};
 
 use crate::{
     bundles::{AspenColliderBundle, NeedsCollider},
     consts::{AspenCollisionLayer, ACTOR_PHYSICS_Z_INDEX},
     game::{
-        characters::components::WeaponSlot, components::ActorColliderType,
-        interface::start_menu::StartMenuTag, items::weapons::components::WeaponCarrier,
+        characters::components::WeaponSlot, components::ActorColliderType, items::weapons::components::WeaponCarrier,
     },
     loading::{
         custom_assets::actor_definitions::CharacterDefinition, registry::RegistryIdentifier,
@@ -64,28 +58,21 @@ pub struct PlayerSelectedHero;
 
 /// event sent when player selects available hero too play
 #[derive(Event)]
-pub struct SelectThisHeroForPlayer(Entity, ());
-
-impl From<ListenerInput<Pointer<Down>>> for SelectThisHeroForPlayer {
-    fn from(event: ListenerInput<Pointer<Down>>) -> Self {
-        Self(event.target, ()) //event.hit.depth)
-    }
-}
+pub struct SelectThisHeroForPlayer(pub Entity);
 
 /// Unlike callback systems, this is a normal system that can be run in parallel with other systems.
 fn select_wanted_hero(
-    start_menu_query: Query<&Style, (With<Node>, With<StartMenuTag>)>,
     mut cmds: Commands,
     mut select_events: EventReader<SelectThisHeroForPlayer>,
     mut camera_query: Query<&mut OrthographicProjection, With<MainCamera>>,
     settings: Res<GeneralSettings>,
 ) {
-    let start_menu_style = start_menu_query.single();
+    // let start_menu_style = start_menu_query.single();
     let mut camera_projection = camera_query.single_mut();
 
-    if start_menu_style.display != Display::None {
-        return;
-    }
+    // if start_menu_style.display != Display::None {
+    //     return;
+    // }
 
     for SelectThisHeroForPlayer(hero, ..) in select_events.read() {
         trace!("resetting zoom");
@@ -93,8 +80,6 @@ fn select_wanted_hero(
 
         trace!("selecting hero");
         cmds.entity(*hero)
-            .remove::<On<Pointer<Down>>>()
-            .remove::<PickableBundle>()
             .insert(PlayerSelectedHero)
             .with_children(|child| {
                 child.spawn((
@@ -102,15 +87,12 @@ fn select_wanted_hero(
                     AspenColliderBundle {
                         tag: ActorColliderType::Character,
                         name: Name::new("PlayerCollider"),
-                        transform_bundle: TransformBundle {
-                            local: (Transform {
-                                // transform relative to parent
-                                translation: (Vec3 {
-                                    x: 0.,
-                                    y: 0.,
-                                    z: ACTOR_PHYSICS_Z_INDEX,
-                                }),
-                                ..default()
+                        transform: Transform {
+                            // transform relative to parent
+                            translation: (Vec3 {
+                                x: 0.,
+                                y: 0.,
+                                z: ACTOR_PHYSICS_Z_INDEX,
                             }),
                             ..default()
                         },
@@ -124,6 +106,8 @@ fn select_wanted_hero(
     }
 }
 
+
+// TODO: add colliders/weaponcarriers too players when spawned?
 /// spawns player with no weapons
 pub fn build_player_from_selected_hero(
     mut commands: Commands,
@@ -140,10 +124,6 @@ pub fn build_player_from_selected_hero(
         .find(|(_, asset)| asset.actor.identifier == *player_registry_identifier)
         .expect("Spawned characters asset definition did not exist");
 
-    commands
-        .entity(selected_hero)
-        .remove::<PickingInteraction>();
-
     info!("Finalizing player before game start");
     commands
         .entity(selected_hero)
@@ -157,15 +137,12 @@ pub fn build_player_from_selected_hero(
                 AspenColliderBundle {
                     tag: ActorColliderType::Character,
                     name: Name::new("PlayerCollider"),
-                    transform_bundle: TransformBundle {
-                        local: (Transform {
-                            // transform relative to parent
-                            translation: (Vec3 {
-                                x: 0.,
-                                y: 0.,
-                                z: ACTOR_PHYSICS_Z_INDEX,
-                            }),
-                            ..default()
+                    transform: Transform {
+                        // transform relative to parent
+                        translation: (Vec3 {
+                            x: 0.,
+                            y: 0.,
+                            z: ACTOR_PHYSICS_Z_INDEX,
                         }),
                         ..default()
                     },

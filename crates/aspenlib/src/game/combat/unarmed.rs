@@ -58,36 +58,30 @@ pub fn delegate_unarmed_attacks(
                         },
                     },
                     ttl: TimeToLive(Timer::from_seconds(2.0, TimerMode::Once)),
-                    sprite_bundle: SpriteBundle {
-                        texture: assets.img_favicon.clone(),
-                        transform: Transform::from_translation(
-                            (location + (attack.direction * 12.0)).extend(ACTOR_Z_INDEX),
-                        ),
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::splat(10.0)),
-                            ..default()
-                        },
-                        ..default()
-                    },
                     rigidbody_bundle: Aspen2dPhysicsBundle::new_projectile(
                         attack.direction * 250.0,
                     ),
                 },
+                Sprite {
+                    image: assets.img_favicon.clone(),
+                    custom_size: Some(Vec2::splat(10.0)),
+                    ..default()
+                },
+                Transform::from_translation(
+                    (location + (attack.direction * 12.0)).extend(ACTOR_Z_INDEX),
+                ),
             ))
             .with_children(|bullet_parts| {
-                bullet_parts.spawn((AspenColliderBundle {
+                bullet_parts.spawn(AspenColliderBundle {
                     name: Name::new("MonsterProjectileCollider"),
-                    transform_bundle: TransformBundle {
-                        local: (Transform {
-                            translation: Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
-                            ..default()
-                        }),
-                        ..default()
-                    },
                     tag: ActorColliderType::Projectile,
                     collider: NeedsCollider::Aabb,
                     collision_groups: AspenCollisionLayer::projectile_actor(),
-                },));
+                    transform: Transform {
+                        translation: Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
+                        ..default()
+                    },
+                });
             });
 
             // TODO: brainstorm possible delegations

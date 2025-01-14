@@ -83,9 +83,9 @@ impl Plugin for AspenHallsPlugin {
                 PostUpdate,
                 add_aabb_based_colliders
                     .run_if(
-                        any_with_component::<NeedsCollider>.and_then(
+                        any_with_component::<NeedsCollider>.and(
                             in_state(GameStage::SelectCharacter)
-                                .or_else(in_state(GeneratorState::FinishedDungeonGen)),
+                                .or(in_state(GeneratorState::FinishedDungeonGen)),
                         ),
                     )
                     .after(TransformSystem::TransformPropagate),

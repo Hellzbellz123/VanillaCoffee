@@ -82,7 +82,7 @@ pub fn camera_movement_system(
     // Calculate the movement speed based on time.delta()
     let movement_speed: f32 = if player_velocity.abs().length() > camera_data.lerp_change_magnitude
     {
-        camera_data.recenter_speed * time.delta_seconds()
+        camera_data.recenter_speed * time.delta_secs()
     } else {
         camera_data.player_still_recenter_speed
     };

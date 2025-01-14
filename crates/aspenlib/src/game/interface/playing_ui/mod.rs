@@ -46,7 +46,7 @@ pub struct PlayingUiTag;
 
 /// toggles visibility of gameplay ui elements
 fn toggle_playing_ui(
-    mut playing_ui_query: Query<&mut Style, (With<Node>, With<PlayingUiTag>)>,
+    mut playing_ui_query: Query<&mut Node, With<PlayingUiTag>>,
     game_state: Option<Res<State<GameStage>>>,
 ) {
     let Ok(mut playing_ui_style) = playing_ui_query.get_single_mut() else {
@@ -82,17 +82,14 @@ fn spawn_playing_ui(
                 .spawn((
                     Name::new("PlayingUi"),
                     PlayingUiTag,
-                    NodeBundle {
-                        style: Style {
-                            display: Display::None,
-                            position_type: PositionType::Absolute,
-                            flex_direction: FlexDirection::Row,
-                            margin: UiRect::all(Val::Px(0.0)),
-                            height: Val::Percent(100.0),
-                            width: Val::Percent(100.0),
-                            align_self: AlignSelf::Center,
-                            ..default()
-                        },
+                    Node {
+                        display: Display::None,
+                        position_type: PositionType::Absolute,
+                        flex_direction: FlexDirection::Row,
+                        margin: UiRect::all(Val::Px(0.0)),
+                        height: Val::Percent(100.0),
+                        width: Val::Percent(100.0),
+                        align_self: AlignSelf::Center,
                         ..default()
                     },
                 ))
@@ -109,23 +106,20 @@ fn create_hud_container(hud_hud_parts: &mut ChildBuilder, touch_assets: Res<Aspe
     hud_hud_parts
         .spawn((
             Name::new("HudContainer"),
-            NodeBundle {
-                style: Style {
-                    display: Display::Flex,
-                    position_type: PositionType::Absolute,
-                    flex_direction: FlexDirection::Row,
-                    margin: UiRect {
-                        left: Val::default(),
-                        right: Val::default(),
-                        top: Val::default(),
-                        bottom: Val::Px(10.0),
-                    },
-                    height: Val::Percent(30.0),
-                    width: Val::Percent(50.0),
-                    align_self: AlignSelf::Center,
-
-                    ..default()
+            Node {
+                display: Display::Flex,
+                position_type: PositionType::Absolute,
+                flex_direction: FlexDirection::Row,
+                margin: UiRect {
+                    left: Val::default(),
+                    right: Val::default(),
+                    top: Val::default(),
+                    bottom: Val::Px(10.0),
                 },
+                height: Val::Percent(30.0),
+                width: Val::Percent(50.0),
+                align_self: AlignSelf::Center,
+
                 ..default()
             },
         ))
