@@ -57,4 +57,4 @@
 	url = https://github.com/Jondolf/bevy_transform_interpolation.git
 [submodule "deps/bevy_console"]
 	path = deps/bevy_console
-	url = https://github.com/RichoDemus/bevy-console.git
+	url = https://github.com/Hellzbellz123/bevy_console.git
