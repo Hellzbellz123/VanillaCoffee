@@ -22,9 +22,6 @@
 [submodule "deps/bevy_mod_debugdump"]
 	path = deps/bevy_mod_debugdump
 	url = https://github.com/jakobhellermann/bevy_mod_debugdump.git
-[submodule "deps/bevy_console"]
-	path = deps/bevy_console
-	url = https://github.com/Hellzbellz123/bevy-console.git
 [submodule "deps/bevy_inspector_egui"]
 	path = deps/bevy_inspector_egui
 	url = https://github.com/jakobhellermann/bevy-inspector-egui.git
