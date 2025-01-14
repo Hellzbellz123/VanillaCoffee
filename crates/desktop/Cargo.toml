@@ -22,7 +22,7 @@ dynamic = ["aspenlib/dynamic"]
 trace = ["aspenlib/trace"]
 
 [dependencies]
-bevy = { version = "*" }
+bevy = { workspace = true, default-features = false }
 bevy_egui = { version = "*", default-features = false, features = [
   "default_fonts",
   "manage_clipboard",

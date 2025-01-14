@@ -21,7 +21,7 @@ develop = ["aspenlib/develop", "dep:wasm-logger"]
 trace = ["aspenlib/trace"]
 
 [dependencies]
-bevy = { version = "*", features = [
+bevy = { workspace = true, default-features = false, features = [
   "webgl2", # webgl2 shaders
 ] }
 log = { version = "*" }

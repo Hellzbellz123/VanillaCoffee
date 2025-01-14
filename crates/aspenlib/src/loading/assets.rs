@@ -1,9 +1,8 @@
-use bevy::prelude::Res;
+use bevy::prelude::{Image, Res};
 use bevy::{
     asset::Handle,
     ecs::system::Resource,
     prelude::{Reflect, TextureAtlasLayout},
-    render::texture::Image,
     text::Font,
 };
 use bevy_asset_loader::prelude::AssetCollection;

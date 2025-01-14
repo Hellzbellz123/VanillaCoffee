@@ -18,7 +18,7 @@ use crate::{
 };
 use bevy::app::AppExit;
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkWorldBundle, LevelSet};
+use bevy_ecs_ldtk::{LdtkProjectHandle, LdtkWorldBundle, LevelSet};
 use leafwing_input_manager::prelude::ActionState;
 
 /// pause game functionality and pause menu ui
@@ -40,7 +40,7 @@ impl Plugin for PauseMenuPlugin {
                     .run_if(in_state(GameStage::PausedGame)),
                 keyboard_pause_sender,
                 pause_menu_visibility.run_if(state_changed::<GameStage>),
-                pause_event_handler.run_if(on_event::<EventTogglePause>()),
+                pause_event_handler.run_if(on_event::<EventTogglePause>),
             ),
         );
     }
@@ -78,27 +78,24 @@ fn spawn_pause_menu(
                 .spawn((
                     Name::new("PauseMenu"),
                     PauseMenuTag,
-                    NodeBundle {
-                        style: Style {
-                            display: Display::None,
-                            position_type: PositionType::Absolute,
-                            overflow: Overflow::clip(),
-                            flex_direction: FlexDirection::Column,
-                            min_height: Val::Percent(60.0),
-                            min_width: Val::Percent(30.0),
-                            // aspect_ratio: Some(0.8),
-                            align_self: AlignSelf::Center,
-                            justify_content: JustifyContent::FlexStart,
-                            margin: UiRect {
-                                left: Val::Percent(40.0),
-                                right: Val::Px(0.0),
-                                top: Val::Px(50.0),
-                                bottom: Val::Auto,
-                            },
-                            padding: UiRect::all(Val::Px(0.0)).with_top(Val::Px(5.0)),
-                            ..default()
+                    BackgroundColor(random_color(Some(0.8))),
+                    Node {
+                        display: Display::None,
+                        position_type: PositionType::Absolute,
+                        overflow: Overflow::clip(),
+                        flex_direction: FlexDirection::Column,
+                        min_height: Val::Percent(60.0),
+                        min_width: Val::Percent(30.0),
+                        // aspect_ratio: Some(0.8),
+                        align_self: AlignSelf::Center,
+                        justify_content: JustifyContent::FlexStart,
+                        margin: UiRect {
+                            left: Val::Percent(40.0),
+                            right: Val::Px(0.0),
+                            top: Val::Px(50.0),
+                            bottom: Val::Auto,
                         },
-                        background_color: BackgroundColor(random_color(Some(0.8))),
+                        padding: UiRect::all(Val::Px(0.0)).with_top(Val::Px(5.0)),
                         ..default()
                     },
                 ))
@@ -112,21 +109,17 @@ fn spawn_pause_menu(
                     start_menu_container_childs
                         .spawn((
                             Name::new("ButtonContainer"),
-                            NodeBundle {
-                                style: Style {
-                                    flex_direction: FlexDirection::Column,
-                                    position_type: PositionType::Relative,
-                                    align_items: AlignItems::Center,
-                                    row_gap: Val::Px(15.0),
-                                    margin: UiRect {
-                                        left: Val::Auto,
-                                        right: Val::Auto,
-                                        top: Val::Px(15.0),
-                                        bottom: Val::Px(15.0),
-                                    },
-                                    ..default()
+                            Node {
+                                flex_direction: FlexDirection::Column,
+                                position_type: PositionType::Relative,
+                                align_items: AlignItems::Center,
+                                row_gap: Val::Px(15.0),
+                                margin: UiRect {
+                                    left: Val::Auto,
+                                    right: Val::Auto,
+                                    top: Val::Px(15.0),
+                                    bottom: Val::Px(15.0),
                                 },
-                                border_color: BorderColor(random_color(None)),
                                 ..default()
                             },
                         ))
@@ -214,7 +207,7 @@ fn abandon_button_interaction(
             if hideout_q.is_empty() {
                 cmds.spawn((
                     LdtkWorldBundle {
-                        ldtk_handle: maps.default_levels.clone(),
+                        ldtk_handle: LdtkProjectHandle::from(maps.default_levels.clone()),
                         level_set: LevelSet::default(),
                         transform: Transform {
                             translation: Vec3 {
@@ -246,7 +239,7 @@ fn back_to_main_menu_interaction(
     mut time: ResMut<Time<Virtual>>,
     mut game_stage: ResMut<NextState<AppStage>>,
     actor_q: Query<Entity, With<RegistryIdentifier>>,
-    level_q: Query<Entity, With<Handle<LdtkProject>>>,
+    level_q: Query<Entity, With<LdtkProjectHandle>>,
     ui_root_q: Query<Entity, (With<Node>, With<InterfaceRootTag>)>,
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<BackToMainMenuTag>)>,
 ) {
@@ -296,7 +289,7 @@ fn keyboard_pause_sender(
 
 fn pause_menu_visibility(
     game_state: Option<Res<State<GameStage>>>,
-    mut pause_menu_query: Query<&mut Style, (With<Node>, With<PauseMenuTag>)>,
+    mut pause_menu_query: Query<&mut Node, With<PauseMenuTag>>,
 ) {
     let Some(game_state) = game_state else {
         return;

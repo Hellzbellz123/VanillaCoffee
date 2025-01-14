@@ -90,11 +90,9 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
 
     // add third party plugins
     vanillacoffee.add_plugins((
-        bevy_mod_picking::DefaultPickingPlugins,
         bevy_ecs_ldtk::LdtkPlugin,
         bevy_framepace::FramepacePlugin,
         avian2d::PhysicsPlugins::default().with_length_unit(32.0),
-        bevy_transform_interpolation::TransformInterpolationPlugin::default(),
     ));
 
     vanillacoffee.insert_resource(Gravity(Vec2::ZERO));
@@ -102,7 +100,7 @@ pub fn start_app(cfg_file: ConfigFile) -> App {
     vanillacoffee.add_systems(
         Update,
         (utilities::set_window_icon
-            .run_if(resource_exists::<AspenInitHandles>.and_then(run_once())),),
+            .run_if(resource_exists::<AspenInitHandles>.and(run_once)),),
     );
 
     vanillacoffee.add_systems(OnEnter(AppStage::Starting), start_app_functionality);

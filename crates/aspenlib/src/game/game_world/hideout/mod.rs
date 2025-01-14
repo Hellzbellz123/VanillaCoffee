@@ -4,19 +4,14 @@ use bevy::{
     log::{error, info},
     math::Vec2,
     prelude::{
-        in_state, on_event, warn, Assets, Commands, DespawnRecursiveExt,
-        Entity, EventReader, GlobalTransform, IntoSystemConfigs, OnEnter,
-        OrthographicProjection, Parent, Plugin, Query, SpatialBundle, Transform,
-        Update, With, Without,
+        in_state, on_event, warn, Assets, Commands, DespawnRecursiveExt, Down, Entity, EventReader,
+        EventWriter, GlobalTransform, IntoSystemConfigs, OnEnter, OrthographicProjection, Parent,
+        Plugin, Pointer, Query, Reflect, Transform, Trigger, Update, With, Without,
     },
 };
 use bevy_ecs_ldtk::{
     prelude::{LdtkExternalLevel, LevelEvent, LevelSet},
     LevelIid, LevelSelection,
-};
-use bevy_mod_picking::{
-    events::{Down, Pointer},
-    prelude::{On, PickableBundle},
 };
 
 use crate::{
@@ -61,9 +56,9 @@ impl Plugin for HideOutPlugin {
             Update,
             (
                 // TODO: fix scheduling
-                teleporter_collisions.run_if(on_event::<CollisionStarted>()),
+                teleporter_collisions.run_if(on_event::<CollisionStarted>),
                 create_playable_heroes
-                    .run_if(in_state(AppStage::Running).and_then(on_event::<LevelEvent>())),
+                    .run_if(in_state(AppStage::Running).and(on_event::<LevelEvent>)),
             ),
         );
     }
@@ -157,15 +152,28 @@ fn populate_hero_spots(
                 return;
             };
 
-            commands.spawn((
-                bundle.clone(),
-                Aspen2dPhysicsBundle::default_character(),
-                PickableBundle::default(),
-                On::<Pointer<Down>>::send_event::<SelectThisHeroForPlayer>(),
-                SpatialBundle::from_transform(Transform::from_translation(
-                    spot.translation().truncate().extend(ACTOR_Z_INDEX),
-                )),
-            ));
+            use std::fmt::Debug;
+
+            // An observer listener that changes the target entity's color.
+            fn send_select_player_event_on<E: Debug + Clone + Reflect>(
+            ) -> impl Fn(Trigger<E>, EventWriter<SelectThisHeroForPlayer>, Query<&PlayerSelectedHero>) {
+                move |trigger, mut ew: EventWriter<SelectThisHeroForPlayer>, other_heroes: Query<&PlayerSelectedHero> | {
+                    if other_heroes.is_empty() {
+                        println!("selectable player was clicked");
+                        ew.send(SelectThisHeroForPlayer(trigger.entity()));
+                    }
+                }
+            }
+
+            commands
+                .spawn((
+                    bundle.clone(),
+                    Aspen2dPhysicsBundle::default_character(),
+                    Transform::from_translation(
+                        spot.translation().truncate().extend(ACTOR_Z_INDEX),
+                    ),
+                ))
+                .observe(send_select_player_event_on::<Pointer<Down>>());
         });
 
     if existing_hero.is_ok() {

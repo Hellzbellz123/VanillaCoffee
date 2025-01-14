@@ -11,7 +11,7 @@ impl Plugin for BossPlugin {
             Update,
             utils::spawn_boss
                 .after(TransformSystem::TransformPropagate)
-                .run_if(on_event::<EventSpawnBoss>()),
+                .run_if(on_event::<EventSpawnBoss>),
         );
     }
 }
@@ -29,7 +29,7 @@ pub struct EventSpawnBoss {
 
 /// boss spawn function
 pub mod utils {
-    
+
     use bevy::prelude::*;
 
     use crate::{
@@ -70,9 +70,7 @@ pub mod utils {
                 .spawn((
                     character.clone(),
                     Aspen2dPhysicsBundle::default_character(),
-                    SpatialBundle::from_transform(Transform::from_translation(
-                        spawn_event.position.extend(ACTOR_Z_INDEX),
-                    )),
+                    Transform::from_translation(spawn_event.position.extend(ACTOR_Z_INDEX)),
                 ))
                 .with_children(|child| {
                     let collider_name = format!("{}Collider", character.name.clone().as_str());
@@ -82,14 +80,11 @@ pub mod utils {
                             AspenColliderBundle {
                                 tag: ActorColliderType::Character,
                                 name: Name::new(collider_name),
-                                transform_bundle: TransformBundle {
-                                    local: (Transform {
-                                        translation: (Vec3 {
-                                            x: 0.0,
-                                            y: 0.0,
-                                            z: ACTOR_PHYSICS_Z_INDEX,
-                                        }),
-                                        ..default()
+                                transform: Transform {
+                                    translation: (Vec3 {
+                                        x: 0.0,
+                                        y: 0.0,
+                                        z: ACTOR_PHYSICS_Z_INDEX,
                                     }),
                                     ..default()
                                 },

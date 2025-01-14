@@ -6,7 +6,7 @@ use bevy::{
     prelude::{default, AssetServer, Assets, ResMut, Sprite, Vec2},
     sprite::Anchor,
 };
-use bevy_aseprite_ultra::prelude::Animation;
+use bevy_aseprite_ultra::prelude::{Animation, AseSpriteAnimation};
 
 use crate::{
     bundles::{Aspen2dRenderBundle, CharacterBundle, WeaponBundle},
@@ -44,8 +44,10 @@ pub fn build_character_bundles(
             move_state: CharacterMoveState::DEFAULT,
             controller: character_def.character_type.get_ai(),
             render: Aspen2dRenderBundle {
-                handle: aseprite_handle,
-                animation: Animation::default().with_tag("idle"),
+                handle: AseSpriteAnimation {
+                    animation: Animation::default().with_tag("idle"),
+                    aseprite: aseprite_handle,
+                },
                 sprite: Sprite {
                     custom_size: Some(Vec2::splat(character_def.actor.tile_size)),
                     anchor: Anchor::BottomCenter,
@@ -143,8 +145,10 @@ fn form_weapon_bundle(
         weapon_type: descriptor,
         stats: EquipmentStats::from_attrs(attributes, None),
         render: Aspen2dRenderBundle {
-            handle: aseprite_handle,
-            animation: Animation::default().with_tag("idle"),
+            handle: AseSpriteAnimation {
+                animation: Animation::default().with_tag("idle"),
+                aseprite: aseprite_handle,
+            },
             sprite: Sprite {
                 anchor: Anchor::default(),
                 custom_size: Some(Vec2::splat(tile_size)),

@@ -30,15 +30,15 @@ pub fn build_gamepad_map(input_map: &mut InputMap<Gameplay>) {
     input_map.insert_dual_axis(Gameplay::Move, GamepadStick::LEFT);
     input_map.insert_dual_axis(Gameplay::Look, GamepadStick::RIGHT);
     input_map.insert_multiple([
-        (Gameplay::Sprint, GamepadButtonType::West),
-        (Gameplay::Attack, GamepadButtonType::South),
-        (Gameplay::Interact, GamepadButtonType::East),
-        (Gameplay::CycleWeapon, GamepadButtonType::North),
-        (Gameplay::ZoomAdd, GamepadButtonType::DPadUp),
-        (Gameplay::ZoomSubtract, GamepadButtonType::DPadDown),
-        (Gameplay::Pause, GamepadButtonType::Start),
-        (Gameplay::Melee, GamepadButtonType::DPadLeft),
-        (Gameplay::Heal, GamepadButtonType::DPadRight),
+        (Gameplay::Sprint, GamepadButton::West),
+        (Gameplay::Attack, GamepadButton::South),
+        (Gameplay::Interact, GamepadButton::East),
+        (Gameplay::CycleWeapon, GamepadButton::North),
+        (Gameplay::ZoomAdd, GamepadButton::DPadUp),
+        (Gameplay::ZoomSubtract, GamepadButton::DPadDown),
+        (Gameplay::Pause, GamepadButton::Start),
+        (Gameplay::Melee, GamepadButton::DPadLeft),
+        (Gameplay::Heal, GamepadButton::DPadRight),
     ]);
 }
 

@@ -43,11 +43,9 @@ pub fn spawn_weapon(
         info!("spawning weapon");
         commands
             .spawn((
+                Transform::from_translation(position.extend(ACTOR_Z_INDEX)),
                 weapon_bundle.clone(),
                 Aspen2dPhysicsBundle::default_item(),
-                SpatialBundle::from_transform(Transform::from_translation(
-                    position.extend(ACTOR_Z_INDEX),
-                )),
             ))
             .with_children(|child| {
                 let collider_name = format!("{}Collider", weapon_bundle.name.as_str());
@@ -60,17 +58,14 @@ pub fn spawn_weapon(
                         AspenCollisionLayer::DynamicActor,
                         LayerMask::ALL,
                     ),
-                    transform_bundle: TransformBundle {
-                        local: Transform {
-                            translation: Vec3 {
-                                x: -2.25,
-                                y: -2.525,
-                                z: ACTOR_PHYSICS_Z_INDEX,
-                            },
-                            rotation: Quat::IDENTITY,
-                            scale: Vec3::ONE,
+                    transform: Transform {
+                        translation: Vec3 {
+                            x: -2.25,
+                            y: -2.525,
+                            z: ACTOR_PHYSICS_Z_INDEX,
                         },
-                        global: GlobalTransform::IDENTITY,
+                        rotation: Quat::IDENTITY,
+                        scale: Vec3::ONE,
                     },
                 });
             });

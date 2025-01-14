@@ -12,6 +12,77 @@ edition = "2021"
 keywords = ["videogame", "game", "lib"]
 categories = ["games"]
 
+[features]
+develop = ["dep:bevy_mod_debugdump"]
+dynamic = ["bevy/dynamic_linking"]
+trace = ["bevy/trace_tracy"]
+
+[target.'cfg(windows)'.dependencies]
+winapi = "0.3"
+
+[dependencies]
+tracing-subscriber = "0.3.18"
+pretty-type-name = "1.0.1"
+petgraph = "0.6.5"
+rand = { version = "0.8" }
+log = "0.4.20"
+clap = { version = "4.2" }
+serde = { version = "1.0" }
+toml = { version = "0.8" }
+ron = { version = "0.8" }
+winit = { version = "0.30", default-features = false }
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+bevy = { workspace = true, default-features = false }
+# Bevy Dependencies are located in deps folder
+asha_macros = { path = "../asha_macros" }
+big-brain = { path = "../../deps/big_brain" }
+bevy_aseprite_ultra = { path = "../../deps/bevy_aseprite_ultra" }
+bevy_console = { path = "../../deps/bevy_console" }
+bevy_framepace = { path = "../../deps/bevy_framepace" }
+bevy_touch_stick = { path = "../../deps/bevy_touch_stick" }
+avian2d = { path = "../../deps/avian/crates/avian2d", default-features = false, features = [
+  "2d",
+  "f32",
+  "parry-f32",
+  "debug-plugin",
+  "parallel",
+  "bevy_scene",
+  "bevy_picking",
+] }
+bevy_transform_interpolation = { path = "../../deps/bevy_transform_interpolation" }
+bevy_mod_debugdump = { optional = true, path = "../../deps/bevy_mod_debugdump", features = [
+  "render_graph",
+] }
+bevy-inspector-egui = { path = "../../deps/bevy_inspector_egui/crates/bevy-inspector-egui", default-features = false, features = [
+  "bevy_render",
+] }
+bevy_egui = { path = "../../deps/bevy_egui", default-features = false, features = [
+  "default_fonts",
+  "serde",
+] }
+leafwing-input-manager = { path = "../../deps/leafwing_input_manager", features = [
+  "timing",
+] }
+bevy_common_assets = { path = "../../deps/bevy_common_assets", features = [
+  "ron",
+  "toml",
+] }
+bevy_ecs_ldtk = { path = "../../deps/bevy_ecs_ldtk", features = [
+  "atlas",
+  "external_levels",
+] }
+bevy_ecs_tilemap = { path = "../../deps/bevy_ecs_tilemap", features = [
+  "render",
+] }
+bevy_asset_loader = { path = "../../deps/bevy_asset_loader/bevy_asset_loader", features = [
+  "2d",
+  "standard_dynamic_assets",
+] }
+bevy_kira_audio = { path = "../../deps/bevy_kira_audio", default-features = false, features = [
+  "ogg",
+] }
+
 [lints.rust]
 missing-docs = { level = "deny" }
 
@@ -42,89 +113,3 @@ cast_possible_truncation = { level = "allow" }
 cast_precision_loss = { level = "allow" }
 cast-sign-loss = { level = "allow" }
 cast_possible_wrap = { level = "allow" }
-
-
-[features]
-develop = ["dep:bevy_mod_debugdump"]
-dynamic = ["bevy/dynamic_linking"]
-trace = ["bevy/trace_tracy"]
-
-[target.'cfg(windows)'.dependencies]
-winapi = "0.3"
-
-[dependencies]
-tracing-subscriber = "0.3.18"
-pretty-type-name = "1.0.1"
-petgraph = "0.6.5"
-rand = { version = "0.8" }
-log = "0.4.20"
-clap = { version = "4.2" }
-serde = { version = "1.0" }
-toml = { version = "0.8" }
-ron = { version = "0.8" }
-winit = { version = "0.30", default-features = false }
-image = { version = "0.25", default-features = false, features = ["png"] }
-bevy = { path = "../../deps/bevy", default-features = false, features = [
-  "bevy_pbr",         # bevy_pbr / bevy_asset / bevy_render / bevy_core_pipeline
-  "bevy_ui",          # bevy_ui / bevy_text / bevy_sprite / bevy_core_pipeline
-  "bevy_winit",       # Support for creating windows
-  "x11",              # Support xOrg Windows
-  "wayland",          # Support Wayland windows
-  "png",              # png is my preffered image format
-  "serialize",        # Support for `serde` Serialize/Deserialize
-  "tonemapping_luts", # extra tonemapping utils requires ktx2 & zstd
-  "ktx2",             # gpu friendly texture format
-  "zstd",             # zstd is for ktx2 compression
-  # "bevy_gilrs",             # Gamepad input support
-  # "subpixel_glyph_atlas",   # Subpixel antialiasing for text/fonts
-  # "bevy_gizmos",            # bevy gizmos for linedrawing, not used yet? impl debug systems with this tool
-] }
-
-# Bevy Dependencies are located in deps folder
-asha_macros = { path = "../asha_macros" }
-big-brain = { path = "../../deps/big_brain" }
-bevy_aseprite_ultra = { path = "../../deps/bevy_aseprite_ultra" }
-bevy_console = { path = "../../deps/bevy_console" }
-bevy_framepace = { path = "../../deps/bevy_framepace" }
-bevy_touch_stick = { path = "../../deps/bevy_touch_stick" }
-avian2d = { path = "../../deps/avian/crates/avian2d" }
-bevy_transform_interpolation = { path = "../../deps/bevy_transform_interpolation" }
-bevy_mod_debugdump = { optional = true, path = "../../deps/bevy_mod_debugdump", features = [
-  "render_graph",
-] }
-bevy-inspector-egui = { path = "../../deps/bevy_inspector_egui/crates/bevy-inspector-egui", default-features = false, features = [
-  "bevy_render",
-] }
-bevy_egui = { path = "../../deps/bevy_egui", default-features = false, features = [
-  "default_fonts",
-  "serde",
-] }
-leafwing-input-manager = { path = "../../deps/leafwing_input_manager", features = [
-  "default",
-  "timing",
-] }
-bevy_common_assets = { path = "../../deps/bevy_common_assets", features = [
-  "ron",
-  "toml",
-] }
-bevy_ecs_ldtk = { path = "../../deps/bevy_ecs_ldtk", features = [
-  "atlas",
-  "external_levels",
-] }
-bevy_ecs_tilemap = { path = "../../deps/bevy_ecs_tilemap", features = [
-  "render",
-] }
-bevy_asset_loader = { path = "../../deps/bevy_asset_loader/bevy_asset_loader", features = [
-  "2d",
-  "standard_dynamic_assets",
-] }
-bevy_kira_audio = { path = "../../deps/bevy_kira_audio", default-features = false, features = [
-  "ogg",
-] }
-bevy_mod_picking = { path = "../../deps/bevy_mod_picking/", default-features = false, features = [
-  "backend_raycast",
-  "backend_sprite",
-  "debug",
-  "selection",
-  "highlight",
-] }

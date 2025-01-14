@@ -20,7 +20,7 @@ impl Plugin for ItemsPlugin {
         ));
         app.add_systems(
             Update,
-            item_spawner::spawn_item_on_event.run_if(on_event::<EventSpawnItem>()),
+            item_spawner::spawn_item_on_event.run_if(on_event::<EventSpawnItem>),
         );
     }
 }

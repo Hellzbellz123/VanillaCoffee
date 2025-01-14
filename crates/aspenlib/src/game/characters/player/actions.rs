@@ -249,9 +249,9 @@ pub fn equip_closest_weapon(
                     collider: NeedsCollider::Aabb,
                     // TODO: standard weapon Colliderbundles
                     collision_groups: CollisionLayers::default(),
-                    transform_bundle: TransformBundle::from_transform(Transform::from_translation(
+                    transform: Transform::from_translation(
                         Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
-                    )),
+                    ),
                 });
             });
         } else {
@@ -262,7 +262,7 @@ pub fn equip_closest_weapon(
         "the weapon slot is empty, parenting weapon: {:?} too player: {:?}",
         closest_weapon, player_entity
     );
-    cmds.entity(player_entity).push_children(&[closest_weapon]);
+    cmds.entity(player_entity).add_children(&[closest_weapon]);
 
     for (ent, parent) in query_child_weapon_collider.iter() {
         if parent.get() == closest_weapon {

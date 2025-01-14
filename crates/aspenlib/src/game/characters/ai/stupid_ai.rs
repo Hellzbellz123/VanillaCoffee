@@ -5,9 +5,9 @@ for being the only real useful example of big-brain as far as im concerned
 use rand::{thread_rng, Rng};
 
 use avian2d::prelude::{
-    Collider, LayerMask, LinearVelocity, ShapeHitData, SpatialQuery, SpatialQueryFilter,
+    Collider, LayerMask, LinearVelocity, ShapeCastConfig, ShapeHitData, SpatialQuery, SpatialQueryFilter
 };
-use bevy::{hierarchy::HierarchyQueryExt, prelude::*, utils::HashSet};
+use bevy::{ecs::entity::{EntityHash, EntityHashSet}, hierarchy::HierarchyQueryExt, prelude::*};
 use big_brain::{
     prelude::{ActionState, Actor, Score},
     thinker::ThinkerBuilder,
@@ -106,7 +106,9 @@ fn stupid_ai_aggro_manager(
             continue;
         }
 
-        let mut excluded_entities = HashSet::new();
+        let s = EntityHash;
+        let mut excluded_entities = EntityHashSet::with_capacity_and_hasher(15, s);
+
         excluded_entities.insert(actor_collider);
         excluded_entities.insert(this_actor);
 
@@ -115,8 +117,7 @@ fn stupid_ai_aggro_manager(
             enemy_pos,
             0.0,
             Dir2::new_unchecked(direction_to_target),
-            distance_to_target,
-            true,
+            &ShapeCastConfig::from_target_distance(distance_to_target),
             &SpatialQueryFilter {
                 mask: LayerMask::ALL,
                 excluded_entities,
@@ -353,7 +354,7 @@ fn wander_action(
                         continue;
                     }
 
-                    let mut excluded_entities = HashSet::new();
+                    let mut excluded_entities = EntityHashSet::with_capacity_and_hasher(15, EntityHash);
                     excluded_entities.insert(actor_collider);
                     excluded_entities.insert(*actor);
 
@@ -362,15 +363,14 @@ fn wander_action(
                         enemy_pos,
                         0.0,
                         Dir2::new_unchecked(direction),
-                        distance,
-                        true,
+                        &ShapeCastConfig::from_max_distance(distance),
                         &SpatialQueryFilter {
                             mask: LayerMask::ALL,
                             excluded_entities,
                         },
                     );
 
-                    if ray.is_some_and(|f| f.time_of_impact <= distance * 0.1) {
+                    if ray.is_some_and(|f| f.distance <= distance * 0.1) {
                         can_meander_tag.wander_target = None;
                         *state = ActionState::Requested;
                     }

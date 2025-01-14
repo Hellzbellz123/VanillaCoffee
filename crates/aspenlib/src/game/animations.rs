@@ -1,6 +1,6 @@
 use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
-use bevy_aseprite_ultra::prelude::{Animation, AnimationRepeat, Aseprite};
+use bevy_aseprite_ultra::prelude::{AnimationRepeat, AseSpriteAnimation, Aseprite};
 
 use crate::{
     game::characters::components::{CharacterMoveState, CurrentMovement, MoveDirection},
@@ -113,11 +113,11 @@ fn change_character_animations(
 /// updates actors animations
 fn handle_animation_changes(
     mut change_events: EventReader<EventAnimationChange>,
-    mut animateable: Query<(&mut Animation, &Handle<Aseprite>)>,
+    mut animateable: Query<&mut AseSpriteAnimation>,
     aseprites: Res<Assets<Aseprite>>,
 ) {
     for event in change_events.read() {
-        let Ok((mut animator, aseprite_handle)) = animateable.get_mut(event.actor) else {
+        let Ok(mut animator) = animateable.get_mut(event.actor) else {
             error!("animation event requested for entity that did not have required animation components");
             continue;
         };
@@ -125,7 +125,7 @@ fn handle_animation_changes(
         if event.anim_handle.len() == 1
             && let Some(tag) = event.anim_handle.first()
         {
-            let Some(aseprite_file) = aseprites.get(aseprite_handle) else {
+            let Some(aseprite_file) = aseprites.get(&animator.aseprite) else {
                 warn!("sprite sheet should exist for this actor");
                 continue;
             };
@@ -135,14 +135,14 @@ fn handle_animation_changes(
                 continue;
             }
 
-            animator.tag = Some((*tag).to_string());
+            animator.animation.tag = Some((*tag).to_string());
         } else if event.anim_handle.len() > 1 {
-            animator.clear_queue();
-            animator.tag = None;
-            animator.repeat = AnimationRepeat::Count(1);
-            animator.playing = true;
+            animator.animation.clear_queue();
+            animator.animation.tag = None;
+            animator.animation.repeat = AnimationRepeat::Count(1);
+            animator.animation.playing = true;
             event.anim_handle.iter().enumerate().for_each(|(idx, tag)| {
-                animator.queue.push_back((
+                animator.animation.queue.push_back((
                     (*tag).to_string(),
                     if idx == event.anim_handle.len() - 1 {
                         AnimationRepeat::Loop
@@ -154,11 +154,13 @@ fn handle_animation_changes(
         }
     }
 
-    for (mut animator, _) in &mut animateable {
-        if animator.tag.is_some() {
+    // idle animators without animation
+    for mut animator in &mut animateable {
+        if animator.animation.tag.is_some() {
             continue;
         }
-        animator.tag = Some("idle".to_string());
+        // TODO: should we check if idle exists?
+        animator.animation.tag = Some("idle".to_string());
     }
 }
 

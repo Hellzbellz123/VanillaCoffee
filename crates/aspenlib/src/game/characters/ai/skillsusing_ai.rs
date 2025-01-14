@@ -259,7 +259,7 @@ fn ai_patternskill_action(
                 pattern_timer: Timer::from_seconds(PATTERN_DUPLICATE_TIME, TimerMode::Once),
                 runs: 0,
             },
-            SpatialBundle::from_transform(*enemy_pos),
+            *enemy_pos,
         ));
     }
 }

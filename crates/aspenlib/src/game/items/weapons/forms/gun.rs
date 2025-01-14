@@ -25,7 +25,7 @@ impl Plugin for GunWeaponsPlugin {
         app.add_event::<GunShootEvent>().add_systems(
             Update,
             (
-                receive_gun_shots.run_if(on_event::<GunShootEvent>()),
+                receive_gun_shots.run_if(on_event::<GunShootEvent>),
                 update_gun_timers,
             ),
         );
@@ -162,19 +162,16 @@ pub fn create_bullet(
                 bullet_creator: entity,
             },
             ttl: TimeToLive(Timer::from_seconds(3.5, TimerMode::Repeating)),
-            sprite_bundle: SpriteBundle {
-                texture: assets.img_favicon.clone(),
-                transform: location,
-                sprite: Sprite {
-                    custom_size: Some(Vec2::splat(projectile_size)),
-                    ..default()
-                },
-                ..default()
-            },
             rigidbody_bundle: Aspen2dPhysicsBundle::new_projectile(
                 velocity_direction * projectile_speed,
             ),
         },
+        Sprite {
+            image: assets.img_favicon.clone(),
+            custom_size: Some(Vec2::splat(projectile_size)),
+            ..default()
+        },
+        location,
         Sensor,
     ))
     .with_children(|child| {
@@ -182,11 +179,8 @@ pub fn create_bullet(
             EntityCreator(entity),
             AspenColliderBundle {
                 name: Name::new("GunProjectileCollider"),
-                transform_bundle: TransformBundle {
-                    local: (Transform {
-                        translation: Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
-                        ..default()
-                    }),
+                transform: Transform {
+                    translation: Vec2::ZERO.extend(ACTOR_PHYSICS_Z_INDEX),
                     ..default()
                 },
                 collider: NeedsCollider::Aabb, //Collider::ball(3.0),

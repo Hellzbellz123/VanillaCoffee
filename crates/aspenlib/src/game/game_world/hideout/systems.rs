@@ -1,9 +1,7 @@
 use avian2d::prelude::{Collider, CollisionEnded, CollisionStarted, Sensor};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{
-    prelude::{LevelSet, SpawnExclusions},
-    IntGridRendering, LdtkSettings, LdtkWorldBundle, LevelBackground, LevelSelection,
-    LevelSpawnBehavior, SetClearColor,
+    prelude::{LevelSet, SpawnExclusions}, IntGridRendering, LdtkProjectHandle, LdtkSettings, LdtkWorldBundle, LevelBackground, LevelSelection, LevelSpawnBehavior, SetClearColor
 };
 
 use crate::{
@@ -47,7 +45,7 @@ pub fn spawn_hideout(mut commands: Commands, maps: Res<AspenLevelsetHandles>) {
 
     commands.spawn((
         LdtkWorldBundle {
-            ldtk_handle: maps.default_levels.clone(),
+            ldtk_handle: LdtkProjectHandle { handle: maps.default_levels.clone() },
             level_set: LevelSet::default(),
             transform: Transform {
                 translation: Vec3 {

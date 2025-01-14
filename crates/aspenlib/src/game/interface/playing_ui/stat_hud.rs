@@ -6,22 +6,19 @@ pub fn create_player_hud(playing_ui_parts: &mut ChildBuilder) {
     playing_ui_parts
         .spawn((
             Name::new("PlayerHud"),
-            NodeBundle {
-                style: Style {
-                    display: Display::Flex,
-                    position_type: PositionType::Relative,
-                    flex_direction: FlexDirection::Row,
-                    align_self: AlignSelf::FlexStart,
-                    justify_content: JustifyContent::SpaceBetween,
-                    height: Val::Percent(35.0),
-                    width: Val::Percent(50.0),
-                    margin: UiRect {
-                        left: Val::Percent(5.0),
-                        right: Val::Auto,
-                        top: Val::Auto,
-                        bottom: Val::Px(5.0),
-                    },
-                    ..default()
+            Node {
+                display: Display::Flex,
+                position_type: PositionType::Relative,
+                flex_direction: FlexDirection::Row,
+                align_self: AlignSelf::FlexStart,
+                justify_content: JustifyContent::SpaceBetween,
+                height: Val::Percent(35.0),
+                width: Val::Percent(50.0),
+                margin: UiRect {
+                    left: Val::Percent(5.0),
+                    right: Val::Auto,
+                    top: Val::Auto,
+                    bottom: Val::Px(5.0),
                 },
                 ..default()
             },
@@ -42,15 +39,12 @@ fn create_hero_portrait(hud_parts: &mut ChildBuilder) {
                 offset: Val::Px(0.0),
                 color: super::colors::OUTLINE,
             },
-            NodeBundle {
-                background_color: BackgroundColor(super::colors::BACKDARK),
-                style: Style {
-                    width: Val::Percent(35.0),
-                    height: Val::Percent(100.0),
-                    justify_content: JustifyContent::Center,
-                    overflow: Overflow::clip(),
-                    ..default()
-                },
+            BackgroundColor(super::colors::BACKDARK),
+            Node {
+                width: Val::Percent(35.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                overflow: Overflow::clip(),
                 ..default()
             },
         ))
@@ -58,18 +52,12 @@ fn create_hero_portrait(hud_parts: &mut ChildBuilder) {
             picture.spawn((
                 Name::new("PlayerPortrait"),
                 UiPlayerPortrait,
-                TextureAtlas {
-                    layout: Handle::default(),
-                    index: 0,
-                },
-                ImageBundle {
-                    style: Style {
-                        margin: UiRect::top(Val::Percent(60.0)),
-                        align_self: AlignSelf::Center,
-                        width: Val::Percent(200.0),
-                        height: Val::Percent(200.0),
-                        ..default()
-                    },
+                ImageNode::default(),
+                Node {
+                    margin: UiRect::top(Val::Percent(60.0)),
+                    align_self: AlignSelf::Center,
+                    width: Val::Percent(200.0),
+                    height: Val::Percent(200.0),
                     ..default()
                 },
             ));
@@ -90,22 +78,19 @@ fn create_vitals_hud(hud_parts: &mut ChildBuilder) {
                 offset: Val::default(),
                 color: super::colors::OUTLINE,
             },
-            NodeBundle {
-                style: Style {
-                    margin: UiRect {
-                        left: Val::Auto,
-                        right: Val::Auto,
-                        ..default()
-                    },
-                    width: Val::Percent(58.0),
-                    height: Val::Percent(95.0),
-                    align_self: AlignSelf::Center,
-                    flex_direction: FlexDirection::Column,
+            Node {
+                margin: UiRect {
+                    left: Val::Auto,
+                    right: Val::Auto,
                     ..default()
                 },
-                background_color: BackgroundColor(super::colors::BACKLIGHT),
+                width: Val::Percent(58.0),
+                height: Val::Percent(95.0),
+                align_self: AlignSelf::Center,
+                flex_direction: FlexDirection::Column,
                 ..default()
             },
+            BackgroundColor(super::colors::BACKLIGHT),
         ))
         .with_children(|stat_bars| {
             statbar_widget(
@@ -140,31 +125,23 @@ pub fn statbar_widget(
     let container_name = format!("{title}BarContainer");
     stat_bars.spawn((
         Name::new(text_name),
-        TextBundle::from_section(
-            title,
-            TextStyle {
-                font_size: 18.0,
-                ..default()
-            },
-        ),
+        Text::new(title),
+        TextFont::from_font_size(18.0),
     ));
     stat_bars
         .spawn((
             Name::new(container_name),
-            NodeBundle {
-                style: Style {
-                    margin: UiRect {
-                        top: Val::Auto,
-                        bottom: Val::Auto,
-                        ..default()
-                    },
-                    align_self: AlignSelf::Center,
-                    width: Val::Percent(95.0),
-                    height: Val::Percent(height),
-                    flex_direction: FlexDirection::Column,
+            BackgroundColor(background),
+            Node {
+                margin: UiRect {
+                    top: Val::Auto,
+                    bottom: Val::Auto,
                     ..default()
                 },
-                background_color: BackgroundColor(background),
+                align_self: AlignSelf::Center,
+                width: Val::Percent(95.0),
+                height: Val::Percent(height),
+                flex_direction: FlexDirection::Column,
                 ..default()
             },
         ))
@@ -172,15 +149,12 @@ pub fn statbar_widget(
             bar_parts.spawn((
                 bar_type,
                 Name::new("HealthBar"),
-                NodeBundle {
-                    style: Style {
-                        height: Val::Percent(100.0),
-                        width: Val::Percent(44.0),
-                        ..default()
-                    },
-                    background_color: BackgroundColor(foreground),
+                Node {
+                    height: Val::Percent(100.0),
+                    width: Val::Percent(44.0),
                     ..default()
                 },
+                BackgroundColor(foreground),
             ));
         });
 }
@@ -227,28 +201,28 @@ impl StatBar {
 /// only runs if portrait handle is not player sprite atlas
 #[allow(clippy::type_complexity)]
 pub fn update_player_portrait(
-    player_query: Query<(&TextureAtlas, &Handle<Image>), With<PlayerSelectedHero>>,
+    player_query: Query<&Sprite, With<PlayerSelectedHero>>,
     mut player_portrait: Query<
-        (&mut UiImage, &mut TextureAtlas),
+        &mut ImageNode,
         (With<UiPlayerPortrait>, Without<PlayerSelectedHero>),
     >,
 ) {
-    let (mut portrait_image, mut portrait_atlas) = player_portrait.single_mut();
-    let Ok((player_atlas, player_image)) = player_query.get_single() else {
+    let mut portrait_image = player_portrait.single_mut();
+    let Ok(player_sprite) = player_query.get_single() else {
         warn!("no selected player is available");
         return;
     };
 
-    if portrait_image.texture != *player_image {
-        portrait_image.texture = player_image.clone_weak();
-        portrait_atlas.layout = player_atlas.layout.clone_weak();
+    if portrait_image.image != player_sprite.image {
+        portrait_image.image = player_sprite.image.clone();
+        portrait_image.texture_atlas = player_sprite.texture_atlas.clone();
     }
 }
 
 /// updates statbars with character stats values
 pub fn update_player_hp_bar(
     player_query: Query<(Entity, &CharacterStats), With<PlayerSelectedHero>>,
-    mut bar_query: Query<(&mut StatBar, &mut Style)>,
+    mut bar_query: Query<(&mut StatBar, &mut Node)>,
 ) {
     let Ok((_, stats)) = player_query.get_single() else {
         warn!("no player stats too update player stats ui with");

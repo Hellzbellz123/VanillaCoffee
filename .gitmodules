@@ -22,9 +22,6 @@
 [submodule "deps/bevy_mod_debugdump"]
 	path = deps/bevy_mod_debugdump
 	url = https://github.com/jakobhellermann/bevy_mod_debugdump.git
-[submodule "deps/bevy_rapier"]
-	path = deps/bevy_rapier
-	url = https://github.com/dimforge/bevy_rapier.git
 [submodule "deps/bevy_console"]
 	path = deps/bevy_console
 	url = https://github.com/RichoDemus/bevy-console.git
@@ -43,9 +40,6 @@
 [submodule "deps/bevy_eventlistener"]
 	path = deps/bevy_eventlistener
 	url = https://github.com/aevyrie/bevy_eventlistener.git
-[submodule "deps/bevy_mod_picking"]
-	path = deps/bevy_mod_picking
-	url = https://github.com/aevyrie/bevy_mod_picking.git
 [submodule "deps/bevy_touch_stick"]
 	path = deps/bevy_touch_stick
 	url = https://github.com/johanhelsing/bevy_touch_stick.git

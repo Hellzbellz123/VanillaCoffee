@@ -35,8 +35,8 @@ impl Plugin for CombatPlugin {
             Update,
             (
                 damage::handle_death_system,
-                damage::projectile_hits.run_if(on_event::<CollisionStarted>()),
-                delegate_attack_events.run_if(on_event::<EventRequestAttack>()),
+                damage::projectile_hits.run_if(on_event::<CollisionStarted>),
+                delegate_attack_events.run_if(on_event::<EventRequestAttack>),
             )
                 .run_if(in_state(AppStage::Running)),
         );

@@ -12,30 +12,26 @@ pub fn spawn_button<T: Component>(
         .spawn((
             Name::new(format!("{text} Button")),
             component,
-            ButtonBundle {
-                style: Style {
-                    width: Val::Px(100.0),
-                    height: Val::Px(60.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                background_color: BackgroundColor(crate::colors::PURPLE.into()),
-                border_color: BorderColor(crate::colors::PINK.into()),
+            Button,
+            Node {
+                width: Val::Px(100.0),
+                height: Val::Px(60.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
                 ..default()
             },
+            BackgroundColor(crate::colors::PURPLE.into()),
+            BorderColor(crate::colors::PINK.into()),
         ))
         .with_children(|button_text| {
             button_text.spawn((
                 Name::new("ButtonText"),
-                TextBundle::from_section(
-                    text,
-                    TextStyle {
-                        font,
-                        font_size: 14.0,
-                        color: Color::WHITE,
-                    },
-                ),
+                Text::new(text),
+                TextFont {
+                    font,
+                    font_size: 14.0,
+                    ..default()
+                },
             ));
         });
 }
@@ -51,17 +47,16 @@ pub fn spawn_menu_title(
 ) {
     child_builder.spawn((
         Name::new("Title"),
-        TextBundle::from_section(
-            text,
-            TextStyle {
-                font,
-                color: Color::WHITE,
-                font_size,
-            },
-        )
-        .with_background_color(random_color(Some(0.6)))
-        .with_text_justify(JustifyText::Center)
-        .with_style(Style {
+        Text::new(text),
+        TextLayout::new(JustifyText::Center, LineBreak::WordBoundary),
+        TextFont {
+            font,
+            font_size,
+            ..default()
+        },
+        BackgroundColor(random_color(Some(0.6))),
+        Node {
+            justify_items: JustifyItems::Center,
             aspect_ratio: None,
             display: Display::Flex,
             position_type: PositionType::Relative,
@@ -78,6 +73,6 @@ pub fn spawn_menu_title(
             width: Val::Percent(65.0),
             height: Val::Px(75.0),
             ..default()
-        }),
+        },
     ));
 }

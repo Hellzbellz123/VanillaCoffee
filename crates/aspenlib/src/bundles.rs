@@ -1,10 +1,6 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_aseprite_ultra::{
-    prelude::{Animation, AnimationState, Aseprite},
-    NotLoaded,
-};
-use bevy_transform_interpolation::TranslationInterpolation;
+use bevy_aseprite_ultra::prelude::{AnimationState, AseSpriteAnimation};
 
 use crate::{
     game::{
@@ -72,7 +68,7 @@ pub struct WeaponBundle {
 }
 
 /// bundle too spawn projectiles
-#[derive(Bundle)]
+#[derive(Bundle, Clone)]
 pub struct ProjectileBundle {
     /// projectile name
     pub name: Name,
@@ -80,27 +76,30 @@ pub struct ProjectileBundle {
     pub projectile_stats: ProjectileStats,
     /// projectile lifetime
     pub ttl: TimeToLive,
-    /// projectile Sprite
-    pub sprite_bundle: SpriteBundle,
     /// projectile collisions and movement
     pub rigidbody_bundle: Aspen2dPhysicsBundle,
 }
 
 /// The `AspenRenderBundle` holds all components needed to render Aseprite files as Actors.
-#[derive(Bundle, Default, Clone)]
+#[derive(Bundle, Default)]
 pub struct Aspen2dRenderBundle {
     /// asperite asset for this sprite
-    pub handle: Handle<Aseprite>,
-    /// animation controller
-    pub animation: Animation,
+    pub handle: AseSpriteAnimation,
     /// animation play information
     pub animation_state: AnimationState,
-    /// marks not yet loaded sprite entity
-    pub not_loaded: NotLoaded,
-    /// texture atlas for final sprite image
-    pub atlas: TextureAtlas,
     /// sprite configuration
     pub sprite: Sprite,
+}
+
+// TODO: yeet this clone, this is ugly
+impl Clone for Aspen2dRenderBundle {
+    fn clone(&self) -> Self {
+        Self {
+            handle: self.handle.clone(),
+            animation_state: AnimationState::default(),
+            sprite: self.sprite.clone(),
+        }
+    }
 }
 
 /// collider bundle for actors
@@ -115,7 +114,7 @@ pub struct AspenColliderBundle {
     /// collision groups
     pub collision_groups: CollisionLayers,
     /// collider transform
-    pub transform_bundle: TransformBundle,
+    pub transform: Transform,
 }
 
 #[derive(Bundle, Clone)]
@@ -129,7 +128,7 @@ pub struct Aspen2dPhysicsBundle {
     pub velocity: LinearVelocity,
     pub ang_vel: AngularVelocity,
     pub rotation_locks: LockedAxes,
-    pub interpolate_loc: TranslationInterpolation
+    pub interpolate_loc: TranslationInterpolation,
 }
 pub const GRAVITY: f32 = 9.81;
 
@@ -143,7 +142,7 @@ pub fn sized_mass(
     let collider = Collider::rectangle(size.x, size.y);
     let density = weight / GRAVITY;
 
-    MassPropertiesBundle::new_computed(&collider, density)
+    MassPropertiesBundle::from_shape(&collider, density)
 }
 
 impl Aspen2dPhysicsBundle {
@@ -166,7 +165,7 @@ impl Aspen2dPhysicsBundle {
             rotation_locks: NO_LOCKED_AXES,
             linear_damping: LinearDamping(0.1),
             angular_damping: AngularDamping(0.1),
-            interpolate_loc: TranslationInterpolation
+            interpolate_loc: TranslationInterpolation,
         }
     }
 
@@ -188,7 +187,7 @@ impl Aspen2dPhysicsBundle {
             rotation_locks: LockedAxes::ROTATION_LOCKED,
             linear_damping: LinearDamping(1.0),
             angular_damping: AngularDamping(1.0),
-            interpolate_loc: TranslationInterpolation
+            interpolate_loc: TranslationInterpolation,
         }
     }
 
@@ -210,7 +209,7 @@ impl Aspen2dPhysicsBundle {
             rotation_locks: NO_LOCKED_AXES,
             linear_damping: LinearDamping(0.8),
             angular_damping: AngularDamping(0.6),
-            interpolate_loc: TranslationInterpolation
+            interpolate_loc: TranslationInterpolation,
         }
     }
 }
@@ -220,7 +219,7 @@ impl std::fmt::Debug for Aspen2dRenderBundle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Aspen2dRenderBundle")
             .field("sprite asset", &self.handle)
-            .field("animation name", &self.animation.tag)
+            .field("animation name", &self.handle.animation.tag)
             .field("sprite cfg", &self.sprite)
             .finish_non_exhaustive()
     }

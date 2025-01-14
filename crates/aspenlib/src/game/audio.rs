@@ -3,8 +3,9 @@ use std::time::Duration;
 use bevy::{prelude::*, utils::HashMap};
 use bevy_aseprite_ultra::prelude::AnimationState;
 use bevy_kira_audio::{
-    prelude::{AudioControl, AudioEmitter, AudioReceiver, SpatialAudio},
-    AudioApp, AudioChannel, AudioPlugin as InternalAudioPlugin, AudioSettings, AudioSource,
+    prelude::AudioControl, AudioApp, AudioChannel, AudioPlugin as InternalAudioPlugin,
+    AudioSettings, AudioSource, DefaultSpatialRadius as GlobalSpatialRadius, SpatialAudioEmitter,
+    SpatialAudioPlugin, SpatialAudioReceiver,
 };
 
 use crate::{
@@ -21,16 +22,16 @@ use crate::{
 };
 
 /// OST music is played on this channel.
-#[derive(Resource, Component)]
+#[derive(Resource)]
 pub struct MusicSoundChannel;
 
 /// Sound Channel intended for menu sounds/creaking/1etc atmospheric sounds
-#[derive(Resource, Component)]
+#[derive(Resource)]
 pub struct AmbienceSoundChannel;
 
 /// `AudioChannel` for footsteps/grunts/etc of npc/player, weapon sounds.
 /// can be used to tell if enemies exist?
-#[derive(Resource, Component)]
+#[derive(Resource)]
 pub struct GameSoundChannel;
 
 /// footstep timer
@@ -58,10 +59,8 @@ impl Plugin for AudioPlugin {
                 command_capacity: 512,
                 sound_capacity: 512,
             })
-            .insert_resource(SpatialAudio {
-                max_distance: 350.0,
-            })
-            .add_plugins(InternalAudioPlugin)
+            .insert_resource(GlobalSpatialRadius { radius: 350.0 })
+            .add_plugins((InternalAudioPlugin, SpatialAudioPlugin))
             .add_audio_channel::<MusicSoundChannel>()
             .add_audio_channel::<AmbienceSoundChannel>()
             .add_audio_channel::<GameSoundChannel>()
@@ -72,7 +71,7 @@ impl Plugin for AudioPlugin {
             .add_systems(
                 Update,
                 (
-                    process_event_sounds.run_if(on_event::<EventPlaySpatialSound>()),
+                    process_event_sounds.run_if(on_event::<EventPlaySpatialSound>),
                     prepare_actor_spatial_sound,
                     update_audio_listener,
                     actor_footstep_sounds,
@@ -110,7 +109,7 @@ pub struct EventPlaySpatialSound {
 fn process_event_sounds(
     game_sound: Res<AudioChannel<GameSoundChannel>>,
     mut event_reader: EventReader<EventPlaySpatialSound>,
-    mut emitters: Query<(Entity, &mut AudioEmitter, &ActorSoundMap)>,
+    mut emitters: Query<(Entity, &mut SpatialAudioEmitter, &ActorSoundMap)>,
 ) {
     for event in event_reader.read() {
         let EventPlaySpatialSound {
@@ -158,7 +157,7 @@ fn play_background_audio(
 fn update_audio_listener(
     mut cmds: Commands,
     player_hero: Query<Entity, With<PlayerSelectedHero>>,
-    audio_reciever: Query<Entity, (With<Parent>, With<AudioReceiver>)>,
+    audio_reciever: Query<Entity, (With<Parent>, With<SpatialAudioReceiver>)>,
 ) {
     // use fake listener that is at player position or else camera position?
     // camera plane is 999 but thats too far for audio too work correctly?
@@ -168,10 +167,8 @@ fn update_audio_listener(
         cmds.entity(hero).with_children(|f| {
             f.spawn((
                 Name::new("PlayerAudioReciever"),
-                AudioReceiver,
-                SpatialBundle::from_transform(Transform::from_translation(
-                    Vec3::ZERO.with_z(ACTOR_Z_INDEX + 1.0),
-                )),
+                SpatialAudioReceiver,
+                Transform::from_translation(Vec3::ZERO.with_z(ACTOR_Z_INDEX + 1.0)),
             ));
         });
     }
@@ -188,7 +185,7 @@ fn prepare_actor_spatial_sound(
             Option<&CharacterMoveState>,
             Option<&WeaponDescriptor>,
         ),
-        Without<AudioEmitter>,
+        Without<SpatialAudioEmitter>,
     >,
 ) {
     // let mut rng = rand::thread_rng();
@@ -219,7 +216,9 @@ fn prepare_actor_spatial_sound(
         cmds.entity(actor).insert((
             ActorSoundMap(sound_map),
             ActorSoundTimers(sound_timers),
-            AudioEmitter::default(),
+            SpatialAudioEmitter {
+                instances: Vec::new(),
+            },
         ));
     }
 }
@@ -233,10 +232,10 @@ fn actor_footstep_sounds(
         &AnimationState,
         &CharacterMoveState,
         &ActorSoundMap,
-        &mut AudioEmitter,
+        &mut SpatialAudioEmitter,
         &GlobalTransform,
     )>,
-    listener: Query<&GlobalTransform, With<AudioReceiver>>,
+    listener: Query<&GlobalTransform, With<SpatialAudioReceiver>>,
 ) {
     let Ok(listener) = listener.get_single() else {
         return;

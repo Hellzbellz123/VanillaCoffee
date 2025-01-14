@@ -9,10 +9,11 @@ use yew::prelude::*;
 
 /// sets browser window title too passed string
 fn set_window_title(title: &str) {
-    web_sys::window()
-        .and_then(|w| w.document())
-        .expect("Unable to get DOM")
-        .set_title(title);
+    if let Some(window) = web_sys::window() {
+        if let Some(document) = window.document() {
+            document.set_title(title);
+        }
+    }
 }
 
 #[function_component(Root)]

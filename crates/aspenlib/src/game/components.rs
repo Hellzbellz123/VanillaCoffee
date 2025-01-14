@@ -2,7 +2,7 @@ use crate::game::{characters::components::CharacterType, items::components::Item
 use bevy::prelude::*;
 
 /// new type for `Timer` for use with actor life time
-#[derive(Debug, Component, Default, Reflect, Deref, DerefMut)]
+#[derive(Debug, Component, Default, Reflect, Deref, DerefMut, Clone)]
 #[reflect(Component)]
 pub struct TimeToLive(pub Timer);
 

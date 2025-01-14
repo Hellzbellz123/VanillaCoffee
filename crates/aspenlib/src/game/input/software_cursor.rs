@@ -16,28 +16,31 @@ impl Plugin for SoftwareCursorPlugin {
         app.register_type::<SoftWareCursor>();
 
         app
-        // .add_systems(
-        //     Update,
-        //     update_software_cursor_position.run_if(
-        //         resource_exists::<AspenCursorPosition>
-        //             .and_then(any_with_component::<SoftWareCursor>)
-        //             .and_then(|res: Res<WindowSettings>| res.software_cursor_enabled),
-        //     ),
-        // )
-        .add_systems(
-            Update,
-            (
-                cursor_grab_system,
-                control_software_cursor.run_if(resource_exists::<AspenInitHandles>),
-                (update_software_cursor_image, update_software_cursor_position)
-                    .run_if(
-                        resource_exists::<AspenCursorPosition>
-                            .and_then(any_with_component::<SoftWareCursor>)
-                            .and_then(|res: Res<WindowSettings>| res.software_cursor_enabled),
+            // .add_systems(
+            //     Update,
+            //     update_software_cursor_position.run_if(
+            //         resource_exists::<AspenCursorPosition>
+            //             .and(any_with_component::<SoftWareCursor>)
+            //             .and(|res: Res<WindowSettings>| res.software_cursor_enabled),
+            //     ),
+            // )
+            .add_systems(
+                Update,
+                (
+                    cursor_grab_system,
+                    control_software_cursor.run_if(resource_exists::<AspenInitHandles>),
+                    (
+                        update_software_cursor_image,
+                        update_software_cursor_position,
                     )
-                    .in_set(AspenInputSystemSet::SoftwareCursor),
-            ),
-        );
+                        .run_if(
+                            resource_exists::<AspenCursorPosition>
+                                .and(any_with_component::<SoftWareCursor>)
+                                .and(|res: Res<WindowSettings>| res.software_cursor_enabled),
+                        )
+                        .in_set(AspenInputSystemSet::SoftwareCursor),
+                ),
+            );
     }
 }
 
@@ -53,24 +56,24 @@ fn cursor_grab_system(
     };
 
     if !cfg.software_cursor_enabled {
-        if !window.cursor.visible {
-            window.cursor.visible = true;
+        if !window.cursor_options.visible {
+            window.cursor_options.visible = true;
         }
         return;
     }
 
     //TODO: disable system if software cursor is disabled.
-    if btn.just_pressed(MouseButton::Left) && window.cursor.visible {
+    if btn.just_pressed(MouseButton::Left) && window.cursor_options.visible {
         // locking cursor causes loss of mouse movement on windows?
         // window.cursor.grab_mode = bevy::window::CursorGrabMode::Confined;
 
-        window.cursor.visible = false;
+        window.cursor_options.visible = false;
     }
 
-    if key.just_pressed(KeyCode::Escape) && !window.cursor.visible {
+    if key.just_pressed(KeyCode::Escape) && !window.cursor_options.visible {
         // window.cursor.grab_mode = bevy::window::CursorGrabMode::None;
 
-        window.cursor.visible = true;
+        window.cursor_options.visible = true;
     }
 }
 
@@ -108,27 +111,21 @@ fn control_software_cursor(
     if cfg.software_cursor_enabled && software_cursor.is_empty() {
         cmds.spawn((
             Name::new("SoftwareCursor"),
+            PickingBehavior {
+                should_block_lower: false,
+                is_hoverable: false,
+            },
             SoftWareCursor {
                 offset: Vec2 { x: 0.0, y: 0.0 },
                 hide_distance: 50.0,
                 hide_alpha: 0.4,
                 show_alpha: 0.8,
             },
-            TextureAtlas::from(tex.cursor_layout.clone()),
-            ImageBundle {
-                background_color: BackgroundColor(crate::colors::WHITE.with_alpha(0.0).into()),
-                style: Style {
-                    width: Val::Vw(3.0),
-                    aspect_ratio: Some(1.0),
-                    position_type: PositionType::Absolute,
-                    left: Val::Auto,
-                    right: Val::Auto,
-                    top: Val::Auto,
-                    bottom: Val::Auto,
-                    ..default()
-                },
-                z_index: ZIndex::Global(15),
-                image: tex.cursor_image.clone().into(),
+            ZIndex(15),
+            BackgroundColor(crate::colors::WHITE.with_alpha(0.0).into()),
+            ImageNode {
+                image: tex.cursor_image.clone(),
+                texture_atlas: Some(TextureAtlas::from(tex.cursor_layout.clone())),
                 ..default()
             },
         ));
@@ -143,14 +140,10 @@ fn update_software_cursor_image(
         (&GlobalTransform, &Aabb),
         (Without<PlayerSelectedHero>, With<RegistryIdentifier>),
     >,
-    mut software_cursor: Query<
-        (&mut SoftWareCursor, &mut UiImage, &mut TextureAtlas, &Node),
-        With<Node>,
-    >,
+    mut software_cursor: Query<(&mut SoftWareCursor, &mut ImageNode, &Node, &ComputedNode)>,
     game_state: Option<Res<State<GameStage>>>,
 ) {
-    let Ok((mut cursor_data, mut cursor_color, mut cursor_atlas, node_size)) =
-        software_cursor.get_single_mut()
+    let Ok((mut cursor_data, mut cursor_image, node, node_size)) = software_cursor.get_single_mut()
     else {
         return;
     };
@@ -169,14 +162,18 @@ fn update_software_cursor_image(
             .as_ref()
             .is_some_and(|f| f.get() != &GameStage::StartMenu)
     {
-        cursor_color.color = cursor_color.color.with_alpha(cursor_data.hide_alpha);
+        cursor_image.color = cursor_image.color.with_alpha(cursor_data.hide_alpha);
     } else {
-        cursor_color.color = cursor_color.color.with_alpha(cursor_data.show_alpha);
+        cursor_image.color = cursor_image.color.with_alpha(cursor_data.show_alpha);
+    };
+
+    let Some(cursor_atlas) = &mut cursor_image.texture_atlas else {
+        warn!("Software cursor image did not have a texture atlas");
+        return;
     };
 
     if game_state.is_some_and(|f| f.get() != &GameStage::StartMenu) {
         // if cursor is over 'interactable actor/enemy' set TextureAtlas.index too 'HasTarget' otherwise 'NoTarget'
-        cursor_data.offset = node_size.size() / 2.0;
         for (interactble_pos, interactable_aabb) in &interactables {
             let pos = interactble_pos.translation(); // + Vec3::from(interactable_aabb.center);
             if Rect::from_center_half_size(
@@ -185,10 +182,12 @@ fn update_software_cursor_image(
             )
             .contains(os_cursor_pos.world)
             {
-                cursor_atlas.index = CursorType::HasTarget as usize;
+                cursor_atlas.index = CursorType::NoTarget as usize;
             } else {
                 cursor_atlas.index = CursorType::NoTarget as usize;
             }
+
+            cursor_data.offset = node_size.size() / 2.0;
         }
     } else {
         cursor_atlas.index = CursorType::Default as usize;
@@ -209,7 +208,7 @@ pub enum CursorType {
 
 /// updates software cursor position based on `LookLocal` (`LookLocal` is just `winit::Window.cursor_position()`)
 fn update_software_cursor_position(
-    mut software_cursor: Query<(&mut Style, &SoftWareCursor), With<Node>>,
+    mut software_cursor: Query<(&mut Node, &SoftWareCursor)>,
     cursor_pos: Res<AspenCursorPosition>,
     window_query: Query<&Window>,
 ) {

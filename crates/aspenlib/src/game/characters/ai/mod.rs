@@ -3,8 +3,7 @@ use big_brain::{prelude::*, BigBrainPlugin};
 use std::{collections::VecDeque, time::Duration};
 
 use crate::{
-    game::characters::{
-        ai::{
+    game::characters::ai::{
             components::{
                 AIAutoShootConfig, AIChaseAction, AICombatAggroConfig, AIShootAction,
                 AIWanderAction, AIWanderConfig, AiType, AttackScorer, ChaseScorer,
@@ -14,8 +13,6 @@ use crate::{
                 SkillusingAiPlugin, MAX_PATTERN_ENERGY,
             },
         },
-        player::PlayerSelectedHero,
-    },
     register_types,
 };
 

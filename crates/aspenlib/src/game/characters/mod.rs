@@ -51,7 +51,7 @@ impl Plugin for CharactersPlugin {
                 (update_character_move_state,).run_if(in_state(AppStage::Running)),
                 spawn_character_on_event
                     .after(TransformSystem::TransformPropagate)
-                    .run_if(on_event::<EventSpawnCharacter>()),
+                    .run_if(on_event::<EventSpawnCharacter>),
             ),
         );
     }

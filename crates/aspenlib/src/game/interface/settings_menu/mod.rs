@@ -29,7 +29,7 @@ impl Plugin for SettingsMenuPlugin {
                 close_settings_interaction,
                 apply_settings_interaction,
                 toggle_settings_interactions.run_if(
-                    in_state(GameStage::PausedGame).or_else(in_state(GameStage::StartMenu)),
+                    in_state(GameStage::PausedGame).or(in_state(GameStage::StartMenu)),
                 ),
             ),
         );
@@ -60,59 +60,50 @@ fn spawn_settings_menu(
                 .spawn((
                     Name::new("SettingsMenu"),
                     SettingsMenuTag,
-                    NodeBundle {
-                        style: Style {
-                            display: Display::None,
-                            position_type: PositionType::Absolute,
-                            flex_direction: FlexDirection::Column,
-                            height: Val::Percent(90.0),
-                            width: Val::Percent(85.0),
-                            margin: UiRect::all(Val::Auto)
-                                .with_top(Val::Px(50.0))
-                                .with_bottom(Val::Px(50.0)),
-                            ..default()
-                        },
-                        focus_policy: bevy::ui::FocusPolicy::Block,
-                        z_index: ZIndex::Local(3),
-                        background_color: BackgroundColor(random_color(Some(0.95))),
+                    Node {
+                        display: Display::None,
+                        position_type: PositionType::Absolute,
+                        flex_direction: FlexDirection::Column,
+                        height: Val::Percent(90.0),
+                        width: Val::Percent(85.0),
+                        margin: UiRect::all(Val::Auto)
+                            .with_top(Val::Px(50.0))
+                            .with_bottom(Val::Px(50.0)),
                         ..default()
                     },
+                    bevy::ui::FocusPolicy::Block,
+                    ZIndex(3),
+                    BackgroundColor(random_color(Some(0.95))),
                 ))
                 .with_children(|start_menu_container_childs| {
                     start_menu_container_childs
                         .spawn((
                             Name::new("SettingsTopBar"),
-                            NodeBundle {
-                                background_color: BackgroundColor(colors::REBECCA_PURPLE.into()),
-                                border_radius: BorderRadius::all(Val::Px(15.0)),
-                                style: Style {
-                                    position_type: PositionType::Relative,
-                                    flex_direction: FlexDirection::Row,
-                                    align_items: AlignItems::Center,
-                                    height: Val::Percent(15.0),
-                                    // justify_content: JustifyContent::SpaceEvenly,
-                                    // width: Val::Percent(70.0),
-                                    // height: Val::Percent(70.0),
-                                    // // min_height: Val::Percent(20.0),
-                                    // // max_height: Val::Percent(85.0),
-                                    padding: UiRect::left(Val::Px(30.0)),
-                                    margin: UiRect::all(Val::Px(10.0)),
-                                    border: UiRect::all(Val::Px(2.0)),
-                                    ..default()
-                                },
-                                border_color: BorderColor(random_color(None)),
+                            BackgroundColor(colors::REBECCA_PURPLE.into()),
+                            BorderRadius::all(Val::Px(15.0)),
+                            Node {
+                                position_type: PositionType::Relative,
+                                flex_direction: FlexDirection::Row,
+                                align_items: AlignItems::Center,
+                                height: Val::Percent(15.0),
+                                // justify_content: JustifyContent::SpaceEvenly,
+                                // width: Val::Percent(70.0),
+                                // height: Val::Percent(70.0),
+                                // // min_height: Val::Percent(20.0),
+                                // // max_height: Val::Percent(85.0),
+                                padding: UiRect::left(Val::Px(30.0)),
+                                margin: UiRect::all(Val::Px(10.0)),
+                                border: UiRect::all(Val::Px(2.0)),
                                 ..default()
                             },
+                            BorderColor(random_color(None)),
                         ))
                         .with_children(|buttons| {
                             buttons
                                 .spawn((
                                     Name::new("TopBarButtonsContainer"),
-                                    NodeBundle {
-                                        style: Style {
-                                            column_gap: Val::Px(15.0),
-                                            ..default()
-                                        },
+                                    Node {
+                                        column_gap: Val::Px(15.0),
                                         ..default()
                                     },
                                 ))
@@ -143,7 +134,7 @@ fn spawn_settings_menu(
 
 fn settings_menu_visibility(
     game_state: Option<Res<State<GameStage>>>,
-    mut settings_menu_query: Query<&mut Style, (With<Node>, With<SettingsMenuTag>)>,
+    mut settings_menu_query: Query<&mut Node, With<SettingsMenuTag>>,
 ) {
     let Some(state) = game_state else {
         return;
@@ -159,7 +150,7 @@ fn settings_menu_visibility(
 /// updates color of all buttons with text for interactions
 fn close_settings_interaction(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<CloseSettingsTag>)>,
-    mut settings_menu_query: Query<&mut Style, (With<Node>, With<SettingsMenuTag>)>,
+    mut settings_menu_query: Query<&mut Node, With<SettingsMenuTag>>,
 ) {
     for interaction in &interaction_query {
         if matches!(interaction, Interaction::Pressed) {
@@ -185,7 +176,7 @@ fn apply_settings_interaction(
 fn toggle_settings_interactions(
     // mut cmds: Commands,
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<SettingsMenuToggleButton>)>,
-    mut settings_menu_query: Query<&mut Style, (With<Node>, With<SettingsMenuTag>)>,
+    mut settings_menu_query: Query<&mut Node, With<SettingsMenuTag>>,
 ) {
     let mut settings_menu_style = settings_menu_query.single_mut();
 

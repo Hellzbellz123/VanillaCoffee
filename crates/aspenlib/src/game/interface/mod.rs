@@ -46,17 +46,18 @@ fn spawn_interface_root(mut cmds: Commands) {
     cmds.spawn((
         Name::new("InterfaceRoot"),
         InterfaceRootTag,
-        NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                // extra
-                // justify_content: JustifyContent::FlexStart,
-                flex_direction: FlexDirection::Column,
-                flex_wrap: FlexWrap::NoWrap,
-                margin: UiRect::all(Val::Auto),
-                ..default()
-            },
+        PickingBehavior {
+            should_block_lower: false,
+            is_hoverable: false,
+        },
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            // extra
+            // justify_content: JustifyContent::FlexStart,
+            flex_direction: FlexDirection::Column,
+            flex_wrap: FlexWrap::NoWrap,
+            margin: UiRect::all(Val::Auto),
             ..default()
         },
     ));
